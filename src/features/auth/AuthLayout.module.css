@@ -1,0 +1,85 @@
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-5);
+  overflow: hidden;
+}
+
+.card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 26px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-raised);
+  text-align: center;
+}
+
+.brand {
+  font-size: 28px;
+  color: var(--color-coral);
+}
+
+.brandSub {
+  margin: 0 0 18px;
+  color: var(--color-muted);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.floating {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.floatItem {
+  position: absolute;
+  opacity: 0.85;
+  animation: floaty 6s ease-in-out infinite;
+}
+
+.float0 {
+  top: 8%;
+  left: 8%;
+}
+.float1 {
+  top: 14%;
+  right: 10%;
+  animation-delay: 0.8s;
+}
+.float2 {
+  bottom: 18%;
+  left: 12%;
+  animation-delay: 1.4s;
+}
+.float3 {
+  bottom: 10%;
+  right: 8%;
+  animation-delay: 0.4s;
+}
+.float4 {
+  top: 45%;
+  left: 2%;
+  animation-delay: 2s;
+}
+.float5 {
+  top: 50%;
+  right: 3%;
+  animation-delay: 1.1s;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}

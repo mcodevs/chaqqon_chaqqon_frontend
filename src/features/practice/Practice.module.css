@@ -1,0 +1,292 @@
+/* ---------- Config ---------- */
+.sectionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.sectionChip {
+  border: 2px solid var(--chip-color);
+  color: var(--chip-color);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 12px 8px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 13px;
+}
+
+.sectionChip[aria-checked='true'] {
+  background: var(--chip-color);
+  color: #fff;
+}
+
+.sectionLabel,
+.sectionDescription {
+  display: block;
+}
+
+.sectionDescription {
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.fieldBlock {
+  margin-bottom: var(--space-4);
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  margin-bottom: 6px;
+}
+
+/* ---------- Stage ---------- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.progress {
+  font-weight: 700;
+  color: var(--color-subtle);
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+
+/* Sized by --flash-size, so the same digits work on the practice stage and in classroom panels. */
+.flashNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: calc(var(--flash-size, 72px) * 1.1);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--flash-size, 72px);
+  line-height: 1;
+}
+
+.stageDigits {
+  margin-bottom: 22px;
+}
+
+.flashSign {
+  font-size: calc(var(--flash-size, 72px) * 0.6);
+  color: var(--color-muted);
+}
+
+.negative,
+.negative .flashSign {
+  color: var(--color-danger);
+}
+
+.readyText {
+  font-size: max(18px, calc(var(--flash-size, 72px) * 0.3));
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.timerTrack {
+  width: 80%;
+  height: 8px;
+  background: var(--color-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.timerFill {
+  height: 100%;
+  background: var(--color-coral);
+  transform-origin: left;
+  animation-name: shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.answerInput {
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: 40px;
+  text-align: center;
+  border: 3px solid var(--color-line);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 18px;
+  outline: none;
+}
+
+.answerInput:focus {
+  border-color: var(--color-green);
+}
+
+.banner {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  padding: 14px 20px;
+  border-radius: 16px;
+  margin-bottom: var(--space-4);
+}
+
+.good {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.bad {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.nextButton {
+  margin-top: 14px;
+}
+
+/* ---------- Column sum ---------- */
+.column {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 22px;
+  font-family: var(--font-display);
+}
+
+.columnCompact {
+  padding: 10px 16px;
+}
+
+.columnRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 2px 0;
+}
+
+.columnCompact .columnRow {
+  font-size: 17px;
+}
+
+.columnSign {
+  width: 18px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.columnValue {
+  min-width: 2ch;
+  text-align: right;
+}
+
+.columnLine {
+  border-top: 3px solid var(--color-ink);
+  margin: 4px 0;
+}
+
+.columnTotal {
+  color: var(--color-blue);
+}
+
+.columnYours {
+  text-align: right;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-subtle);
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* ---------- Summary ---------- */
+.summary {
+  text-align: center;
+}
+
+.summaryScore {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--color-coral);
+}
+
+.summarySub {
+  color: var(--color-muted);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+}
+
+.summaryNote {
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: var(--space-3);
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.historyItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.historyItem:first-child {
+  border-top: none;
+}
+
+.historyBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.historyOk {
+  font-weight: 700;
+  color: var(--color-success);
+  padding-top: 3px;
+}
+
+@media (max-width: 420px) {
+  .sectionGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,16 @@
+.error {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-subtle);
+  font-weight: 600;
+  padding: 10px 0;
+}

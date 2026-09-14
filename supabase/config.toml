@@ -1,0 +1,11 @@
+# Supabase CLI configuration (only what differs from the defaults).
+project_id = "chaqqon-chaqqon"
+
+[functions.register-teacher]
+# Called before anyone is signed in; the function validates its input itself.
+verify_jwt = false
+
+[functions.manage-students]
+# The function checks that the caller is the teacher. Skipping the gateway JWT check
+# also keeps it compatible with the new publishable API keys.
+verify_jwt = false

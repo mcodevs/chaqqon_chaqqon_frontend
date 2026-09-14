@@ -1,0 +1,68 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface-soft);
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+
+.rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 13px;
+  background: var(--color-line);
+  color: var(--color-muted);
+}
+
+.gold {
+  background: var(--medal-gold);
+  color: var(--color-ink);
+}
+
+.silver {
+  background: var(--medal-silver);
+  color: var(--color-ink);
+}
+
+.bronze {
+  background: var(--medal-bronze);
+  color: var(--color-ink);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameMain {
+  font-weight: 800;
+}
+
+.nameSub {
+  font-size: 11px;
+  color: var(--color-subtle);
+  font-weight: 700;
+}
+
+.score {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-green);
+  font-size: 16px;
+}

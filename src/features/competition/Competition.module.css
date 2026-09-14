@@ -1,0 +1,107 @@
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.pickChip {
+  border: 2px solid var(--color-line);
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.pickChip[aria-pressed='true'] {
+  background: var(--color-pink);
+  border-color: var(--color-pink);
+  color: #fff;
+}
+
+.pickChip:disabled {
+  opacity: 0.45;
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-subtle);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 13px;
+  margin: var(--space-3) 0;
+}
+
+.individual {
+  background: var(--color-surface-soft);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+.individualName {
+  font-weight: 800;
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+
+.monitor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.monitorRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.monitorName {
+  flex: 1;
+  font-weight: 800;
+}
+
+.monitorProgress {
+  color: var(--color-muted);
+}
+
+.monitorScore {
+  color: var(--color-success);
+}
+
+.monitorStatus {
+  font-size: 11px;
+  color: var(--color-subtle);
+}
+
+.done {
+  color: var(--color-green);
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions > * {
+  flex: 1;
+}

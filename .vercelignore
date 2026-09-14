@@ -1,0 +1,9 @@
+# Local secrets and tool state never leave this machine.
+.env*.local
+supabase/.temp
+supabase/.branches
+.claude
+
+# Rebuilt on Vercel.
+node_modules
+dist

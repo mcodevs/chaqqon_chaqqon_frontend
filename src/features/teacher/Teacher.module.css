@@ -1,0 +1,105 @@
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--space-3);
+}
+
+.buttonRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.buttonRow > * {
+  flex: 1;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.row:first-child {
+  border-top: none;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 800;
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.credentials {
+  border: 2px dashed var(--color-violet);
+}
+
+.credentialsTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.credentialsList {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 var(--space-2);
+  font-size: 18px;
+}
+
+.credentialsList dt {
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+.credentialsList dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.credentialsHint {
+  margin: 0 0 var(--space-3);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+@media (max-width: 420px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .rowActions {
+    width: 100%;
+  }
+
+  .rowActions > * {
+    flex: 1;
+  }
+}

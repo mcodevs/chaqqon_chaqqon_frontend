@@ -1,0 +1,42 @@
+.group {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.option {
+  flex: 1;
+  border: 2px solid var(--color-line);
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-muted);
+}
+
+.boxed .option[aria-checked='true'] {
+  background: var(--color-blue);
+  border-color: var(--color-blue);
+  color: #fff;
+}
+
+.pill {
+  gap: 0;
+  padding: 4px;
+  background: var(--color-line-soft);
+  border-radius: var(--radius-md);
+}
+
+.pill .option {
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+.pill .option[aria-checked='true'] {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}

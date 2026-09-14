@@ -1,0 +1,46 @@
+:root {
+  --font-display: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  --color-ink: #22242b;
+  --color-ink-soft: #5b5f6d;
+  --color-muted: #8a8fa0;
+  --color-subtle: #a0a4b0;
+  --color-line: #edeff3;
+  --color-line-soft: #f2f1f8;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fafafd;
+  --color-background: #fff6e8;
+
+  --color-coral: #ff6b6b;
+  --color-orange: #ffa94d;
+  --color-yellow: #ffd93d;
+  --color-green: #6bcb77;
+  --color-blue: #4d9de0;
+  --color-violet: #9b5de5;
+  --color-pink: #f15bb5;
+
+  --color-success: #3ea24c;
+  --color-success-soft: #e7f8ea;
+  --color-danger: #d6473f;
+  --color-danger-soft: #ffe9ec;
+
+  --medal-gold: #ffd93d;
+  --medal-silver: #c9cdd6;
+  --medal-bronze: #e5934a;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+
+  --shadow-card: 0 8px 24px rgba(30, 30, 60, 0.06);
+  --shadow-raised: 0 18px 40px rgba(155, 93, 229, 0.18);
+  --shadow-press: 0 4px 0 rgba(0, 0, 0, 0.15);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+}
