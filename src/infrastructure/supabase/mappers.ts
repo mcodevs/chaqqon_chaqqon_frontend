@@ -1,3 +1,4 @@
+import type { Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
 import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/config';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
@@ -82,6 +83,16 @@ export function toRoomProgressRow(progress: RoomProgress): Tables['room_progress
     correct: progress.correct,
     total: progress.total,
     finished: progress.finished,
+  };
+}
+
+export function toPayment(row: Tables['student_payments']['Row']): Payment {
+  return {
+    id: row.id,
+    studentId: row.student_id,
+    recordedAt: row.recorded_at,
+    paidUntil: row.paid_until,
+    kind: row.kind,
   };
 }
 

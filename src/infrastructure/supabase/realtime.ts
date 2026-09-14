@@ -1,8 +1,9 @@
 import type { ChangeListener, Unsubscribe } from '@/application/ports';
+import { createChangeNotifier } from '../shared/changeNotifier';
 import type { AppSupabaseClient } from './client';
 
-/** Tables published to Realtime by the migration. */
-export type RealtimeTable = 'rooms' | 'room_progress' | 'practice_results';
+/** Tables published to Realtime by the migrations. */
+export type RealtimeTable = 'rooms' | 'room_progress' | 'practice_results' | 'student_payments';
 
 /** Calls `listener` whenever rows this user may see (per RLS) change in the given tables. */
 export function subscribeToTables(
@@ -19,4 +20,20 @@ export function subscribeToTables(
   return () => {
     void client.removeChannel(channel);
   };
+}
+
+/** Own writes refresh at once; Realtime brings in everyone else's. */
+export function liveSubscription(client: AppSupabaseClient, tables: readonly RealtimeTable[]) {
+  const changes = createChangeNotifier();
+
+  const subscribe = (listener: ChangeListener): Unsubscribe => {
+    const stopLocal = changes.subscribe(listener);
+    const stopRemote = subscribeToTables(client, tables, listener);
+    return () => {
+      stopLocal();
+      stopRemote();
+    };
+  };
+
+  return { notify: changes.notify, subscribe };
 }

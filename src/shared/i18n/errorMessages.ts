@@ -1,4 +1,5 @@
 import { type AppErrorCode, isAppError } from '@/application/errors';
+import { MAX_PREPAID_MONTHS } from '@/domain/billing';
 import { CLASSROOM_PARTICIPANTS } from '@/domain/classroom';
 import { MIN_PASSWORD_LENGTH } from '@/domain/users';
 
@@ -21,6 +22,8 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   ROOM_NOT_FOUND: 'Musobaqa xonasi topilmadi',
   ROOM_NOT_RUNNING: 'Musobaqa hali boshlanmagan',
   CLASSROOM_SIZE: `Sinf musobaqasi uchun ${CLASSROOM_PARTICIPANTS.min}–${CLASSROOM_PARTICIPANTS.max} ta o'quvchi tanlang`,
+  PAYMENT_NOT_FOUND: "Bekor qilinadigan to'lov yo'q",
+  INVALID_PAID_UNTIL: `Ertangi kundan ${MAX_PREPAID_MONTHS} oygacha bo'lgan sanani tanlang`,
 };
 
 const UNEXPECTED_ERROR = "Kutilmagan xatolik yuz berdi. Qaytadan urinib ko'ring.";

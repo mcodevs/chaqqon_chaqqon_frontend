@@ -20,16 +20,75 @@
   padding: 0;
 }
 
+.item {
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.item:first-child {
+  border-top: none;
+}
+
 .row {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: 10px 0;
-  border-top: 1px solid var(--color-line-soft);
 }
 
-.row:first-child {
-  border-top: none;
+.paymentForm {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-md);
+}
+
+.paymentTitle {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 800;
+}
+
+.monthChoices {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.monthChoice {
+  flex: 1;
+  padding: 8px 4px;
+  border: 2px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-weight: 800;
+  color: var(--color-muted);
+}
+
+.monthChoice[aria-pressed='true'] {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: #fff;
+}
+
+.dateInput {
+  width: 100%;
+  padding: 9px 13px;
+  border: 2px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-size: 15px;
+  outline: none;
+}
+
+.dateInput:focus {
+  border-color: var(--color-violet);
+}
+
+.paymentHint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-muted);
 }
 
 .info {
@@ -44,6 +103,35 @@
 .meta {
   font-size: 12px;
   color: var(--color-muted);
+}
+
+.access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.accessOpen {
+  color: var(--color-success);
+}
+
+.accessClosed {
+  color: var(--color-danger);
+}
+
+.linkButton {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .rowActions {

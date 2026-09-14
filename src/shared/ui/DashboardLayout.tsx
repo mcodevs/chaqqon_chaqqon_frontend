@@ -23,7 +23,7 @@ export function DashboardLayout({ title, subtitle, tabs, onLogout, children }: D
           Chiqish
         </Button>
       </header>
-      <TabNav items={tabs} />
+      {tabs.length > 0 && <TabNav items={tabs} />}
       <main className={styles.content}>{children}</main>
     </div>
   );

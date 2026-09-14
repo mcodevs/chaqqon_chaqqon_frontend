@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import type { RoomSnapshot } from '@/application/competitionService';
+import type { CalendarDate, Payment } from '@/domain/billing';
 import type { PracticeResult } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
 import { useLiveQuery } from '@/shared/hooks/useLiveQuery';
@@ -25,4 +27,31 @@ export function useResults(): PracticeResult[] | undefined {
 export function useRoomSnapshot(): RoomSnapshot | undefined {
   const { competition } = useServices();
   return useLiveQuery({ load: competition.getSnapshot, subscribe: competition.subscribe });
+}
+
+/** The teacher gets every payment, a student only their own. */
+export function usePayments(): Payment[] | undefined {
+  const { billing } = useServices();
+  return useLiveQuery({ load: billing.listPayments, subscribe: billing.subscribe });
+}
+
+/** Today in Tashkent. It updates when the day changes, so access opens and closes on time. */
+export function useSchoolToday(): CalendarDate {
+  const { billing } = useServices();
+  const [today, setToday] = useState(billing.today);
+
+  useEffect(() => {
+    let timer: number;
+    const scheduleNextDay = () => {
+      // A second late, so the new day has surely started.
+      timer = window.setTimeout(() => {
+        setToday(billing.today());
+        scheduleNextDay();
+      }, billing.msUntilTomorrow() + 1000);
+    };
+    scheduleNextDay();
+    return () => window.clearTimeout(timer);
+  }, [billing]);
+
+  return today;
 }

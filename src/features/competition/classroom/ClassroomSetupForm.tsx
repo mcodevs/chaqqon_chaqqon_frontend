@@ -11,10 +11,12 @@ import styles from './Classroom.module.css';
 
 interface ClassroomSetupFormProps {
   students: readonly Student[];
+  /** Unpaid students, who cannot be picked. */
+  closedIds: ReadonlySet<string>;
   onStart: (config: PracticeConfig, participants: readonly Student[]) => void;
 }
 
-export function ClassroomSetupForm({ students, onStart }: ClassroomSetupFormProps) {
+export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSetupFormProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [config, setConfig] = useState(DEFAULT_PRACTICE_CONFIG);
   const fullscreen = useFullscreen();
@@ -37,6 +39,7 @@ export function ClassroomSetupForm({ students, onStart }: ClassroomSetupFormProp
       </p>
       <StudentPicker
         students={students}
+        closedIds={closedIds}
         selectedIds={selectedIds}
         max={CLASSROOM_PARTICIPANTS.max}
         onChange={setSelectedIds}

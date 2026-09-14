@@ -1,3 +1,4 @@
+import type { CalendarDate, Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
 import type { PracticeResult } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
@@ -55,12 +56,25 @@ export interface RoomRepository {
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 
+export interface PaymentRepository {
+  /** Oldest first. The teacher gets every payment, a student only their own. */
+  list(): Promise<Payment[]>;
+  /**
+   * Opens the student until `paidUntil`. The backend checks the day against its own clock:
+   * `AppError('INVALID_PAID_UNTIL')` when it is out of range, `AppError('STUDENT_NOT_FOUND')` for an unknown id.
+   */
+  record(studentId: string, paidUntil: CalendarDate): Promise<Payment>;
+  remove(paymentId: string): Promise<void>;
+  subscribe(listener: ChangeListener): Unsubscribe;
+}
+
 /** Everything a backend has to provide. */
 export interface Ports {
   auth: AuthGateway;
   students: StudentRepository;
   results: ResultRepository;
   rooms: RoomRepository;
+  payments: PaymentRepository;
 }
 
 export interface Clock {

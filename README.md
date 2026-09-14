@@ -77,12 +77,16 @@ Sxema o'zgargan bo'lsa, avval migratsiyani Supabase'ga qo'llang, keyin push qili
   - o'quvchi faqat o'z natijasini yozadi (mashq yoki onlayn musobaqa);
   - sinf musobaqasi natijasini faqat ustoz yozadi va faqat o'quvchilar uchun;
   - musobaqa progressini faqat xona ishtirokchisi yozadi, faqat xona boshlanganda;
-  - xonani faqat ustoz boshqaradi, bir vaqtda bitta faol xona bo'ladi.
+  - xonani faqat ustoz boshqaradi, bir vaqtda bitta faol xona bo'ladi;
+  - to'lovni faqat ustoz yozadi. Sana ertangi kundan 24 oygacha bo'lishi kerak va baza soati bo'yicha tekshiriladi;
+  - to'lovi tugagan o'quvchi faqat o'z profili va to'lovlarini ko'radi, hech narsa yoza olmaydi. To'lov ustozni
+    cheklamaydi.
 
   Barcha qoidalar `src/infrastructure/supabase/schema.test.ts` da haqiqiy migratsiya ustida sinaladi.
 
-- **Realtime** `rooms`, `room_progress` va `practice_results` o'zgarishlarini uzatadi: musobaqa monitori va
-  reyting jonli yangilanadi. `profiles` Realtime'ga qo'shilmagan, aks holda loginlar payload'da ko'rinib qolardi.
+- **Realtime** `rooms`, `room_progress`, `practice_results` va `student_payments` o'zgarishlarini uzatadi:
+  musobaqa monitori va reyting jonli yangilanadi, yopiq o'quvchining sahifasi esa to'lov belgilanishi bilan
+  ochiladi. `profiles` Realtime'ga qo'shilmagan, aks holda loginlar payload'da ko'rinib qolardi.
 - Sxema o'zgarsa, tiplarni qayta yarating:
   `npx supabase gen types typescript --linked > src/infrastructure/supabase/database.types.ts`.
 
@@ -144,6 +148,14 @@ supabase/
   so'rovda saqlanadi. O'rinlar to'g'ri javoblar soni bo'yicha belgilanadi, teng natijaga bir xil o'rin beriladi.
 - **Natija turi** — har bir natijada `mode` bor: `practice`, `online` yoki `classroom`. "Natijalarim"da onlayn
   musobaqa 🏆, sinf musobaqasi 🏫 belgisi bilan ko'rsatiladi.
+- **To'lov** (`domain/billing.ts`). Ustoz "To'ladi" tugmasini bosib, o'quvchi qaysi sanagacha ochiq bo'lishini
+  kiritadi: sanani o'zi tanlaydi yoki "1–4 oy" tugmalaridan birini bosadi (o'quvchilar oldindan bir necha oyga
+  to'lashi mumkin). Oylar joriy muddat oxiridan sanaladi, shuning uchun oldindan to'langanda kun yo'qolmaydi.
+  Kiritilgan sanada profil yopiladi. Sana ertangi kundan 24 oygacha bo'lishi kerak, buni baza soati tekshiradi.
+  Oxirgi yozilgan to'lov amal qiladi: xato sana to'g'risini yozib tuzatiladi, "bekor qilish" esa oldingi to'lovni
+  qaytaradi. Kunlar Toshkent vaqti (UTC+5) bo'yicha sanaladi. Yopiq o'quvchi "Profilingiz yopiq" sahifasini
+  ko'radi, bu sahifa to'lov belgilanishi bilan o'zi ochiladi. To'lov tizimi ishga tushganda bor bo'lgan
+  o'quvchilar shu oy oxirigacha ochiq qoldi.
 - **Parollarni** hech kim o'qiy olmaydi: local rejimda ular PBKDF2-SHA256 bilan xeshlanadi, Supabase'da
   Auth'da saqlanadi. O'quvchi paroli faqat yaratilganda yoki "Yangi parol" bosilganda bir marta ko'rsatiladi.
 - **Musobaqa progressi** har bir o'quvchi uchun alohida yozuvda saqlanadi (local kalit yoki `room_progress`

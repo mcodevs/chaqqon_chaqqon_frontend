@@ -1,6 +1,7 @@
 import type { Clock } from '@/application/ports';
 import { createSeededRandom } from '@/domain/random';
 import { createLocalAuthGateway } from '@/infrastructure/local/localAuthGateway';
+import { createLocalPaymentRepository } from '@/infrastructure/local/localPaymentRepository';
 import {
   createLocalResultRepository,
   createLocalRoomRepository,
@@ -36,6 +37,7 @@ export function createTestDependencies() {
     students: createLocalStudentRepository({ records, hasher: fakeHasher, generateId }),
     results: createLocalResultRepository(store),
     rooms: createLocalRoomRepository(store),
+    payments: createLocalPaymentRepository({ store, records, clock, generateId }),
     generateId,
     clock,
     random: createSeededRandom(1),

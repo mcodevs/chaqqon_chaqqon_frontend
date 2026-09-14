@@ -3,6 +3,7 @@ import type { Room } from '@/domain/competition';
 import { DEFAULT_PRACTICE_CONFIG } from '@/domain/practice/config';
 import type { PracticeResult } from '@/domain/results';
 import {
+  toPayment,
   toPracticeResult,
   toPracticeResultRow,
   toRoom,
@@ -74,5 +75,23 @@ describe('supabase mappers', () => {
     expect(
       toStudentAccount({ id: 's1', username: 'ali10', first_name: 'Ali', last_name: 'Valiyev', age: 8 }),
     ).toEqual({ id: 's1', username: 'ali10', firstName: 'Ali', lastName: 'Valiyev', age: 8 });
+  });
+
+  it('maps payments from snake_case rows', () => {
+    expect(
+      toPayment({
+        id: 'p1',
+        student_id: 's1',
+        recorded_at: '2026-09-14T08:00:00+00:00',
+        paid_until: '2026-10-14',
+        kind: 'payment',
+      }),
+    ).toEqual({
+      id: 'p1',
+      studentId: 's1',
+      recordedAt: '2026-09-14T08:00:00+00:00',
+      paidUntil: '2026-10-14',
+      kind: 'payment',
+    });
   });
 });

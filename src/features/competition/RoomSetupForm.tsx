@@ -12,12 +12,14 @@ import { StudentPicker } from './StudentPicker';
 
 interface RoomSetupFormProps {
   students: readonly Student[];
+  /** Unpaid students, who cannot be picked. */
+  closedIds: ReadonlySet<string>;
   pending: boolean;
   error: string | null;
   onOpen: (input: OpenRoomInput) => void;
 }
 
-export function RoomSetupForm({ students, pending, error, onOpen }: RoomSetupFormProps) {
+export function RoomSetupForm({ students, closedIds, pending, error, onOpen }: RoomSetupFormProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sameForAll, setSameForAll] = useState(true);
   const [sharedConfig, setSharedConfig] = useState(DEFAULT_PRACTICE_CONFIG);
@@ -35,6 +37,7 @@ export function RoomSetupForm({ students, pending, error, onOpen }: RoomSetupFor
     <Card title="Yangi musobaqa xonasi">
       <StudentPicker
         students={students}
+        closedIds={closedIds}
         selectedIds={selectedIds}
         max={MAX_ROOM_PARTICIPANTS}
         onChange={setSelectedIds}

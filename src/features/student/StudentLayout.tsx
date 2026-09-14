@@ -1,14 +1,18 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useRoomSnapshot, useStudents } from '@/shared/services/queries';
+import { accessOf } from '@/domain/billing';
+import { usePayments, useRoomSnapshot, useSchoolToday, useStudents } from '@/shared/services/queries';
 import { useSession } from '@/shared/session/SessionContext';
 import { DashboardLayout } from '@/shared/ui/DashboardLayout';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
+import { ClosedAccountPage } from './ClosedAccountPage';
 import { CurrentStudentContext } from './CurrentStudentContext';
 
 export function StudentLayout() {
   const { session, signOut } = useSession();
   const students = useStudents();
+  const payments = usePayments();
+  const today = useSchoolToday();
   const snapshot = useRoomSnapshot();
 
   const studentId = session?.role === 'student' ? session.studentId : null;
@@ -19,7 +23,12 @@ export function StudentLayout() {
     if (accountDeleted) signOut();
   }, [accountDeleted, signOut]);
 
-  if (!student) return <LoadingScreen />;
+  if (!student || !payments) return <LoadingScreen />;
+
+  const access = accessOf(payments, student.id, today);
+  if (!access.open) {
+    return <ClosedAccountPage student={student} paidUntil={access.paidUntil} onLogout={signOut} />;
+  }
 
   const hasPendingCompetition =
     snapshot?.room?.participantIds.includes(student.id) === true && !snapshot.progress[student.id]?.finished;

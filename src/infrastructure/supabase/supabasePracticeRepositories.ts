@@ -1,6 +1,5 @@
 import { AppError } from '@/application/errors';
-import type { ChangeListener, ResultRepository, RoomRepository, Unsubscribe } from '@/application/ports';
-import { createChangeNotifier } from '../shared/changeNotifier';
+import type { ResultRepository, RoomRepository } from '@/application/ports';
 import type { AppSupabaseClient } from './client';
 import { POSTGRES_UNIQUE_VIOLATION } from './edgeFunctions';
 import {
@@ -11,23 +10,7 @@ import {
   toRoomProgressRow,
   toRoomRow,
 } from './mappers';
-import { type RealtimeTable, subscribeToTables } from './realtime';
-
-/** Own writes refresh at once; Realtime brings in everyone else's. */
-function liveSubscription(client: AppSupabaseClient, tables: readonly RealtimeTable[]) {
-  const changes = createChangeNotifier();
-
-  const subscribe = (listener: ChangeListener): Unsubscribe => {
-    const stopLocal = changes.subscribe(listener);
-    const stopRemote = subscribeToTables(client, tables, listener);
-    return () => {
-      stopLocal();
-      stopRemote();
-    };
-  };
-
-  return { notify: changes.notify, subscribe };
-}
+import { liveSubscription } from './realtime';
 
 export function createSupabaseResultRepository(client: AppSupabaseClient): ResultRepository {
   const live = liveSubscription(client, ['practice_results']);

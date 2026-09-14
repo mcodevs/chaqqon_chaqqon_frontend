@@ -1,6 +1,7 @@
 import type { Ports } from '@/application/ports';
 import { type SupabaseConfig, createSupabaseClient } from './client';
 import { createSupabaseAuthGateway } from './supabaseAuthGateway';
+import { createSupabasePaymentRepository } from './supabasePaymentRepository';
 import { createSupabaseResultRepository, createSupabaseRoomRepository } from './supabasePracticeRepositories';
 import { createSupabaseStudentRepository } from './supabaseStudentRepository';
 
@@ -13,5 +14,6 @@ export function createSupabasePorts(config: SupabaseConfig): Ports {
     students: createSupabaseStudentRepository(client),
     results: createSupabaseResultRepository(client),
     rooms: createSupabaseRoomRepository(client),
+    payments: createSupabasePaymentRepository(client),
   };
 }

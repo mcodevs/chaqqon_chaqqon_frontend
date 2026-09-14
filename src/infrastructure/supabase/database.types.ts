@@ -9,6 +9,7 @@ type NoArgs = Record<PropertyKey, never>;
 type Role = 'teacher' | 'student';
 type RoomStatus = 'waiting' | 'running' | 'finished';
 type PracticeMode = 'practice' | 'online' | 'classroom';
+type PaymentKind = 'payment' | 'launch';
 
 type ProfileRow = {
   id: string;
@@ -48,6 +49,14 @@ type PracticeResultRow = {
   room_id: string | null;
 };
 
+type StudentPaymentRow = {
+  id: string;
+  student_id: string;
+  recorded_at: string;
+  paid_until: string;
+  kind: PaymentKind;
+};
+
 export type Database = {
   __InternalSupabase: { PostgrestVersion: '13' };
   public: {
@@ -75,6 +84,12 @@ export type Database = {
         Insert: Pick<PracticeResultRow, 'student_id' | 'config' | 'correct' | 'total'> &
           Partial<PracticeResultRow>;
         Update: Partial<PracticeResultRow>;
+        Relationships: [];
+      };
+      student_payments: {
+        Row: StudentPaymentRow;
+        Insert: Pick<StudentPaymentRow, 'student_id' | 'paid_until'> & Partial<StudentPaymentRow>;
+        Update: Partial<StudentPaymentRow>;
         Relationships: [];
       };
     };

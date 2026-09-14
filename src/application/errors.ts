@@ -16,7 +16,9 @@ export type AppErrorCode =
   | 'ROOM_TOO_LARGE'
   | 'ROOM_NOT_FOUND'
   | 'ROOM_NOT_RUNNING'
-  | 'CLASSROOM_SIZE';
+  | 'CLASSROOM_SIZE'
+  | 'PAYMENT_NOT_FOUND'
+  | 'INVALID_PAID_UNTIL';
 
 /** Expected, user-facing failure of a use case. Presentation maps `code` to a message. */
 export class AppError extends Error {

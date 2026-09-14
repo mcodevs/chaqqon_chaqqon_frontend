@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatSeconds } from './format';
+import { formatCalendarDate, formatSeconds } from './format';
 
 describe('formatSeconds', () => {
   it('writes tenths with a decimal comma and whole seconds without one', () => {
@@ -8,5 +8,11 @@ describe('formatSeconds', () => {
 
   it('never prints floating-point noise', () => {
     expect(formatSeconds(0.1 + 0.2)).toBe('0,3');
+  });
+});
+
+describe('formatCalendarDate', () => {
+  it('writes billing days as day.month.year', () => {
+    expect(formatCalendarDate('2026-10-04')).toBe('04.10.2026');
   });
 });

@@ -4,13 +4,15 @@ import styles from './Competition.module.css';
 
 interface StudentPickerProps {
   students: readonly Student[];
+  /** Unpaid students: listed, but they cannot take part. */
+  closedIds: ReadonlySet<string>;
   /** In the order they were picked. */
   selectedIds: readonly string[];
   max: number;
   onChange: (ids: string[]) => void;
 }
 
-export function StudentPicker({ students, selectedIds, max, onChange }: StudentPickerProps) {
+export function StudentPicker({ students, closedIds, selectedIds, max, onChange }: StudentPickerProps) {
   const isFull = selectedIds.length >= max;
 
   const toggle = (id: string) =>
@@ -22,16 +24,18 @@ export function StudentPicker({ students, selectedIds, max, onChange }: StudentP
       <div className={styles.picker} role="group" aria-label="Ishtirokchilar">
         {students.map((student) => {
           const selected = selectedIds.includes(student.id);
+          const closed = closedIds.has(student.id);
           return (
             <button
               key={student.id}
               type="button"
               aria-pressed={selected}
-              disabled={!selected && isFull}
+              disabled={!selected && (closed || isFull)}
               className={styles.pickChip}
               onClick={() => toggle(student.id)}
             >
               {student.firstName}
+              {closed && <span className={styles.closedMark}> · yopiq</span>}
             </button>
           );
         })}
