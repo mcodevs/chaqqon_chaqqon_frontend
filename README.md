@@ -21,15 +21,23 @@ npm run build      # production build
 
 ## Deploy (Vercel)
 
-Frontend Vercel'da joylashgan: `chaqqon-chaqqon` loyihasi. Supabase manzili va publishable kalit Vercel'ning
-Environment Variables bo'limida saqlanadi. `vercel.json` sahifa yangilanganda ichki yo'nalishlar ochilishini
-ta'minlaydi, `.vercelignore` esa lokal maxfiy fayllarni (`.env.local`, `supabase/.temp`) yuklamaydi.
+Frontend Vercel'da joylashgan: `chaqqon-chaqqon` loyihasi. U GitHub'dagi
+[`mcodevs/chaqqon_chaqqon_frontend`](https://github.com/mcodevs/chaqqon_chaqqon_frontend) repozitoriyiga ulangan:
+
+- `main` branchiga push qilinsa, Vercel production'ni o'zi yangilaydi;
+- boshqa branchlar uchun alohida preview manzil yaratiladi.
+
+Supabase manzili va publishable kalit Vercel'ning Environment Variables bo'limida saqlanadi. `vercel.json` sahifa
+yangilanganda ichki yo'nalishlar ochilishini ta'minlaydi.
+
+Commit qilmasdan ham deploy qilish mumkin. Bunda `.vercelignore` lokal maxfiy fayllarni (`.env.local`,
+`supabase/.temp`) yuklamaydi:
 
 ```bash
 npx vercel deploy --prod
 ```
 
-Sxema o'zgargan bo'lsa, avval migratsiyani Supabase'ga qo'llang, keyin frontendni deploy qiling.
+Sxema o'zgargan bo'lsa, avval migratsiyani Supabase'ga qo'llang, keyin push qiling.
 
 ## Backend
 
