@@ -1,5 +1,6 @@
 import type { Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
+import type { MarketItem, MarketOrder } from '@/domain/market';
 import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/config';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
@@ -93,6 +94,52 @@ export function toPayment(row: Tables['student_payments']['Row']): Payment {
     recordedAt: row.recorded_at,
     paidUntil: row.paid_until,
     kind: row.kind,
+  };
+}
+
+export function toMarketItem(row: Tables['market_items']['Row']): MarketItem {
+  return {
+    id: row.id,
+    title: row.title,
+    costStars: row.cost_stars,
+    imageUrl: row.image_url,
+    stock: row.stock,
+    createdAt: row.created_at,
+  };
+}
+
+export function toMarketItemRow(item: MarketItem): Tables['market_items']['Insert'] {
+  return {
+    id: item.id,
+    title: item.title,
+    cost_stars: item.costStars,
+    image_url: item.imageUrl,
+    stock: item.stock,
+    created_at: item.createdAt,
+  };
+}
+
+export function toMarketOrder(row: Tables['market_orders']['Row']): MarketOrder {
+  return {
+    id: row.id,
+    studentId: row.student_id,
+    itemId: row.item_id,
+    itemTitle: row.item_title,
+    costStars: row.cost_stars,
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
+export function toMarketOrderRow(order: MarketOrder): Tables['market_orders']['Insert'] {
+  return {
+    id: order.id,
+    student_id: order.studentId,
+    item_id: order.itemId,
+    item_title: order.itemTitle,
+    cost_stars: order.costStars,
+    status: order.status,
+    created_at: order.createdAt,
   };
 }
 

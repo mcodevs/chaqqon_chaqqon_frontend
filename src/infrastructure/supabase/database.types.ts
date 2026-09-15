@@ -57,6 +57,25 @@ type StudentPaymentRow = {
   kind: PaymentKind;
 };
 
+type MarketItemRow = {
+  id: string;
+  title: string;
+  cost_stars: number;
+  image_url: string;
+  stock: number | null;
+  created_at: string;
+};
+
+type MarketOrderRow = {
+  id: string;
+  student_id: string;
+  item_id: string;
+  item_title: string;
+  cost_stars: number;
+  status: 'pending' | 'delivered' | 'cancelled';
+  created_at: string;
+};
+
 export type Database = {
   __InternalSupabase: { PostgrestVersion: '13' };
   public: {
@@ -90,6 +109,19 @@ export type Database = {
         Row: StudentPaymentRow;
         Insert: Pick<StudentPaymentRow, 'student_id' | 'paid_until'> & Partial<StudentPaymentRow>;
         Update: Partial<StudentPaymentRow>;
+        Relationships: [];
+      };
+      market_items: {
+        Row: MarketItemRow;
+        Insert: Pick<MarketItemRow, 'title' | 'cost_stars' | 'image_url'> & Partial<MarketItemRow>;
+        Update: Partial<MarketItemRow>;
+        Relationships: [];
+      };
+      market_orders: {
+        Row: MarketOrderRow;
+        Insert: Pick<MarketOrderRow, 'student_id' | 'item_id' | 'item_title' | 'cost_stars'> &
+          Partial<MarketOrderRow>;
+        Update: Partial<MarketOrderRow>;
         Relationships: [];
       };
     };

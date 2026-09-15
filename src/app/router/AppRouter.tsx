@@ -7,8 +7,10 @@ import { LeaderboardPage } from '@/features/leaderboard/LeaderboardPage';
 import { PracticePage } from '@/features/practice/PracticePage';
 import { ResultsPage } from '@/features/student/ResultsPage';
 import { StudentLayout } from '@/features/student/StudentLayout';
+import { StudentMarketPage } from '@/features/student/StudentMarketPage';
 import { StudentsPage } from '@/features/teacher/StudentsPage';
 import { TeacherLayout } from '@/features/teacher/TeacherLayout';
+import { TeacherMarketPage } from '@/features/teacher/TeacherMarketPage';
 import { TeacherStatsPage } from '@/features/teacher/TeacherStatsPage';
 import { GuestOnly, HomeRedirect, RequireRole } from './routeGuards';
 
@@ -37,6 +39,7 @@ export function AppRouter() {
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="competition" element={<TeacherCompetitionPage />} />
         <Route path="classroom" element={<ClassroomPage />} />
+        <Route path="market" element={<TeacherMarketPage />} />
       </Route>
 
       <Route
@@ -51,6 +54,7 @@ export function AppRouter() {
         <Route path="results" element={<ResultsPage />} />
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="competition" element={<StudentCompetitionPage />} />
+        <Route path="market" element={<StudentMarketPage />} />
       </Route>
 
       <Route path="*" element={<HomeRedirect />} />

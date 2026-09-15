@@ -3,7 +3,13 @@ import { createChangeNotifier } from '../shared/changeNotifier';
 import type { AppSupabaseClient } from './client';
 
 /** Tables published to Realtime by the migrations. */
-export type RealtimeTable = 'rooms' | 'room_progress' | 'practice_results' | 'student_payments';
+export type RealtimeTable =
+  | 'rooms'
+  | 'room_progress'
+  | 'practice_results'
+  | 'student_payments'
+  | 'market_items'
+  | 'market_orders';
 
 /** Calls `listener` whenever rows this user may see (per RLS) change in the given tables. */
 export function subscribeToTables(

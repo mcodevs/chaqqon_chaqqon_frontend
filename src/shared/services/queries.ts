@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomSnapshot } from '@/application/competitionService';
 import type { CalendarDate, Payment } from '@/domain/billing';
+import type { MarketItem, MarketOrder, StudentStarsBalance } from '@/domain/market';
 import type { PracticeResult } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
 import { useLiveQuery } from '@/shared/hooks/useLiveQuery';
@@ -40,6 +41,24 @@ export function useStudentRoom(studentId: string): RoomSnapshot | undefined {
 export function useRoomSnapshot(): RoomSnapshot | undefined {
   const { competition } = useServices();
   return useLiveQuery({ load: () => competition.getSnapshot(), subscribe: competition.subscribe });
+}
+
+export function useMarketItems(): MarketItem[] | undefined {
+  const { market } = useServices();
+  return useLiveQuery({ load: market.listItems, subscribe: market.subscribe });
+}
+
+export function useMarketOrders(): MarketOrder[] | undefined {
+  const { market } = useServices();
+  return useLiveQuery({ load: market.listOrders, subscribe: market.subscribe });
+}
+
+export function useStudentStars(studentId: string): StudentStarsBalance | undefined {
+  const { market } = useServices();
+  return useLiveQuery({
+    load: () => market.getStudentStars(studentId),
+    subscribe: market.subscribe,
+  });
 }
 
 /** The teacher gets every payment, a student only their own. */

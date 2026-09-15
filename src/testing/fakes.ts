@@ -3,6 +3,7 @@ import { createSeededRandom } from '@/domain/random';
 import { createLocalAuthGateway } from '@/infrastructure/local/localAuthGateway';
 import { createLocalPaymentRepository } from '@/infrastructure/local/localPaymentRepository';
 import {
+  createLocalMarketRepository,
   createLocalResultRepository,
   createLocalRoomRepository,
 } from '@/infrastructure/local/localPracticeRepositories';
@@ -38,6 +39,7 @@ export function createTestDependencies() {
     results: createLocalResultRepository(store),
     rooms: createLocalRoomRepository(store),
     payments: createLocalPaymentRepository({ store, records, clock, generateId }),
+    market: createLocalMarketRepository(store),
     generateId,
     clock,
     random: createSeededRandom(1),

@@ -3,7 +3,11 @@ import { createPbkdf2PasswordHasher } from '../security/pbkdf2PasswordHasher';
 import { createWebStorageStore } from '../storage/webStorageStore';
 import { createLocalAuthGateway } from './localAuthGateway';
 import { createLocalPaymentRepository } from './localPaymentRepository';
-import { createLocalResultRepository, createLocalRoomRepository } from './localPracticeRepositories';
+import {
+  createLocalMarketRepository,
+  createLocalResultRepository,
+  createLocalRoomRepository,
+} from './localPracticeRepositories';
 import { createLocalStudentRepository } from './localStudentRepository';
 import { createStudentRecords } from './studentRecords';
 import { createWebSessionStore } from './webSessionStore';
@@ -32,5 +36,6 @@ export function createLocalPorts(browser: Window, clock: Clock): Ports {
     results: createLocalResultRepository(store),
     rooms: createLocalRoomRepository(store),
     payments: createLocalPaymentRepository({ store, records, clock, generateId }),
+    market: createLocalMarketRepository(store),
   };
 }

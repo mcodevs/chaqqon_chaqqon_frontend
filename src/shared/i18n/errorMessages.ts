@@ -24,6 +24,9 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   CLASSROOM_SIZE: `Sinf musobaqasi uchun ${CLASSROOM_PARTICIPANTS.min}–${CLASSROOM_PARTICIPANTS.max} ta o'quvchi tanlang`,
   PAYMENT_NOT_FOUND: "Bekor qilinadigan to'lov yo'q",
   INVALID_PAID_UNTIL: `Ertangi kundan ${MAX_PREPAID_MONTHS} oygacha bo'lgan sanani tanlang`,
+  ITEM_NOT_FOUND: 'Mahsulot topilmadi',
+  INSUFFICIENT_STARS: "Yulduzchalaringiz yetarli emas",
+  ORDER_NOT_FOUND: 'Buyurtma topilmadi',
 };
 
 const UNEXPECTED_ERROR = "Kutilmagan xatolik yuz berdi. Qaytadan urinib ko'ring.";

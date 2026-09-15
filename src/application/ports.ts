@@ -1,5 +1,6 @@
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
+import type { MarketItem, MarketOrder, OrderStatus } from '@/domain/market';
 import type { PracticeResult } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
 import type { Role, Session } from './session';
@@ -69,6 +70,16 @@ export interface PaymentRepository {
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 
+export interface MarketRepository {
+  listItems(): Promise<MarketItem[]>;
+  saveItem(item: MarketItem): Promise<void>;
+  deleteItem(id: string): Promise<void>;
+  listOrders(): Promise<MarketOrder[]>;
+  createOrder(order: MarketOrder): Promise<void>;
+  updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
+  subscribe(listener: ChangeListener): Unsubscribe;
+}
+
 /** Everything a backend has to provide. */
 export interface Ports {
   auth: AuthGateway;
@@ -76,6 +87,7 @@ export interface Ports {
   results: ResultRepository;
   rooms: RoomRepository;
   payments: PaymentRepository;
+  market: MarketRepository;
 }
 
 export interface Clock {
