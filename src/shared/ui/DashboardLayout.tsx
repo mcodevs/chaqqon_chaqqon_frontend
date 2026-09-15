@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from './Button';
 import type { TabItem } from './TabNav';
@@ -21,13 +21,9 @@ export function DashboardLayout({
   onLogout,
   children,
 }: DashboardLayoutProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const closeMobileMenu = () => setMobileMenuOpen(false);
-
   return (
     <div className={styles.shell}>
-      {/* 1. Desktop & Tablet Sidebar */}
+      {/* 1. Desktop & Tablet Sidebar (>= 860px) */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <div className={styles.brand}>
@@ -85,77 +81,9 @@ export function DashboardLayout({
         </div>
       </aside>
 
-      {/* 2. Mobile Top Navigation Bar */}
-      <div className={styles.mobileBar}>
-        <div className={styles.mobileBrand}>
-          <span className={styles.mobileLogo}>⚡</span>
-          <span className={styles.mobileTitle}>{title}</span>
-        </div>
-
-        <div className={styles.mobileRight}>
-          {actions && <div className={styles.mobileActions}>{actions}</div>}
-          <button
-            type="button"
-            className={styles.menuToggleBtn}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Menyuni ochish"
-          >
-            {mobileMenuOpen ? '✕' : '☰'}
-          </button>
-        </div>
-      </div>
-
-      {/* 3. Mobile Backdrop Drawer */}
-      {mobileMenuOpen && (
-        <div className={styles.mobileDrawerOverlay} onClick={closeMobileMenu}>
-          <div
-            className={styles.mobileDrawer}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.drawerHeader}>
-              <div className={styles.brand}>
-                <div className={styles.brandLogo}>⚡</div>
-                <div>
-                  <div className={styles.brandTitle}>{title}</div>
-                  <div className={styles.brandSubtitle}>{subtitle}</div>
-                </div>
-              </div>
-              <button
-                type="button"
-                className={styles.drawerCloseBtn}
-                onClick={closeMobileMenu}
-              >
-                ✕
-              </button>
-            </div>
-
-            <nav className={styles.drawerNav}>
-              {tabs.map((tab) => (
-                <NavLink
-                  key={tab.to}
-                  to={tab.to}
-                  end={tab.end}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
-                    `${styles.drawerLink} ${isActive ? styles.drawerLinkActive : ''}`
-                  }
-                >
-                  {tab.label}
-                </NavLink>
-              ))}
-            </nav>
-
-            <div className={styles.drawerFooter}>
-              <Button variant="outline" block onClick={onLogout}>
-                🚪 Chiqish
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Main Viewport Area */}
+      {/* 2. Main Viewport Area */}
       <div className={styles.mainWrapper}>
+        {/* Desktop Top Bar */}
         <header className={styles.desktopTopBar}>
           <div>
             <h1 className={styles.pageTitle}>{title}</h1>
@@ -166,6 +94,48 @@ export function DashboardLayout({
           </div>
         </header>
 
+        {/* Mobile Top Header (Logotip, Ism, Actions & Chiqish) */}
+        <header className={styles.mobileHeader}>
+          <div className={styles.mobileHeaderLeft}>
+            <span className={styles.mobileLogo}>⚡</span>
+            <div className={styles.mobileTitleGroup}>
+              <span className={styles.mobileTitle}>{title}</span>
+              <span className={styles.mobileSubtitle}>{subtitle}</span>
+            </div>
+          </div>
+
+          <div className={styles.mobileHeaderRight}>
+            {actions}
+            <button
+              type="button"
+              onClick={onLogout}
+              className={styles.mobileLogoutBtn}
+              title="Chiqish"
+            >
+              🚪
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Horizontal Sub-Navbar (Toza gorizontal navigatsiya) */}
+        <nav className={styles.mobileNavBar}>
+          <div className={styles.mobileNavScroll}>
+            {tabs.map((tab) => (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                end={tab.end}
+                className={({ isActive }) =>
+                  `${styles.mobileNavItem} ${isActive ? styles.mobileNavItemActive : ''}`
+                }
+              >
+                {tab.label}
+              </NavLink>
+            ))}
+          </div>
+        </nav>
+
+        {/* Asosiy kontent */}
         <main className={styles.contentArea}>
           {children}
         </main>

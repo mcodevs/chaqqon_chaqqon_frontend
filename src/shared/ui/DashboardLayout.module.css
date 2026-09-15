@@ -1,6 +1,7 @@
 .shell {
   display: flex;
   min-height: 100vh;
+  width: 100%;
   background-color: var(--color-background);
 }
 
@@ -190,7 +191,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  max-width: 100%;
+  width: 100%;
 }
 
 .desktopTopBar {
@@ -225,17 +226,18 @@
   padding: 0 2.5rem 3rem;
   max-width: var(--content-max-width, 1200px);
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Mobile Top Bar & Drawer (< 860px)                                          */
+/* Mobile Elements (< 860px)                                                  */
 /* -------------------------------------------------------------------------- */
 
-.mobileBar {
+.mobileHeader {
   display: none;
 }
 
-.mobileDrawerOverlay {
+.mobileNavBar {
   display: none;
 }
 
@@ -247,13 +249,6 @@
     overflow-x: hidden;
   }
 
-  .mainWrapper {
-    width: 100%;
-    min-width: 0;
-    flex: 1;
-    overflow-x: hidden;
-  }
-
   .sidebar {
     display: none;
   }
@@ -262,156 +257,127 @@
     display: none;
   }
 
-  .mobileBar {
+  /* 1. Mobile Top Header */
+  .mobileHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: var(--header-height, 60px);
-    padding: 0 1rem;
+    padding: 0.75rem 1rem;
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-line);
     position: sticky;
     top: 0;
+    z-index: 40;
     width: 100%;
-    z-index: 50;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   }
 
-  .mobileBrand {
+  .mobileHeaderLeft {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: 0;
   }
 
   .mobileLogo {
     font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .mobileTitleGroup {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
 
   .mobileTitle {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--color-ink);
-    max-width: 170px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
   }
 
-  .mobileRight {
+  .mobileSubtitle {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-muted);
+  }
+
+  .mobileHeaderRight {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.5rem;
+    flex-shrink: 0;
   }
 
-  .menuToggleBtn {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-line);
+  .mobileLogoutBtn {
     background: var(--color-surface-soft);
-    font-size: 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border: 1px solid var(--color-line);
+    font-size: 1.15rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius-sm, 10px);
     cursor: pointer;
-    color: var(--color-ink);
+    line-height: 1;
   }
 
+  /* 2. Mobile Horizontal Navbar */
+  .mobileNavBar {
+    display: block;
+    position: sticky;
+    top: 57px; /* directly below mobileHeader */
+    z-index: 30;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  .mobileNavScroll {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mobileNavScroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobileNavItem {
+    flex-shrink: 0;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-md, 12px);
+    background: var(--color-surface-soft);
+    border: 1px solid var(--color-line);
+    color: var(--color-ink-soft);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+
+  .mobileNavItemActive {
+    background: var(--color-ink) !important;
+    color: #ffffff !important;
+    border-color: var(--color-ink) !important;
+    box-shadow: 0 2px 8px rgba(34, 36, 43, 0.15);
+  }
+
+  /* 3. Content Area on Mobile */
   .contentArea {
-    padding: 1rem;
+    padding: 1rem 0.75rem 2.5rem;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-  }
-
-  /* Mobile Drawer */
-  .mobileDrawerOverlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    z-index: 99;
-    animation: fadeIn 0.2s ease-out;
-  }
-
-  .mobileDrawer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 280px;
-    background: var(--color-surface);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
-    animation: slideRight 0.25s ease-out;
-  }
-
-  @keyframes slideRight {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  .drawerHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1rem;
-    border-bottom: 1px solid var(--color-line);
-  }
-
-  .drawerCloseBtn {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    color: var(--color-muted);
-    cursor: pointer;
-    padding: 0.25rem;
-  }
-
-  .drawerNav {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .drawerLink {
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--color-ink-soft);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .drawerLinkActive {
-    background: var(--color-ink);
-    color: #ffffff;
-  }
-
-  .drawerFooter {
-    padding: 1rem;
-    border-top: 1px solid var(--color-line);
   }
 }
