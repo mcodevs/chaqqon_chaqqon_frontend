@@ -4,7 +4,7 @@
 -- Tables
 -- ---------------------------------------------------------------------------
 
-create table public.market_items (
+create table if not exists public.market_items (
   id uuid primary key default gen_random_uuid(),
   title text not null check (length(trim(title)) > 0),
   cost_stars integer not null check (cost_stars > 0),
@@ -13,7 +13,7 @@ create table public.market_items (
   created_at timestamptz not null default now()
 );
 
-create table public.market_orders (
+create table if not exists public.market_orders (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references public.profiles (id) on delete cascade,
   item_id uuid not null references public.market_items (id) on delete cascade,
@@ -23,7 +23,7 @@ create table public.market_orders (
   created_at timestamptz not null default now()
 );
 
-create index market_orders_student_id_idx on public.market_orders (student_id);
+create index if not exists market_orders_student_id_idx on public.market_orders (student_id);
 
 -- Realtime
 alter publication supabase_realtime add table public.market_items;
