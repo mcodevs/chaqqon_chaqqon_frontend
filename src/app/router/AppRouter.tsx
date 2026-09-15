@@ -9,6 +9,7 @@ import { ResultsPage } from '@/features/student/ResultsPage';
 import { StudentLayout } from '@/features/student/StudentLayout';
 import { StudentsPage } from '@/features/teacher/StudentsPage';
 import { TeacherLayout } from '@/features/teacher/TeacherLayout';
+import { TeacherStatsPage } from '@/features/teacher/TeacherStatsPage';
 import { GuestOnly, HomeRedirect, RequireRole } from './routeGuards';
 
 export function AppRouter() {
@@ -32,6 +33,7 @@ export function AppRouter() {
         }
       >
         <Route index element={<StudentsPage />} />
+        <Route path="stats" element={<TeacherStatsPage />} />
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="competition" element={<TeacherCompetitionPage />} />
         <Route path="classroom" element={<ClassroomPage />} />
