@@ -174,17 +174,25 @@
   color: var(--color-muted);
 }
 
-@media (max-width: 420px) {
+@media (max-width: 640px) {
   .formGrid {
     grid-template-columns: 1fr;
   }
 
   .row {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 12px 0;
+  }
+
+  .info {
+    width: 100%;
   }
 
   .rowActions {
     width: 100%;
+    justify-content: stretch;
   }
 
   .rowActions > * {

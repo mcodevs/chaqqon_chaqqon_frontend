@@ -125,15 +125,6 @@ export function TeacherMarketPage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Do'kon Boshqaruvi</h1>
-          <p className={styles.subtitle}>
-            O'quvchilar uchun motivatsion sovg'alar yarating, yulduzchalar narxini belgilang va buyurtmalarni topshiring.
-          </p>
-        </div>
-      </header>
-
       {feedback && (
         <div className={feedback.type === 'success' ? styles.successAlert : styles.errorAlert} role="alert">
           <span>{feedback.type === 'success' ? '✅' : '⚠️'} {feedback.message}</span>

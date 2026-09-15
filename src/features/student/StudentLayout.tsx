@@ -40,11 +40,11 @@ export function StudentLayout() {
     snapshot?.room?.participantIds.includes(student.id) === true && !snapshot.progress[student.id]?.finished;
 
   const tabs = [
-    { to: '/student', label: 'Mashq', end: true },
-    { to: '/student/results', label: 'Natijalarim' },
-    { to: '/student/market', label: "Do'kon 🎁" },
-    { to: '/student/leaderboard', label: 'Reyting' },
-    { to: '/student/competition', label: hasPendingCompetition ? 'Musobaqa •' : 'Musobaqa' },
+    { to: '/student', label: '🧮 Mashq', end: true },
+    { to: '/student/results', label: '📈 Natijalarim' },
+    { to: '/student/market', label: "🎁 Do'kon" },
+    { to: '/student/leaderboard', label: '🏆 Reyting' },
+    { to: '/student/competition', label: hasPendingCompetition ? '⚡ Musobaqa •' : '⚡ Musobaqa' },
   ];
 
   const starsBadge = (
