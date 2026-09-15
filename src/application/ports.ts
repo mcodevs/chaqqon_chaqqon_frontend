@@ -48,9 +48,10 @@ export interface ResultRepository {
 }
 
 export interface RoomRepository {
-  getCurrent(): Promise<Room | null>;
-  /** Throws `AppError('ROOM_ACTIVE')` when saving a second unfinished room. */
-  saveCurrent(room: Room): Promise<void>;
+  /** Returns all unfinished (waiting or running) rooms, newest first. */
+  listActive(): Promise<Room[]>;
+  getById(id: string): Promise<Room | null>;
+  save(room: Room): Promise<void>;
   listProgress(roomId: string): Promise<RoomProgress[]>;
   saveProgress(progress: RoomProgress): Promise<void>;
   subscribe(listener: ChangeListener): Unsubscribe;

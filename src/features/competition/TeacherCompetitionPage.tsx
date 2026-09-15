@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { closedStudentIds } from '@/domain/billing';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
-import { usePayments, useRoomSnapshot, useSchoolToday, useStudents } from '@/shared/services/queries';
+import { useActiveRooms, usePayments, useSchoolToday, useStudents } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
+import { Button } from '@/shared/ui/Button';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
+import styles from './Competition.module.css';
 import { RoomMonitor } from './RoomMonitor';
 import { RoomSetupForm } from './RoomSetupForm';
 
@@ -11,34 +14,63 @@ export function TeacherCompetitionPage() {
   const students = useStudents();
   const payments = usePayments();
   const today = useSchoolToday();
-  const snapshot = useRoomSnapshot();
-  const openRoom = useAsyncAction(competition.open);
+  const activeRooms = useActiveRooms();
+  const [showSetup, setShowSetup] = useState(false);
+
+  const openRoom = useAsyncAction(async (input: Parameters<typeof competition.open>[0]) => {
+    await competition.open(input);
+    setShowSetup(false);
+  });
   const startRoom = useAsyncAction(competition.start);
   const closeRoom = useAsyncAction(competition.close);
 
-  if (!students || !payments || !snapshot) return <LoadingScreen />;
+  if (!students || !payments || !activeRooms) return <LoadingScreen />;
 
-  if (!snapshot.room) {
-    return (
-      <RoomSetupForm
-        students={students}
-        closedIds={closedStudentIds(students, payments, today)}
-        pending={openRoom.pending}
-        error={openRoom.error}
-        onOpen={openRoom.run}
-      />
-    );
-  }
+  const closedIds = closedStudentIds(students, payments, today);
+  const busyIds = new Set(
+    activeRooms.flatMap((snap) => (snap.room ? snap.room.participantIds : [])),
+  );
 
-  const room = snapshot.room;
+  const isFormOpen = activeRooms.length === 0 || showSetup;
+
   return (
-    <RoomMonitor
-      room={room}
-      progress={snapshot.progress}
-      students={students}
-      error={startRoom.error ?? closeRoom.error}
-      onStart={() => startRoom.run(room.id)}
-      onClose={() => closeRoom.run(room.id)}
-    />
+    <div className={styles.teacherRoomsList}>
+      {activeRooms.length > 0 && !showSetup && (
+        <div className={styles.teacherHeader}>
+          <span className={styles.hint}>Faol musobaqalar: {activeRooms.length} ta</span>
+          <Button tone="pink" onClick={() => setShowSetup(true)}>
+            + Yangi xona ochish
+          </Button>
+        </div>
+      )}
+
+      {isFormOpen && (
+        <RoomSetupForm
+          students={students}
+          closedIds={closedIds}
+          busyIds={busyIds}
+          pending={openRoom.pending}
+          error={openRoom.error}
+          onOpen={openRoom.run}
+          onCancel={activeRooms.length > 0 ? () => setShowSetup(false) : undefined}
+        />
+      )}
+
+      {activeRooms.map(({ room, progress }) => {
+        if (!room) return null;
+        return (
+          <RoomMonitor
+            key={room.id}
+            room={room}
+            progress={progress}
+            students={students}
+            error={startRoom.error ?? closeRoom.error}
+            onStart={() => startRoom.run(room.id)}
+            onClose={() => closeRoom.run(room.id)}
+          />
+        );
+      })}
+    </div>
   );
 }
+

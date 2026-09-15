@@ -14,12 +14,23 @@ interface RoomSetupFormProps {
   students: readonly Student[];
   /** Unpaid students, who cannot be picked. */
   closedIds: ReadonlySet<string>;
+  /** Students in other active rooms. */
+  busyIds?: ReadonlySet<string>;
   pending: boolean;
   error: string | null;
   onOpen: (input: OpenRoomInput) => void;
+  onCancel?: () => void;
 }
 
-export function RoomSetupForm({ students, closedIds, pending, error, onOpen }: RoomSetupFormProps) {
+export function RoomSetupForm({
+  students,
+  closedIds,
+  busyIds = new Set(),
+  pending,
+  error,
+  onOpen,
+  onCancel,
+}: RoomSetupFormProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sameForAll, setSameForAll] = useState(true);
   const [sharedConfig, setSharedConfig] = useState(DEFAULT_PRACTICE_CONFIG);
@@ -38,6 +49,7 @@ export function RoomSetupForm({ students, closedIds, pending, error, onOpen }: R
       <StudentPicker
         students={students}
         closedIds={closedIds}
+        busyIds={busyIds}
         selectedIds={selectedIds}
         max={MAX_ROOM_PARTICIPANTS}
         onChange={setSelectedIds}
@@ -63,9 +75,16 @@ export function RoomSetupForm({ students, closedIds, pending, error, onOpen }: R
       )}
 
       <ErrorMessage>{error}</ErrorMessage>
-      <Button tone="pink" block disabled={selectedIds.length === 0 || pending} onClick={submit}>
-        Xona ochish
-      </Button>
+      <div className={onCancel ? styles.actions : undefined}>
+        <Button tone="pink" block={!onCancel} disabled={selectedIds.length === 0 || pending} onClick={submit}>
+          Xona ochish
+        </Button>
+        {onCancel && (
+          <Button tone="coral" variant="outline" onClick={onCancel}>
+            Bekor qilish
+          </Button>
+        )}
+      </div>
     </Card>
   );
 }

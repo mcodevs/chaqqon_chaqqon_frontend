@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCurrentStudent } from '@/features/student/CurrentStudentContext';
-import { useRoomSnapshot } from '@/shared/services/queries';
+import { useStudentRoom } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
@@ -8,7 +8,7 @@ import { CompetitionRun } from './CompetitionRun';
 
 export function StudentCompetitionPage() {
   const student = useCurrentStudent();
-  const snapshot = useRoomSnapshot();
+  const snapshot = useStudentRoom(student.id);
   // Keeps the summary on screen after this student finishes, until they leave it.
   const [reviewingRoomId, setReviewingRoomId] = useState<string | null>(null);
 

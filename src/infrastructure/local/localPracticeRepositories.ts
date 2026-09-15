@@ -5,7 +5,7 @@ import { type KeyValueStore, keyMatches } from '../storage/keyValueStore';
 
 const KEYS = {
   results: 'results',
-  currentRoom: 'rooms/current',
+  roomsList: 'rooms/all',
   roomsPrefix: 'rooms/',
   progressPrefix: (roomId: string) => `rooms/progress/${roomId}/`,
 } as const;
@@ -30,9 +30,28 @@ export function createLocalResultRepository(store: KeyValueStore): ResultReposit
 }
 
 export function createLocalRoomRepository(store: KeyValueStore): RoomRepository {
+  const listAll = async (): Promise<Room[]> => {
+    return (await store.get<Room[]>(KEYS.roomsList)) ?? [];
+  };
+
   return {
-    getCurrent: () => store.get<Room>(KEYS.currentRoom),
-    saveCurrent: (room) => store.set(KEYS.currentRoom, room),
+    async listActive() {
+      const all = await listAll();
+      return all
+        .filter((room) => room.status !== 'finished')
+        .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+    },
+    async getById(id: string) {
+      const all = await listAll();
+      return all.find((room) => room.id === id) ?? null;
+    },
+    async save(room: Room) {
+      const all = await listAll();
+      const next = all.some((r) => r.id === room.id)
+        ? all.map((r) => (r.id === room.id ? room : r))
+        : [...all, room];
+      await store.set(KEYS.roomsList, next);
+    },
     async listProgress(roomId) {
       const keys = await store.keys(KEYS.progressPrefix(roomId));
       const entries = await Promise.all(keys.map((key) => store.get<RoomProgress>(key)));

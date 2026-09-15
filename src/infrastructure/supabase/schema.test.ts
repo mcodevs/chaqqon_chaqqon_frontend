@@ -144,19 +144,16 @@ describe('database schema and row-level security', () => {
     ]);
   });
 
-  it('lets only the teacher open rooms, one unfinished room at a time', async () => {
+  it('lets only the teacher open rooms, allowing multiple active rooms concurrently', async () => {
     await expect(as('authenticated', ALI, openRoom([ALI]))).rejects.toThrow(/row-level security/);
 
-    const [room] = await as<{ id: string }>('authenticated', TEACHER, openRoom([ALI]));
-    await expect(as('authenticated', TEACHER, openRoom([VALI]))).rejects.toThrow(/duplicate key/);
-    await as('authenticated', TEACHER, "update public.rooms set status = 'finished' where id = $1", [
-      room.id,
-    ]);
+    const [room1] = await as<{ id: string }>('authenticated', TEACHER, openRoom([ALI]));
+    const [room2] = await as<{ id: string }>('authenticated', TEACHER, openRoom([VALI]));
+    expect(room2.id).not.toBe(room1.id);
 
-    const [next] = await as<{ id: string }>('authenticated', TEACHER, openRoom([VALI]));
-    expect(next.id).not.toBe(room.id);
-    await as('authenticated', TEACHER, "update public.rooms set status = 'finished' where id = $1", [
-      next.id,
+    await as('authenticated', TEACHER, "update public.rooms set status = 'finished' where id in ($1, $2)", [
+      room1.id,
+      room2.id,
     ]);
   });
 

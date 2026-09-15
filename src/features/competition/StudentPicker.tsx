@@ -6,13 +6,22 @@ interface StudentPickerProps {
   students: readonly Student[];
   /** Unpaid students: listed, but they cannot take part. */
   closedIds: ReadonlySet<string>;
+  /** Students who are already participating in another active room. */
+  busyIds?: ReadonlySet<string>;
   /** In the order they were picked. */
   selectedIds: readonly string[];
   max: number;
   onChange: (ids: string[]) => void;
 }
 
-export function StudentPicker({ students, closedIds, selectedIds, max, onChange }: StudentPickerProps) {
+export function StudentPicker({
+  students,
+  closedIds,
+  busyIds = new Set(),
+  selectedIds,
+  max,
+  onChange,
+}: StudentPickerProps) {
   const isFull = selectedIds.length >= max;
 
   const toggle = (id: string) =>
@@ -25,17 +34,19 @@ export function StudentPicker({ students, closedIds, selectedIds, max, onChange 
         {students.map((student) => {
           const selected = selectedIds.includes(student.id);
           const closed = closedIds.has(student.id);
+          const busy = busyIds.has(student.id);
           return (
             <button
               key={student.id}
               type="button"
               aria-pressed={selected}
-              disabled={!selected && (closed || isFull)}
+              disabled={!selected && (closed || busy || isFull)}
               className={styles.pickChip}
               onClick={() => toggle(student.id)}
             >
               {student.firstName}
               {closed && <span className={styles.closedMark}> · yopiq</span>}
+              {busy && !closed && <span className={styles.closedMark}> · band</span>}
             </button>
           );
         })}

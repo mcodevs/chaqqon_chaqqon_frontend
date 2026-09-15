@@ -35,12 +35,20 @@ describe('competitionService', () => {
     expect(await service.getSnapshot()).toEqual({ room: null, progress: {} });
   });
 
-  it('allows only one active room', async () => {
+  it('allows multiple active rooms concurrently', async () => {
     const service = setup();
-    await service.open({ participantIds: ['a'], configs: configsFor(['a']) });
-    await expect(service.open({ participantIds: ['b'], configs: configsFor(['b']) })).rejects.toMatchObject({
-      code: 'ROOM_ACTIVE',
-    });
+    const room1 = await service.open({ participantIds: ['a'], configs: configsFor(['a']) });
+    const room2 = await service.open({ participantIds: ['b'], configs: configsFor(['b']) });
+
+    const active = await service.getActiveRooms();
+    expect(active).toHaveLength(2);
+    expect(active.map((s) => s.room?.id)).toEqual([room2.id, room1.id]);
+
+    const forA = await service.getSnapshot('a');
+    expect(forA.room?.id).toBe(room1.id);
+
+    const forB = await service.getSnapshot('b');
+    expect(forB.room?.id).toBe(room2.id);
   });
 
   it('validates participant count', async () => {

@@ -3,7 +3,6 @@ import {
   type Room,
   type RoomProgress,
   emptyProgress,
-  isRoomActive,
 } from '@/domain/competition';
 import type { PracticeConfig } from '@/domain/practice/config';
 import { AppError } from './errors';
@@ -34,31 +33,50 @@ export interface ProgressUpdate {
 
 export function createCompetitionService({ rooms, generateId, clock }: CompetitionDependencies) {
   const requireRoom = async (roomId: string): Promise<Room> => {
-    const room = await rooms.getCurrent();
-    if (!room || room.id !== roomId) throw new AppError('ROOM_NOT_FOUND');
+    const room = await rooms.getById(roomId);
+    if (!room) throw new AppError('ROOM_NOT_FOUND');
     return room;
+  };
+
+  const getRoomProgress = async (room: Room): Promise<Record<string, RoomProgress>> => {
+    const stored = await rooms.listProgress(room.id);
+    return Object.fromEntries(
+      room.participantIds.map((id) => [
+        id,
+        stored.find((p) => p.studentId === id) ?? emptyProgress(room, id),
+      ]),
+    );
   };
 
   return {
     subscribe: (listener: ChangeListener): Unsubscribe => rooms.subscribe(listener),
 
-    async getSnapshot(): Promise<RoomSnapshot> {
-      const room = await rooms.getCurrent();
-      if (!isRoomActive(room)) return { room: null, progress: {} };
-
-      const stored = await rooms.listProgress(room.id);
-      const progress = Object.fromEntries(
-        room.participantIds.map((id) => [
-          id,
-          stored.find((p) => p.studentId === id) ?? emptyProgress(room, id),
-        ]),
+    /** Returns snapshots for all active rooms (for teacher monitoring). */
+    async getActiveRooms(): Promise<RoomSnapshot[]> {
+      const active = await rooms.listActive();
+      return Promise.all(
+        active.map(async (room) => ({
+          room,
+          progress: await getRoomProgress(room),
+        })),
       );
+    },
+
+    /**
+     * Returns the active room for a given student, or the latest active room if no studentId is given.
+     */
+    async getSnapshot(studentId?: string): Promise<RoomSnapshot> {
+      const active = await rooms.listActive();
+      const room = studentId
+        ? active.find((r) => r.participantIds.includes(studentId)) ?? null
+        : (active[0] ?? null);
+
+      if (!room) return { room: null, progress: {} };
+      const progress = await getRoomProgress(room);
       return { room, progress };
     },
 
     async open({ participantIds, configs }: OpenRoomInput): Promise<Room> {
-      if (isRoomActive(await rooms.getCurrent())) throw new AppError('ROOM_ACTIVE');
-
       const uniqueIds = [...new Set(participantIds)];
       if (uniqueIds.length === 0) throw new AppError('ROOM_EMPTY');
       if (uniqueIds.length > MAX_ROOM_PARTICIPANTS) throw new AppError('ROOM_TOO_LARGE');
@@ -76,19 +94,19 @@ export function createCompetitionService({ rooms, generateId, clock }: Competiti
           }),
         ),
       };
-      await rooms.saveCurrent(room);
+      await rooms.save(room);
       return room;
     },
 
     async start(roomId: string): Promise<void> {
       const room = await requireRoom(roomId);
       if (room.status !== 'waiting') return;
-      await rooms.saveCurrent({ ...room, status: 'running' });
+      await rooms.save({ ...room, status: 'running' });
     },
 
     async close(roomId: string): Promise<void> {
       const room = await requireRoom(roomId);
-      await rooms.saveCurrent({ ...room, status: 'finished' });
+      await rooms.save({ ...room, status: 'finished' });
     },
 
     async reportProgress(roomId: string, studentId: string, update: ProgressUpdate): Promise<void> {

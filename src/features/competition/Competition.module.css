@@ -176,3 +176,17 @@
     opacity: 1;
   }
 }
+
+.teacherHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.teacherRoomsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+

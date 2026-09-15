@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { accessOf } from '@/domain/billing';
-import { usePayments, useRoomSnapshot, useSchoolToday, useStudents } from '@/shared/services/queries';
+import { usePayments, useSchoolToday, useStudentRoom, useStudents } from '@/shared/services/queries';
 import { useSession } from '@/shared/session/SessionContext';
 import { DashboardLayout } from '@/shared/ui/DashboardLayout';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
@@ -13,9 +13,8 @@ export function StudentLayout() {
   const students = useStudents();
   const payments = usePayments();
   const today = useSchoolToday();
-  const snapshot = useRoomSnapshot();
-
   const studentId = session?.role === 'student' ? session.studentId : null;
+  const snapshot = useStudentRoom(studentId ?? '');
   const student = students?.find((s) => s.id === studentId) ?? null;
   const accountDeleted = students !== undefined && student === null;
 

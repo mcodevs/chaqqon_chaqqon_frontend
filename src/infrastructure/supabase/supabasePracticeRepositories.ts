@@ -37,19 +37,27 @@ export function createSupabaseRoomRepository(client: AppSupabaseClient): RoomRep
   const live = liveSubscription(client, ['rooms', 'room_progress']);
 
   return {
-    // RLS limits students to rooms they take part in, so "latest visible room" is the current one for everybody.
-    async getCurrent() {
+    async listActive() {
       const { data, error } = await client
         .from('rooms')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .neq('status', 'finished')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data.map(toRoom);
+    },
+
+    async getById(id: string) {
+      const { data, error } = await client
+        .from('rooms')
+        .select('*')
+        .eq('id', id)
         .maybeSingle();
       if (error) throw error;
       return data ? toRoom(data) : null;
     },
 
-    async saveCurrent(room) {
+    async save(room) {
       const { error } = await client.from('rooms').upsert(toRoomRow(room));
       if (error?.code === POSTGRES_UNIQUE_VIOLATION) throw new AppError('ROOM_ACTIVE');
       if (error) throw error;

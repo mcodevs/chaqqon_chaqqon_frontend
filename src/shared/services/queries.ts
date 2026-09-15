@@ -24,9 +24,22 @@ export function useResults(): PracticeResult[] | undefined {
   return useLiveQuery({ load: results.list, subscribe: results.subscribe });
 }
 
+export function useActiveRooms(): RoomSnapshot[] | undefined {
+  const { competition } = useServices();
+  return useLiveQuery({ load: competition.getActiveRooms, subscribe: competition.subscribe });
+}
+
+export function useStudentRoom(studentId: string): RoomSnapshot | undefined {
+  const { competition } = useServices();
+  return useLiveQuery({
+    load: () => competition.getSnapshot(studentId),
+    subscribe: competition.subscribe,
+  });
+}
+
 export function useRoomSnapshot(): RoomSnapshot | undefined {
   const { competition } = useServices();
-  return useLiveQuery({ load: competition.getSnapshot, subscribe: competition.subscribe });
+  return useLiveQuery({ load: () => competition.getSnapshot(), subscribe: competition.subscribe });
 }
 
 /** The teacher gets every payment, a student only their own. */
