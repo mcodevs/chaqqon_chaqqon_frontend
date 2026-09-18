@@ -9,7 +9,7 @@ import {
   useStudents,
 } from '@/shared/services/queries';
 import { useSession } from '@/shared/session/SessionContext';
-import { DashboardLayout } from '@/shared/ui/DashboardLayout';
+import { type BottomNavItem, DashboardLayout } from '@/shared/ui/DashboardLayout';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import { ClosedAccountPage } from './ClosedAccountPage';
 import { CurrentStudentContext } from './CurrentStudentContext';
@@ -39,12 +39,22 @@ export function StudentLayout() {
   const hasPendingCompetition =
     snapshot?.room?.participantIds.includes(student.id) === true && !snapshot.progress[student.id]?.finished;
 
+  // Desktop sidebar uchun to'liq bo'limlar
   const tabs = [
     { to: '/student', label: '🧮 Mashq', end: true },
+    { to: '/student/competition', label: hasPendingCompetition ? '⚡ Musobaqa •' : '⚡ Musobaqa' },
+    { to: '/student/leaderboard', label: '🏆 Reyting' },
     { to: '/student/results', label: '📈 Natijalarim' },
     { to: '/student/market', label: "🎁 Do'kon" },
-    { to: '/student/leaderboard', label: '🏆 Reyting' },
-    { to: '/student/competition', label: hasPendingCompetition ? '⚡ Musobaqa •' : '⚡ Musobaqa' },
+    { to: '/student/profile', label: '👤 Profil' },
+  ];
+
+  // Mobile Bottom Navigation Bar uchun eng asosiy 4 ta bo'lim
+  const bottomNavItems: BottomNavItem[] = [
+    { to: '/student', label: 'Mashq', icon: '🧮', end: true },
+    { to: '/student/competition', label: 'Musobaqa', icon: '⚡', badge: hasPendingCompetition },
+    { to: '/student/leaderboard', label: 'Reyting', icon: '🏆' },
+    { to: '/student/profile', label: 'Profil', icon: '👤' },
   ];
 
   const starsBadge = (
@@ -55,14 +65,14 @@ export function StudentLayout() {
         gap: '4px',
         background: 'var(--color-surface)',
         border: '2px solid var(--color-yellow)',
-        padding: '6px 12px',
-        borderRadius: '14px',
+        padding: '5px 10px',
+        borderRadius: '12px',
         fontWeight: 800,
-        fontSize: '14px',
+        fontSize: '13px',
         color: '#b38100',
         boxShadow: '0 2px 8px rgba(255, 217, 61, 0.25)',
       }}
-      title="Musobaqalardan ishlangan yulduzchalaringiz"
+      title="Yulduzchalaringiz balansi"
     >
       <span>⭐</span>
       <span>{stars?.balance ?? 0}</span>
@@ -75,6 +85,7 @@ export function StudentLayout() {
         title={`Salom, ${student.firstName}!`}
         subtitle="Chaqqon-chaqqon"
         tabs={tabs}
+        bottomNavItems={bottomNavItems}
         actions={starsBadge}
         onLogout={signOut}
       >
