@@ -19,6 +19,10 @@ type ProfileRow = {
   last_name: string;
   age: number | null;
   created_at: string;
+  telegram_user_id: number | null;
+  telegram_chat_id: number | null;
+  telegram_username: string | null;
+  telegram_first_name: string | null;
 };
 
 type RoomRow = {
@@ -132,6 +136,16 @@ export type Database = {
         Args: NoArgs;
         Returns: Pick<ProfileRow, 'id' | 'username' | 'first_name' | 'last_name' | 'age'>[];
       };
+      link_telegram_account: {
+        Args: {
+          p_telegram_user_id: number;
+          p_telegram_chat_id: number;
+          p_telegram_username?: string | null;
+          p_telegram_first_name?: string | null;
+        };
+        Returns: boolean;
+      };
+      unlink_telegram_account: { Args: NoArgs; Returns: boolean };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

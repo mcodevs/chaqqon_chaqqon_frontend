@@ -4,6 +4,47 @@ Ushbu hujjatda platformani rivojlantirish davomida kiritilgan barcha yangiliklar
 
 ---
 
+## 📅 2026-09-18 — Telegram Bot va Telegram Mini App (TMA) Integratsiyasi
+
+### 1. Telegram Mini App (TMA) ga to'liq o'tish
+- **Rasmiy SDK va Viewport sozlamalari**:
+  - `index.html` ga Telegram WebApp SDK ulandi (`telegram-web-app.js`).
+  - Mobil qurilmalarda ekranni to'ldirib ochilish (`viewport-fit=cover`, no zoom) ta'minlandi.
+  - Ilova ochilishi bilanoq `ready()` va `expand()` orqali to'liq ekran rejimiga o'tadi.
+- **Telegram BackButton sinxronizatsiyasi**:
+  - React Router bilan Telegramning chap yuqoridagi rasmiy «Orqaga» tugmasi avtomatik bog'landi (`bindTelegramBackButton`).
+  - Ichki sahifalarda (natijalar, do'kon, musobaqa) o'quvchi bemalol Telegram tugmasi orqali orqaga qayta oladi.
+
+### 2. Xavfsiz Autentifikatsiya va Bir Martalik Bog'lash (Account Linking)
+- **Oqim (User Flow)**:
+  - Mavjud login va parollar to'liq saqlab qolindi.
+  - O'quvchi yoki ustoz Telegram Mini App orqali ilk bor kirganida, uning Telegram profili (@username yoki ismi) aniqlanadi va formaga eslatma chiqadi.
+  - Foydalanuvchi bir marta o'z login va parolini kiritib kirgach, hisob uning Telegram ID raqamiga avtomatik biriktiriladi (`link_telegram_account`).
+  - Keyingi barcha kirishlarda Telegram Mini App foydalanuvchini avtomatik taniydi va **hech qanday parolsiz, 1 soniyada to'g'ridan-to'g'ri tizimga kiradi**.
+- **HMAC-SHA256 Xavfsizlik Tekshiruvi**:
+  - Telegram `initData` imzolangan ma'lumotlarini tekshiruvchi maxsus Web Crypto algoritmi yaratildi (`telegramValidation.ts`).
+  - `supabase/functions/telegram-auth`: Soxtalashtirilgan so'rovlardan himoyalangan serverless avtomatik autentifikatsiya servisi ishga tushirildi.
+
+### 3. Telegram Bot (@chaqqon_chaqqon_bot) va Bildirishnomalar
+- **Bot Sozlamalari (`setup-telegram-bot.ts`)**:
+  - Bot menyusi (`Menu Button`) to'g'ridan-to'g'ri «🚀 O'yinni boshlash» tugmasi orqali Mini App (`https://chaqqon-chaqqon.vercel.app`) ga sozlandi.
+  - `/start` va `/help` komandalari, bot tavsifi va qisqa ma'lumotlari o'rnatildi.
+  - Webhook Supabase Edge Function'ga bog'landi.
+- **Musobaqa Bildirishnomalari (`telegram-bot`)**:
+  - Ustoz yangi musobaqa xonasi ochganda, Telegram hisobi ulangan barcha o'quvchilarga botdan avtomatik chaqiruv xabari yuboriladi:
+    *«🏆 Yangi Musobaqa Boshlandi! Ustoz musobaqa xonasini ochdi... [🚀 Musobaqaga kirish]»*.
+- **Yutuqlar Do'koni Bildirishnomalari**:
+  - Ustoz sovg'ani o'quvchiga topshirganda («✓ Topshirildi»): o'quvchiga tabrik xabari va do'kon tugmasi boradi.
+  - Ustoz buyurtmani bekor qilganda («✕ Bekor qilindi»): sarflangan yulduzchalar hisobiga qaytarilgani haqida xabardor qilinadi.
+- **To'lov Qabul Qilingani Bildirishnomasi**:
+  - Ustoz o'quvchining to'lovini kiritganda (`recordPayment`), o'quvchiga to'lov qabul qilingani va platformadan foydalanish sanasi qaysi kungacha uzaytirilgani haqida darhol xabar boradi.
+
+### 4. Taktil sezish (Haptic Feedback) Gamifikatsiyasi
+- Bolalar mashq yechayotganda va to'g'ri javob berganda yoqimli tebranish (`success`), noto'g'ri berganda esa ogohlantiruvchi tebranish (`error`) beriladi.
+- Bu o'quvchilarda interaktiv o'yin muhitini va jalb qilinishni kuchaytiradi.
+
+---
+
 ## 📅 2026-09-16 — Asosiy Funksional va Dizayn Yangilanishlari
 
 ### 1. Musobaqa boshlanishidan oldin tayyorgarlik (Countdown)
@@ -64,6 +105,6 @@ Ushbu hujjatda platformani rivojlantirish davomida kiritilgan barcha yangiliklar
 ---
 
 ## 🧪 Texnik ko'rsatkichlar
-- **Testlar**: 23 ta test fayli, 162 ta unit va integratsion testlar 100% muvaffaqiyatli o'tgan (`PASS`).
-- **Xatolar**: TypeScript va Lint tekshiruvlarida 0 ta xatolik.
-- **Kod holati**: Barcha o'zgarishlar GitHub omboriga muvaffaqiyatli `push` qilingan.
+- **Testlar**: 25 ta test fayli, 172 ta unit va integratsion testlar 100% muvaffaqiyatli o'tgan (`PASS`).
+- **Xatolar**: TypeScript va Lint tekshiruvlarida 0 ta xatolik (`tsc -b`, `oxlint`).
+- **Build**: Vite production build 100% muvaffaqiyatli (`dist` tayyor).

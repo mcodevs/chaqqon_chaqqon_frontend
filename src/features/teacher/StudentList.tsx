@@ -5,6 +5,7 @@ import { type StudentAccount, fullName } from '@/domain/users';
 import { formatCalendarDate } from '@/shared/format';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useServices } from '@/shared/services/ServicesContext';
+import { notifyPaymentRecorded } from '@/shared/telegram/telegramNotifications';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
@@ -36,7 +37,13 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
   const [payingId, setPayingId] = useState<string | null>(null);
 
   const handlePayment = async (student: StudentAccount, paidUntil: CalendarDate) => {
-    if (await recordPayment.run(student.id, paidUntil)) setPayingId(null);
+    if (await recordPayment.run(student.id, paidUntil)) {
+      setPayingId(null);
+      notifyPaymentRecorded({
+        studentId: student.id,
+        paidUntil: formatCalendarDate(paidUntil),
+      });
+    }
   };
 
   const handleCancelPayment = (student: StudentAccount) => {

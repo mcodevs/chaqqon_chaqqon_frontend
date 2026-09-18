@@ -1,5 +1,6 @@
 import type { AuthGateway, Credentials } from '@/application/ports';
 import type { Role, Session } from '@/application/session';
+import { getTelegramInitData, getTelegramUser, isTelegramWebApp } from '@/shared/telegram/telegramWebApp';
 import { authEmailFor, authPasswordFor } from '../../../supabase/functions/_shared/identity';
 import type { AppSupabaseClient } from './client';
 import { invokeFunction } from './edgeFunctions';
@@ -34,6 +35,24 @@ export function createSupabaseAuthGateway(client: AppSupabaseClient): AuthGatewa
       await client.auth.signOut(THIS_DEVICE);
       return null;
     }
+
+    // If signed in from Telegram Mini App, automatically link the account
+    if (isTelegramWebApp()) {
+      const tgUser = getTelegramUser();
+      if (tgUser) {
+        try {
+          await client.rpc('link_telegram_account', {
+            p_telegram_user_id: tgUser.id,
+            p_telegram_chat_id: tgUser.id,
+            p_telegram_username: tgUser.username ?? null,
+            p_telegram_first_name: tgUser.first_name ?? null,
+          });
+        } catch (err) {
+          console.warn('Could not automatically link telegram account:', err);
+        }
+      }
+    }
+
     return session;
   };
 
@@ -61,12 +80,41 @@ export function createSupabaseAuthGateway(client: AppSupabaseClient): AuthGatewa
     async restoreSession() {
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
-      if (!data.session) return null;
+      if (data.session) {
+        const session = await sessionFor(data.session.user.id);
+        // The account was deleted while the session was stored.
+        if (!session) await client.auth.signOut(THIS_DEVICE);
+        return session;
+      }
 
-      const session = await sessionFor(data.session.user.id);
-      // The account was deleted while the session was stored.
-      if (!session) await client.auth.signOut(THIS_DEVICE);
-      return session;
+      // If in Telegram Mini App and no active local session, attempt silent auto-login
+      if (isTelegramWebApp()) {
+        const initData = getTelegramInitData();
+        if (initData) {
+          try {
+            const res = await invokeFunction<{
+              linked: boolean;
+              tokenHash?: string;
+              role?: Role;
+              username?: string;
+            }>(client, 'telegram-auth', { initData });
+
+            if (res?.linked && res.tokenHash) {
+              const { data: otpData, error: otpError } = await client.auth.verifyOtp({
+                token_hash: res.tokenHash,
+                type: 'magiclink',
+              });
+              if (!otpError && otpData?.user) {
+                return sessionFor(otpData.user.id);
+              }
+            }
+          } catch (err) {
+            console.warn('Telegram silent auth check failed:', err);
+          }
+        }
+      }
+
+      return null;
     },
 
     onSessionEnded(listener) {

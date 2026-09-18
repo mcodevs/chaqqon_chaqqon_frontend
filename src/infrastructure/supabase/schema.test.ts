@@ -346,4 +346,54 @@ describe('database schema and row-level security', () => {
     `);
     expect(counts.rows).toEqual([{ profiles: 0, results: 0, progress: 0, payments: 0 }]);
   });
+
+  it('allows an authenticated user to link and unlink their telegram account', async () => {
+    // Guest cannot call link_telegram_account
+    await expect(
+      as('anon', '', 'select public.link_telegram_account(123456789::bigint, 123456789::bigint, $1, $2)', [
+        'alibek',
+        'Ali',
+      ]),
+    ).rejects.toThrow();
+
+    // Authenticated user can link
+    const res = await as(
+      'authenticated',
+      VALI,
+      'select public.link_telegram_account(99887766::bigint, 99887766::bigint, $1, $2) as linked',
+      ['valibek', 'Vali'],
+    );
+    expect(res).toEqual([{ linked: true }]);
+
+    // Profile contains the linked telegram data
+    const profile = await as<{ telegram_user_id: number; telegram_username: string }>(
+      'authenticated',
+      VALI,
+      'select telegram_user_id, telegram_username from public.profiles where id = $1',
+      [VALI],
+    );
+    expect(profile).toEqual([{ telegram_user_id: 99887766, telegram_username: 'valibek' }]);
+
+    // Another user cannot link the same telegram user ID
+    await expect(
+      as(
+        'authenticated',
+        GULI,
+        'select public.link_telegram_account(99887766::bigint, 99887766::bigint, $1, $2)',
+        ['gulibek', 'Guli'],
+      ),
+    ).rejects.toThrow(/TELEGRAM_ACCOUNT_ALREADY_LINKED/);
+
+    // Unlink works
+    const unlinked = await as('authenticated', VALI, 'select public.unlink_telegram_account() as unlinked');
+    expect(unlinked).toEqual([{ unlinked: true }]);
+
+    const cleared = await as<{ telegram_user_id: string | null }>(
+      'authenticated',
+      VALI,
+      'select telegram_user_id from public.profiles where id = $1',
+      [VALI],
+    );
+    expect(cleared).toEqual([{ telegram_user_id: null }]);
+  });
 });

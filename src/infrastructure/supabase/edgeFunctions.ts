@@ -21,7 +21,7 @@ function isExplainableCode(value: unknown): value is ExplainableCode {
   return typeof value === 'string' && (EXPLAINABLE_CODES as readonly string[]).includes(value);
 }
 
-export type FunctionName = 'register-teacher' | 'manage-students';
+export type FunctionName = 'register-teacher' | 'manage-students' | 'telegram-auth' | 'telegram-bot';
 
 /** Calls an Edge Function; known failure codes become `AppError`s. */
 export async function invokeFunction<T = unknown>(

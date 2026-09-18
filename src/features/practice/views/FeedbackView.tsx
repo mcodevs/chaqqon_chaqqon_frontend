@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import type { ProblemAttempt } from '@/domain/practice/session';
+import { triggerHaptic } from '@/shared/telegram/telegramWebApp';
 import { Button } from '@/shared/ui/Button';
 import styles from '../Practice.module.css';
 import { ColumnSum } from './ColumnSum';
@@ -10,6 +12,9 @@ interface FeedbackViewProps {
 }
 
 export function FeedbackView({ attempt, isLast, onNext }: FeedbackViewProps) {
+  useEffect(() => {
+    triggerHaptic(attempt.isCorrect ? 'success' : 'error');
+  }, [attempt.isCorrect]);
   return (
     <div className={styles.stage}>
       <div role="status" className={`${styles.banner} ${attempt.isCorrect ? styles.good : styles.bad}`}>

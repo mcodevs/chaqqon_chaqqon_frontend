@@ -3,6 +3,7 @@ import { closedStudentIds } from '@/domain/billing';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useActiveRooms, usePayments, useSchoolToday, useStudents } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
+import { notifyCompetitionStarted } from '@/shared/telegram/telegramNotifications';
 import { Button } from '@/shared/ui/Button';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import styles from './Competition.module.css';
@@ -20,6 +21,7 @@ export function TeacherCompetitionPage() {
   const openRoom = useAsyncAction(async (input: Parameters<typeof competition.open>[0]) => {
     await competition.open(input);
     setShowSetup(false);
+    notifyCompetitionStarted(input.participantIds);
   });
   const startRoom = useAsyncAction(competition.start);
   const closeRoom = useAsyncAction(competition.close);

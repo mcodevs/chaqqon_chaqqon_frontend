@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useServices } from '@/shared/services/ServicesContext';
 import { useMarketItems, useMarketOrders, useStudents } from '@/shared/services/queries';
 import { toErrorMessage } from '@/shared/i18n/errorMessages';
+import { notifyMarketOrderStatus } from '@/shared/telegram/telegramNotifications';
 import type { MarketItem, MarketOrder } from '@/domain/market';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import styles from './TeacherMarketPage.module.css';
@@ -93,6 +94,7 @@ export function TeacherMarketPage() {
   };
 
   const handleOrderStatus = async (orderId: string, status: 'delivered' | 'cancelled') => {
+    const targetOrder = orders?.find((o) => o.id === orderId);
     setOrderActionId(orderId);
     try {
       await market.updateOrderStatus(orderId, status);
@@ -100,6 +102,14 @@ export function TeacherMarketPage() {
         type: 'success',
         message: status === 'delivered' ? "Sovg'a o'quvchiga topshirildi!" : 'Buyurtma bekor qilindi va yulduzchalar qaytarildi.',
       });
+      if (targetOrder) {
+        notifyMarketOrderStatus({
+          studentId: targetOrder.studentId,
+          itemTitle: targetOrder.itemTitle,
+          costStars: targetOrder.costStars,
+          status,
+        });
+      }
     } catch (err: unknown) {
       setFeedback({ type: 'error', message: toErrorMessage(err) });
     } finally {
