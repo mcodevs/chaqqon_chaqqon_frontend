@@ -162,6 +162,3 @@ supabase/
   qatori). Shuning uchun bir vaqtda yozilganda natijalar bir-birini o'chirmaydi.
 - **Backend almashtiriladigan.** Ilova faqat `application/ports.ts` dagi portlarni biladi.
   `app/composition.ts` konfiguratsiyaga qarab local yoki Supabase adapterlarini ulaydi.
-
-
-Test
