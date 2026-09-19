@@ -22,13 +22,13 @@ export function StudentCompetitionPage() {
   );
 
   if (!room || !room.participantIds.includes(student.id)) {
-    return message("Hozircha faol musobaqa yo'q. Ustoz xona ochganda shu yerda ko'rinadi.");
+    return message("Hozircha faol interaktiv uy vazifasi yo'q. Ustoz xona ochganda shu yerda ko'rinadi.");
   }
   if (room.status === 'waiting') {
-    return message("Musobaqa boshlanishini kuting — ustoz tayyor bo'lganda avtomatik boshlanadi.");
+    return message("Vazifa boshlanishini kuting — ustoz tayyor bo'lganda avtomatik boshlanadi.");
   }
   if (progress[student.id]?.finished && reviewingRoomId !== room.id) {
-    return message("Siz musobaqani yakunladingiz! Natijangiz reytingda ko'rinadi.");
+    return message("Siz ushbu uy vazifasini yakunladingiz! Har 4 ta to'liq bajarilgan vazifa uchun 1 ta yulduz beriladi.");
   }
 
   return (

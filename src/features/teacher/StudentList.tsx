@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { StudentCredentials } from '@/application/studentService';
 import { type CalendarDate, type Payment, type StudentAccess, accessOf } from '@/domain/billing';
+import type { HomeworkStatus } from '@/domain/homework';
 import { type StudentAccount, fullName } from '@/domain/users';
-import { formatCalendarDate } from '@/shared/format';
+import { formatCalendarDate, formatLastActive } from '@/shared/format';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
+import { useWrittenHomework } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -27,13 +29,36 @@ function accessLabel({ open, paidUntil }: StudentAccess): string {
 }
 
 export function StudentList({ students, payments, today, onCredentialsIssued }: StudentListProps) {
-  const { students: studentService, billing } = useServices();
+  const { students: studentService, billing, homework } = useServices();
   const recordPayment = useAsyncAction(billing.recordPayment);
   const cancelPayment = useAsyncAction(billing.cancelLatestPayment);
   const resetPassword = useAsyncAction(studentService.resetPassword);
   const removeStudent = useAsyncAction(studentService.remove);
+  const homeworkList = useWrittenHomework();
+
+  const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [selectedLevel, setSelectedLevel] = useState<string>('all');
+
   /** Whose "To'ladi" form is open. */
   const [payingId, setPayingId] = useState<string | null>(null);
+
+  // Extract unique birth years from student list
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    for (const s of students) {
+      if (s.birthYear) years.add(s.birthYear);
+    }
+    return Array.from(years).sort((a, b) => a - b);
+  }, [students]);
+
+  // Filter students based on birth year and level group
+  const filteredStudents = useMemo(() => {
+    return students.filter((s) => {
+      if (selectedYear !== 'all' && String(s.birthYear) !== selectedYear) return false;
+      if (selectedLevel !== 'all' && (s.levelGroup ?? 'A') !== selectedLevel) return false;
+      return true;
+    });
+  }, [students, selectedYear, selectedLevel]);
 
   const handlePayment = async (student: StudentAccount, paidUntil: CalendarDate) => {
     if (await recordPayment.run(student.id, paidUntil)) setPayingId(null);
@@ -55,27 +80,78 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
     if (window.confirm(`${fullName(student)} o'chirilsinmi?`)) void removeStudent.run(student.id);
   };
 
+  const handleHomeworkStatus = async (studentId: string, status: HomeworkStatus) => {
+    await homework.setStatus(studentId, today, status);
+  };
+
   return (
-    <Card title={`O'quvchilar ro'yxati (${students.length})`}>
+    <Card title={`O'quvchilar ro'yxati (${filteredStudents.length}/${students.length})`}>
+      {/* Guruhlash filtrlari */}
+      <div className={styles.filterBar}>
+        <div className={styles.filterGroup}>
+          <span className={styles.filterLabel}>Yil:</span>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className={styles.filterSelect}
+          >
+            <option value="all">Barchasi</option>
+            {availableYears.map((y) => (
+              <option key={y} value={String(y)}>
+                {y}-yil
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.filterGroup}>
+          <span className={styles.filterLabel}>Toifa:</span>
+          <select
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+            className={styles.filterSelect}
+          >
+            <option value="all">Barchasi</option>
+            <option value="A">A toifa (Formulasiz)</option>
+            <option value="B">B toifa (Kichik do'st)</option>
+            <option value="C">C toifa (Katta do'st)</option>
+            <option value="D">D toifa (Miks)</option>
+          </select>
+        </div>
+      </div>
+
       <ErrorMessage>
         {recordPayment.error ?? cancelPayment.error ?? resetPassword.error ?? removeStudent.error}
       </ErrorMessage>
-      {students.length === 0 && <EmptyState>Hozircha o'quvchi qo'shilmagan.</EmptyState>}
+      {filteredStudents.length === 0 && <EmptyState>O'quvchilar topilmadi.</EmptyState>}
       <ul className={styles.list}>
-        {students.map((student) => {
+        {filteredStudents.map((student) => {
           const access = accessOf(payments, student.id, today);
           const paying = payingId === student.id;
+          const lastActive = formatLastActive(student.lastActiveAt);
+          const studentHw = homeworkList?.find((h) => h.studentId === student.id && h.date === today);
+
           return (
             <li key={student.id} className={styles.item}>
               <div className={styles.row}>
-                <NameAvatar name={student.firstName} />
+                <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={44} />
                 <div className={styles.info}>
                   <div className={styles.name}>
                     {fullName(student)}
                     {student.age !== null && `, ${student.age} yosh`}
+                    {student.birthYear && ` (${student.birthYear}-yil)`}
+                    <span className={styles.badgeLevel} style={{ marginLeft: 6 }}>
+                      {student.levelGroup ?? 'A'} toifa
+                    </span>
                   </div>
                   <div className={styles.meta}>
-                    login: <b>{student.username}</b>
+                    login: <b>{student.username}</b> ·{' '}
+                    <span className={styles.lastActiveText}>
+                      {lastActive.isOnline && <span className={styles.onlineIndicator} />}
+                      <span style={{ color: lastActive.isOnline ? '#059669' : '#64748b' }}>
+                        {lastActive.text}
+                      </span>
+                    </span>
                   </div>
                   <div
                     className={`${styles.access} ${access.open ? styles.accessOpen : styles.accessClosed}`}
@@ -91,6 +167,34 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                         bekor qilish
                       </button>
                     )}
+                  </div>
+
+                  {/* Yozma uy vazifasi statusini tezkor belgilash */}
+                  <div className={styles.homeworkCheckSection}>
+                    <span className={styles.homeworkLabel}>Yozma uy vazifasi:</span>
+                    <div className={styles.hwButtonGroup}>
+                      <button
+                        type="button"
+                        className={`${styles.hwBtn} ${studentHw?.status === 'bajardi' ? styles.hwBtnActiveBajardi : ''}`}
+                        onClick={() => handleHomeworkStatus(student.id, 'bajardi')}
+                      >
+                        ✓ Bajardi
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.hwBtn} ${studentHw?.status === 'chala' ? styles.hwBtnActiveChala : ''}`}
+                        onClick={() => handleHomeworkStatus(student.id, 'chala')}
+                      >
+                        ⚠ Chala
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.hwBtn} ${studentHw?.status === 'bajarmadi' ? styles.hwBtnActiveBajarmadi : ''}`}
+                        onClick={() => handleHomeworkStatus(student.id, 'bajarmadi')}
+                      >
+                        ✕ Bajarmadi
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className={styles.rowActions}>

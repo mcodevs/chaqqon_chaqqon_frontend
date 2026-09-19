@@ -8,7 +8,7 @@ export interface Problem {
   answer: number;
 }
 
-type ProblemShape = Pick<PracticeConfig, 'section' | 'rowCount'>;
+type ProblemShape = Pick<PracticeConfig, 'section' | 'rowCount'> & Partial<Pick<PracticeConfig, 'digitCount'>>;
 
 interface Draft {
   numbers: number[];
@@ -18,8 +18,11 @@ interface Draft {
 
 const MAX_ATTEMPTS = 80;
 
-/** Every row after the opening is a single digit added or subtracted. */
-const MOVES: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((digit) => [digit, -digit]);
+const MOVES_BY_DIGIT_COUNT: Record<number, readonly number[]> = {
+  1: [1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((digit) => [digit, -digit]),
+  2: Array.from({ length: 90 }, (_, i) => i + 10).flatMap((n) => [n, -n]),
+  3: Array.from({ length: 900 }, (_, i) => i + 100).flatMap((n) => [n, -n]),
+};
 
 const OPENINGS: Record<Exclude<SectionId, 'miks'>, readonly number[]> = {
   formulasiz: [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -50,14 +53,27 @@ export function generateProblems(config: PracticeConfig, random: Random): Proble
   return Array.from({ length: config.problemCount }, () => generateProblem(config, random));
 }
 
-function draftProblem({ section, rowCount }: ProblemShape, random: Random): Draft {
-  const numbers = section === 'miks' ? miksOpening(random) : [pickOne(random, OPENINGS[section])];
+function initialNumbers(section: SectionId, digitCount: number, random: Random): number[] {
+  if (digitCount === 1) {
+    if (section === 'miks') return miksOpening(random);
+    return [pickOne(random, OPENINGS[section])];
+  }
+  const min = Math.pow(10, digitCount - 1);
+  const max = Math.pow(10, digitCount) - 1;
+  return [randomInt(random, min, max)];
+}
+
+function draftProblem(shape: ProblemShape, random: Random): Draft {
+  const digitCount = shape.digitCount ?? 1;
+  const numbers = initialNumbers(shape.section, digitCount, random);
   let total = numbers.reduce((sum, value) => sum + value, 0);
   let hits = numbers.length - 1; // the miks opening move is a family move by construction
 
-  while (numbers.length < rowCount) {
-    const valid = MOVES.filter((value) => total + value >= 0);
-    const matching = valid.filter((value) => classifyMove(total, value) === section);
+  const moves = MOVES_BY_DIGIT_COUNT[digitCount] ?? MOVES_BY_DIGIT_COUNT[1];
+
+  while (numbers.length < shape.rowCount) {
+    const valid = moves.filter((value) => total + value >= 0);
+    const matching = valid.filter((value) => classifyMove(total, value) === shape.section);
     const value = pickOne(random, matching.length > 0 ? matching : valid);
 
     if (matching.length > 0) hits++;
@@ -68,12 +84,24 @@ function draftProblem({ section, rowCount }: ProblemShape, random: Random): Draf
   return { numbers, hits };
 }
 
-function requiredHits({ section, rowCount }: ProblemShape): number {
+function requiredHits({ section, rowCount, digitCount = 1 }: ProblemShape): number {
   const moves = rowCount - 1;
+  if (digitCount === 1) {
+    switch (section) {
+      case 'formulasiz':
+      case 'kichik':
+        return moves;
+      case 'katta':
+        return Math.max(1, Math.ceil(moves * 0.6));
+      case 'miks':
+        return 1;
+    }
+  }
   switch (section) {
     case 'formulasiz':
-    case 'kichik':
       return moves;
+    case 'kichik':
+      return Math.max(1, Math.ceil(moves * 0.8));
     case 'katta':
       return Math.max(1, Math.ceil(moves * 0.6));
     case 'miks':

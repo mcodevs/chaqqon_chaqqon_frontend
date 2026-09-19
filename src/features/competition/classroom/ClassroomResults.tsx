@@ -42,7 +42,7 @@ export function ClassroomResults({
               <span className={styles.place} aria-label={`${score.place}-o'rin`}>
                 {MEDALS[score.place] ?? score.place}
               </span>
-              <NameAvatar name={student?.firstName ?? '?'} size={48} />
+              <NameAvatar name={student?.firstName ?? '?'} avatarUrl={student?.avatarUrl} size={48} />
               <span className={styles.rankName}>{student ? fullName(student) : "O'quvchi"}</span>
               <span className={styles.rankScore}>
                 {score.correct}/{score.total}

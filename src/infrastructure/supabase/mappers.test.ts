@@ -67,6 +67,7 @@ describe('supabase mappers', () => {
       section: 'miks',
       rowCount: 10,
       secondsPerNumber: 7,
+      digitCount: 2,
     });
     expect(parsed.configs.b).toEqual(DEFAULT_PRACTICE_CONFIG);
   });
@@ -75,6 +76,30 @@ describe('supabase mappers', () => {
     expect(
       toStudentAccount({ id: 's1', username: 'ali10', first_name: 'Ali', last_name: 'Valiyev', age: 8 }),
     ).toEqual({ id: 's1', username: 'ali10', firstName: 'Ali', lastName: 'Valiyev', age: 8 });
+
+    expect(
+      toStudentAccount({
+        id: 's2',
+        username: 'vali12',
+        first_name: 'Vali',
+        last_name: 'Aliyev',
+        age: 9,
+        birth_year: 2017,
+        level_group: 'B',
+        avatar_url: 'preset:boy_1',
+        last_active_at: '2026-09-20T00:00:00.000Z',
+      }),
+    ).toEqual({
+      id: 's2',
+      username: 'vali12',
+      firstName: 'Vali',
+      lastName: 'Aliyev',
+      age: 9,
+      birthYear: 2017,
+      levelGroup: 'B',
+      avatarUrl: 'preset:boy_1',
+      lastActiveAt: '2026-09-20T00:00:00.000Z',
+    });
   });
 
   it('maps payments from snake_case rows', () => {

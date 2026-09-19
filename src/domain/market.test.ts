@@ -15,6 +15,7 @@ const config: PracticeConfig = {
   rowCount: 4,
   secondsPerNumber: 4,
   problemCount: 5,
+  digitCount: 1,
 };
 
 const makeResult = (mode: PracticeResult['mode'], correct: number, total: number): PracticeResult => ({
@@ -29,15 +30,32 @@ const makeResult = (mode: PracticeResult['mode'], correct: number, total: number
 });
 
 describe('market domain', () => {
-  it('calculates earned stars correctly only from competitions', () => {
+  it('calculates earned stars correctly from classroom competitions and interactive homeworks (4 hw = 1 star)', () => {
     const results = [
       makeResult('practice', 5, 5), // solo -> 0 stars
-      makeResult('online', 4, 5), // online -> 4 stars
+      makeResult('online', 4, 5), // 1st online
+      makeResult('online', 3, 5), // 2nd online
+      makeResult('online', 5, 5), // 3rd online
+      makeResult('online', 4, 5), // 4th online -> 1 star earned here
       makeResult('classroom', 5, 5), // classroom 100% -> 5 + 2 bonus = 7 stars
     ];
 
-    expect(calculateEarnedStars(results, 's1')).toBe(11);
+    expect(calculateEarnedStars(results, 's1')).toBe(8); // 1 (from 4 online) + 7 (from classroom)
     expect(calculateEarnedStars(results, 's2')).toBe(0);
+  });
+
+  it('prevents earning stars on levels easier than student assigned level', () => {
+    const results = [
+      makeResult('online', 4, 5), // config is 'formulasiz' (Level A)
+      makeResult('online', 4, 5),
+      makeResult('online', 4, 5),
+      makeResult('online', 4, 5),
+    ];
+
+    // If student is level 'C' (katta do'st), formulasiz (A) yields 0 stars
+    expect(calculateEarnedStars(results, 's1', 'C')).toBe(0);
+    // If student is level 'A', 4 online yield 1 star
+    expect(calculateEarnedStars(results, 's1', 'A')).toBe(1);
   });
 
   it('calculates spent stars, excluding cancelled orders', () => {
@@ -75,7 +93,7 @@ describe('market domain', () => {
   });
 
   it('computes total balance and affordability', () => {
-    const results = [makeResult('online', 5, 5)]; // 5 + 2 = 7 stars
+    const results = [makeResult('classroom', 5, 5)]; // 5 + 2 = 7 stars
     const orders: MarketOrder[] = [
       {
         id: 'o1',

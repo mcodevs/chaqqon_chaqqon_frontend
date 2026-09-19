@@ -3,19 +3,42 @@ import type { Room, RoomProgress } from '@/domain/competition';
 import type { MarketItem, MarketOrder } from '@/domain/market';
 import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/config';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
+import type { WrittenHomework } from '@/domain/homework';
 import type { Student, StudentAccount } from '@/domain/users';
 import type { Database, Json } from './database.types';
 
 type Tables = Database['public']['Tables'];
-type ProfileRow = Pick<Tables['profiles']['Row'], 'id' | 'first_name' | 'last_name' | 'age'>;
-type StudentAccountRow = Database['public']['Functions']['student_accounts']['Returns'][number];
+type ProfileRow = Pick<Tables['profiles']['Row'], 'id' | 'first_name' | 'last_name' | 'age'> &
+  Partial<Pick<Tables['profiles']['Row'], 'birth_year' | 'level_group' | 'avatar_url' | 'last_active_at'>>;
+type StudentAccountRow = ProfileRow & { username: string };
 
 export function toStudent(row: ProfileRow): Student {
-  return { id: row.id, firstName: row.first_name, lastName: row.last_name, age: row.age };
+  const student: Student = {
+    id: row.id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    age: row.age,
+  };
+  if (row.birth_year !== undefined && row.birth_year !== null) student.birthYear = row.birth_year;
+  if (row.level_group !== undefined && row.level_group !== null) student.levelGroup = row.level_group;
+  if (row.avatar_url !== undefined && row.avatar_url !== null) student.avatarUrl = row.avatar_url;
+  if (row.last_active_at !== undefined && row.last_active_at !== null) student.lastActiveAt = row.last_active_at;
+  return student;
 }
 
 export function toStudentAccount(row: StudentAccountRow): StudentAccount {
   return { ...toStudent(row), username: row.username };
+}
+
+export function toWrittenHomework(row: Tables['written_homework']['Row']): WrittenHomework {
+  return {
+    id: row.id,
+    studentId: row.student_id,
+    date: row.date,
+    status: row.status,
+    notes: row.notes,
+    updatedAt: row.updated_at,
+  };
 }
 
 export function toPracticeResult(row: Tables['practice_results']['Row']): PracticeResult {

@@ -8,6 +8,8 @@ export interface PracticeConfig {
   /** Time from one number to the next, blank included (see `numberTiming`). */
   secondsPerNumber: number;
   problemCount: number;
+  /** Number of digits in each number (1, 2, or 3). */
+  digitCount: number;
 }
 
 export interface Range {
@@ -21,6 +23,7 @@ export const PRACTICE_LIMITS = {
   rowCount: { min: 3, max: 10, step: 1 },
   secondsPerNumber: { min: 0.3, max: 7, step: 0.1 },
   problemCount: { min: 5, max: 10, step: 1 },
+  digitCount: { min: 1, max: 3, step: 1 },
 } as const satisfies Record<string, Range>;
 
 export const DEFAULT_PRACTICE_CONFIG: PracticeConfig = {
@@ -28,6 +31,7 @@ export const DEFAULT_PRACTICE_CONFIG: PracticeConfig = {
   rowCount: 4,
   secondsPerNumber: 6,
   problemCount: 5,
+  digitCount: 1,
 };
 
 export function isSectionId(value: unknown): value is SectionId {
@@ -51,6 +55,7 @@ export function normalizePracticeConfig(value: unknown): PracticeConfig {
       defaults.secondsPerNumber,
     ),
     problemCount: clampToRange(input.problemCount, PRACTICE_LIMITS.problemCount, defaults.problemCount),
+    digitCount: clampToRange(input.digitCount, PRACTICE_LIMITS.digitCount, defaults.digitCount),
   };
 }
 

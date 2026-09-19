@@ -34,6 +34,7 @@ export function FlashRound({ state, participants, secondsPerNumber, isLastRound,
             <LanePanel
               key={student.id}
               name={student.firstName}
+              avatarUrl={student.avatarUrl}
               correct={countCorrect(state, lane)}
               verdict={attempt ? (attempt.isCorrect ? 'good' : 'bad') : undefined}
             >

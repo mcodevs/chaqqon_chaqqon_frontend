@@ -4,7 +4,7 @@ import { type BottomNavItem, DashboardLayout } from '@/shared/ui/DashboardLayout
 
 const DESKTOP_TABS = [
   { to: '/teacher', label: "👥 O'quvchilar", end: true },
-  { to: '/teacher/competition', label: '⚡ Musobaqa' },
+  { to: '/teacher/competition', label: '📝 Interaktiv vazifalar' },
   { to: '/teacher/stats', label: '📊 Statistika' },
   { to: '/teacher/classroom', label: '🏫 Sinf musobaqasi' },
   { to: '/teacher/market', label: "🎁 Do'kon" },
@@ -14,7 +14,7 @@ const DESKTOP_TABS = [
 
 const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
   { to: '/teacher', label: "O'quvchilar", icon: '👥', end: true },
-  { to: '/teacher/competition', label: 'Musobaqa', icon: '⚡' },
+  { to: '/teacher/competition', label: 'Uy vazifasi', icon: '📝' },
   { to: '/teacher/stats', label: 'Statistika', icon: '📊' },
   { to: '/teacher/profile', label: 'Profil', icon: '👤' },
 ];

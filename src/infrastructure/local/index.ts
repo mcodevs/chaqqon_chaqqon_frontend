@@ -1,7 +1,8 @@
-import type { Clock, Ports } from '@/application/ports';
+import type { Clock, Ports, StorageGateway } from '@/application/ports';
 import { createPbkdf2PasswordHasher } from '../security/pbkdf2PasswordHasher';
 import { createWebStorageStore } from '../storage/webStorageStore';
 import { createLocalAuthGateway } from './localAuthGateway';
+import { createLocalHomeworkRepository } from './localHomeworkRepository';
 import { createLocalPaymentRepository } from './localPaymentRepository';
 import {
   createLocalMarketRepository,
@@ -13,6 +14,19 @@ import { createStudentRecords } from './studentRecords';
 import { createWebSessionStore } from './webSessionStore';
 
 const STORAGE_NAMESPACE = 'chaqqon:v1';
+
+function createLocalStorageGateway(): StorageGateway {
+  return {
+    async uploadAvatar(file: Blob): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    },
+  };
+}
 
 /** Backend that lives entirely in this browser (localStorage), for offline use and development. */
 export function createLocalPorts(browser: Window, clock: Clock): Ports {
@@ -37,5 +51,7 @@ export function createLocalPorts(browser: Window, clock: Clock): Ports {
     rooms: createLocalRoomRepository(store),
     payments: createLocalPaymentRepository({ store, records, clock, generateId }),
     market: createLocalMarketRepository(store),
+    homework: createLocalHomeworkRepository(store),
+    storage: createLocalStorageGateway(),
   };
 }

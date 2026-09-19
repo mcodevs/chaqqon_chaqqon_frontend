@@ -45,7 +45,7 @@ export function RoomSetupForm({
     });
 
   return (
-    <Card title="Yangi musobaqa xonasi">
+    <Card title="Yangi interaktiv uy vazifasi xonasi">
       <StudentPicker
         students={students}
         closedIds={closedIds}

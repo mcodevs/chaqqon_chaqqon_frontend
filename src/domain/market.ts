@@ -29,24 +29,50 @@ export interface StudentStarsBalance {
   balance: number;
 }
 
+import { type LevelGroup, LEVEL_INDEX, SECTION_TO_LEVEL } from './users';
+
 /**
- * Calculates earned stars from competition results:
- * - Only 'online' and 'classroom' matches award stars (solo practice does not).
- * - 1 star per correct answer.
- * - +2 bonus stars if 100% accurate.
+ * Calculates earned stars:
+ * - Classroom competition ('classroom'): 1 star per correct answer + 2 bonus stars if 100% accurate.
+ * - Interactive homework ('online'): 1 star per 4 completed homeworks (Math.floor(completed / 4)).
+ * - Solo practice ('practice'): awards 0 stars.
+ * - If studentLevel is specified, results on sections easier than the student's level are ignored.
  */
-export function calculateEarnedStars(results: readonly PracticeResult[], studentId: string): number {
-  let earned = 0;
+export function calculateEarnedStars(
+  results: readonly PracticeResult[],
+  studentId: string,
+  studentLevel?: LevelGroup,
+): number {
+  let classroomEarned = 0;
+  let onlineCompletedCount = 0;
+
   for (const r of results) {
     if (r.studentId !== studentId) continue;
     if (r.mode !== 'online' && r.mode !== 'classroom') continue;
 
-    earned += r.correct;
-    if (r.total > 0 && r.correct === r.total) {
-      earned += 2; // Perfect score bonus
+    // Check if problem is easier than the student's assigned level group
+    if (studentLevel) {
+      const problemLevel = SECTION_TO_LEVEL[r.config.section] ?? 'A';
+      if (LEVEL_INDEX[problemLevel] < LEVEL_INDEX[studentLevel]) {
+        continue; // Student worked on an easier topic, no stars
+      }
+    }
+
+    if (r.mode === 'classroom') {
+      classroomEarned += r.correct;
+      if (r.total > 0 && r.correct === r.total) {
+        classroomEarned += 2; // Perfect score bonus
+      }
+    } else if (r.mode === 'online') {
+      // Completed interactive homework room
+      if (r.total > 0 && r.correct >= 0) {
+        onlineCompletedCount++;
+      }
     }
   }
-  return earned;
+
+  const onlineStars = Math.floor(onlineCompletedCount / 4);
+  return classroomEarned + onlineStars;
 }
 
 /**
@@ -71,8 +97,9 @@ export function computeStudentStars(
   studentId: string,
   results: readonly PracticeResult[],
   orders: readonly MarketOrder[],
+  studentLevel?: LevelGroup,
 ): StudentStarsBalance {
-  const earnedStars = calculateEarnedStars(results, studentId);
+  const earnedStars = calculateEarnedStars(results, studentId, studentLevel);
   const spentStars = calculateSpentStars(orders, studentId);
   return {
     studentId,

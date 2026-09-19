@@ -27,7 +27,7 @@ export function LeaderboardPage() {
         {rows.map((row, index) => (
           <li key={row.student.id} className={styles.row}>
             <span className={`${styles.rank} ${MEDAL_CLASSES[index] ?? ''}`}>{index + 1}</span>
-            <NameAvatar name={row.student.firstName} />
+            <NameAvatar name={row.student.firstName} avatarUrl={row.student.avatarUrl} />
             <div className={styles.name}>
               <div className={styles.nameMain}>{fullName(row.student)}</div>
               <div className={styles.nameSub}>{row.sessions} ta mashq</div>

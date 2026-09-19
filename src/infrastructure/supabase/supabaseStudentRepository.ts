@@ -2,6 +2,7 @@ import type { StudentRepository } from '@/application/ports';
 import type { StudentAccount } from '@/domain/users';
 import { createChangeNotifier } from '../shared/changeNotifier';
 import type { AppSupabaseClient } from './client';
+import type { Database } from './database.types';
 import { invokeFunction } from './edgeFunctions';
 import { toStudent, toStudentAccount } from './mappers';
 
@@ -14,11 +15,28 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
     async list() {
       const { data, error } = await client
         .from('profiles')
-        .select('id, first_name, last_name, age')
+        .select('id, first_name, last_name, age, birth_year, level_group, avatar_url, last_active_at')
         .eq('role', 'student')
         .order('created_at');
       if (error) throw error;
       return data.map(toStudent);
+    },
+
+    async updateProfile(id, updates) {
+      const rowUpdates: Database['public']['Tables']['profiles']['Update'] = {};
+      if (updates.birthYear !== undefined) rowUpdates.birth_year = updates.birthYear;
+      if (updates.levelGroup !== undefined) rowUpdates.level_group = updates.levelGroup;
+      if (updates.avatarUrl !== undefined) rowUpdates.avatar_url = updates.avatarUrl;
+      if (updates.lastActiveAt !== undefined) rowUpdates.last_active_at = updates.lastActiveAt;
+
+      const { error } = await client.from('profiles').update(rowUpdates).eq('id', id);
+      if (error) throw error;
+      changes.notify();
+    },
+
+    async touchActive(id) {
+      // Fire and forget, don't block user interactions if offline or fail
+      void client.from('profiles').update({ last_active_at: new Date().toISOString() }).eq('id', id);
     },
 
     async listAccounts() {

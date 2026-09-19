@@ -14,6 +14,7 @@ const dummyConfig: PracticeConfig = {
   rowCount: 4,
   secondsPerNumber: 4,
   problemCount: 5,
+  digitCount: 1,
 };
 
 const createResult = (

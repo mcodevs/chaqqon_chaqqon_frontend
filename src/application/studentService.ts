@@ -15,6 +15,8 @@ interface StudentDependencies {
   random: Random;
 }
 
+import type { LevelGroup } from '@/domain/users';
+
 export interface StudentCredentials {
   username: string;
   password: string;
@@ -24,6 +26,8 @@ export interface NewStudentInput extends StudentCredentials {
   firstName: string;
   lastName: string;
   age: number | null;
+  birthYear?: number | null;
+  levelGroup?: LevelGroup;
 }
 
 export interface CreatedStudent {
@@ -71,7 +75,14 @@ export function createStudentService({ students, random }: StudentDependencies) 
       }
 
       const student = await students.create(
-        { firstName, lastName: input.lastName.trim(), age: input.age, username },
+        {
+          firstName,
+          lastName: input.lastName.trim(),
+          age: input.age,
+          birthYear: input.birthYear ?? null,
+          levelGroup: input.levelGroup ?? 'A',
+          username,
+        },
         password,
       );
       return { student, credentials: { username, password } };
@@ -84,6 +95,13 @@ export function createStudentService({ students, random }: StudentDependencies) 
       await students.setPassword(id, password);
       return { username: account.username, password };
     },
+
+    updateProfile: (
+      id: string,
+      updates: Partial<Pick<Student, 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
+    ) => students.updateProfile(id, updates),
+
+    touchActive: (id: string) => students.touchActive(id),
 
     remove: (id: string): Promise<void> => students.remove(id),
   };

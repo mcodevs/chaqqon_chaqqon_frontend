@@ -42,10 +42,26 @@ describe('generateProblem', () => {
     );
   });
 
-  it('rejects problems shorter than two rows', () => {
-    expect(() => generateProblem({ section: 'formulasiz', rowCount: 1 }, createSeededRandom(1))).toThrow(
-      RangeError,
-    );
+  it('generates multi-digit problems (2 and 3 digits)', () => {
+    for (const digitCount of [2, 3]) {
+      const min = Math.pow(10, digitCount - 1);
+      const max = Math.pow(10, digitCount) - 1;
+      for (const section of SECTION_IDS) {
+        const random = createSeededRandom(digitCount * 100);
+        const { numbers, answer } = generateProblem({ section, rowCount: 4, digitCount }, random);
+        expect(numbers).toHaveLength(4);
+        expect(numbers[0]).toBeGreaterThanOrEqual(min);
+        expect(numbers[0]).toBeLessThanOrEqual(max);
+        let total = numbers[0];
+        for (let i = 1; i < numbers.length; i++) {
+          expect(Math.abs(numbers[i])).toBeGreaterThanOrEqual(min);
+          expect(Math.abs(numbers[i])).toBeLessThanOrEqual(max);
+          total += numbers[i];
+          expect(total).toBeGreaterThanOrEqual(0);
+        }
+        expect(answer).toBe(total);
+      }
+    }
   });
 });
 

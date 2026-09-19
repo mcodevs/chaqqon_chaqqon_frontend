@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCalendarDate, formatSeconds } from './format';
+import { formatCalendarDate, formatLastActive, formatSeconds } from './format';
 
 describe('formatSeconds', () => {
   it('writes tenths with a decimal comma and whole seconds without one', () => {
@@ -14,5 +14,17 @@ describe('formatSeconds', () => {
 describe('formatCalendarDate', () => {
   it('writes billing days as day.month.year', () => {
     expect(formatCalendarDate('2026-10-04')).toBe('04.10.2026');
+  });
+});
+
+describe('formatLastActive', () => {
+  it('returns Hali kirmagan when null or undefined', () => {
+    expect(formatLastActive(null)).toEqual({ text: 'Hali kirmagan', isOnline: false });
+    expect(formatLastActive(undefined)).toEqual({ text: 'Hali kirmagan', isOnline: false });
+  });
+
+  it('marks as Hozir onlayn when under 5 minutes', () => {
+    const now = new Date().toISOString();
+    expect(formatLastActive(now)).toEqual({ text: 'Hozir onlayn', isOnline: true });
   });
 });

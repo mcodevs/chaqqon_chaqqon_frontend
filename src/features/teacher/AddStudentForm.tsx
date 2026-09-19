@@ -8,7 +8,17 @@ import { ErrorMessage } from '@/shared/ui/Notice';
 import { TextField } from '@/shared/ui/TextField';
 import styles from './Teacher.module.css';
 
-const EMPTY_FORM = { firstName: '', lastName: '', age: '', username: '', password: '' };
+import { LEVEL_GROUPS, LEVEL_META, type LevelGroup } from '@/domain/users';
+
+const EMPTY_FORM = {
+  firstName: '',
+  lastName: '',
+  age: '',
+  birthYear: '',
+  levelGroup: 'A' as LevelGroup,
+  username: '',
+  password: '',
+};
 
 export function AddStudentForm({ onCreated }: { onCreated: (credentials: StudentCredentials) => void }) {
   const { students } = useServices();
@@ -28,6 +38,8 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
       firstName: form.firstName,
       lastName: form.lastName,
       age: form.age.trim() === '' ? null : Number(form.age),
+      birthYear: form.birthYear.trim() === '' ? null : Number(form.birthYear),
+      levelGroup: form.levelGroup,
       username: form.username,
       password: form.password,
     });
@@ -50,6 +62,28 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
             value={form.age}
             onChange={update('age')}
           />
+          <TextField
+            label="Tug'ilgan yili"
+            type="number"
+            inputMode="numeric"
+            placeholder="masalan, 2018"
+            value={form.birthYear}
+            onChange={update('birthYear')}
+          />
+          <label className={styles.fieldLabel}>
+            <span>Bilim darajasi (Toifa)</span>
+            <select
+              value={form.levelGroup}
+              onChange={(e) => setForm((curr) => ({ ...curr, levelGroup: e.target.value as LevelGroup }))}
+              className={styles.selectInput}
+            >
+              {LEVEL_GROUPS.map((lvl) => (
+                <option key={lvl} value={lvl}>
+                  {LEVEL_META[lvl].label}: {LEVEL_META[lvl].formula} ({LEVEL_META[lvl].description})
+                </option>
+              ))}
+            </select>
+          </label>
           <TextField
             label="Login"
             autoCapitalize="none"

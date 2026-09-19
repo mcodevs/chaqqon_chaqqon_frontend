@@ -37,6 +37,18 @@ export function createLocalStudentRepository({
       await records.save({ ...record, passwordHash: await hasher.hash(password) });
     },
 
+    async updateProfile(id, updates) {
+      const record = (await records.list()).find((r) => r.id === id);
+      if (!record) throw new AppError('STUDENT_NOT_FOUND');
+      await records.save({ ...record, ...updates });
+    },
+
+    async touchActive(id) {
+      const record = (await records.list()).find((r) => r.id === id);
+      if (!record) return;
+      await records.save({ ...record, lastActiveAt: new Date().toISOString() });
+    },
+
     remove: (id) => records.remove(id),
 
     subscribe: (listener) => records.subscribe(listener),
@@ -44,7 +56,16 @@ export function createLocalStudentRepository({
 }
 
 function toStudent(record: StudentRecord): Student {
-  return { id: record.id, firstName: record.firstName, lastName: record.lastName, age: record.age };
+  return {
+    id: record.id,
+    firstName: record.firstName,
+    lastName: record.lastName,
+    age: record.age,
+    birthYear: record.birthYear ?? null,
+    levelGroup: record.levelGroup ?? 'A',
+    avatarUrl: record.avatarUrl ?? null,
+    lastActiveAt: record.lastActiveAt ?? null,
+  };
 }
 
 function toAccount(record: StudentRecord): StudentAccount {

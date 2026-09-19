@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomSnapshot } from '@/application/competitionService';
 import type { CalendarDate, Payment } from '@/domain/billing';
+import type { WrittenHomework } from '@/domain/homework';
 import type { MarketItem, MarketOrder, StudentStarsBalance } from '@/domain/market';
 import type { PracticeResult } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
@@ -8,6 +9,11 @@ import { useLiveQuery } from '@/shared/hooks/useLiveQuery';
 import { useServices } from './ServicesContext';
 
 // Service methods are created once in the composition root, so they are stable references.
+
+export function useWrittenHomework(): WrittenHomework[] | undefined {
+  const { homework } = useServices();
+  return useLiveQuery({ load: homework.list, subscribe: homework.subscribe });
+}
 
 export function useStudents(): Student[] | undefined {
   const { students } = useServices();

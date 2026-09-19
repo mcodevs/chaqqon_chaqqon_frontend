@@ -1,25 +1,38 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { accessOf } from '@/domain/billing';
+import { HOMEWORK_STATUS_META } from '@/domain/homework';
 import { accuracyPercent } from '@/domain/results';
+import { LEVEL_META } from '@/domain/users';
 import { formatDate } from '@/shared/format';
 import {
   usePayments,
   useResults,
   useSchoolToday,
   useStudentStars,
+  useWrittenHomework,
 } from '@/shared/services/queries';
+import { useServices } from '@/shared/services/ServicesContext';
 import { useSession } from '@/shared/session/SessionContext';
+import { AvatarPickerModal } from '@/shared/ui/AvatarPickerModal';
+import { NameAvatar } from '@/shared/ui/NameAvatar';
 import { useCurrentStudent } from './CurrentStudentContext';
 import styles from './StudentProfilePage.module.css';
 
 export function StudentProfilePage() {
   const student = useCurrentStudent();
   const { signOut } = useSession();
+  const { students: studentService } = useServices();
   const stars = useStudentStars(student.id);
   const payments = usePayments();
   const results = useResults();
   const today = useSchoolToday();
+  const homeworkList = useWrittenHomework();
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+  const studentHomework = useMemo(() => {
+    return homeworkList?.find((h) => h.studentId === student.id);
+  }, [homeworkList, student.id]);
 
   const access = useMemo(() => {
     if (!payments) return null;
@@ -40,22 +53,36 @@ export function StudentProfilePage() {
     return { totalRuns, overallAccuracy };
   }, [studentResults]);
 
-  const initials = (student.firstName.charAt(0) || '👤').toUpperCase();
   const fullName = [student.firstName, student.lastName].filter(Boolean).join(' ');
+
+  const handleAvatarSelect = async (newUrl: string) => {
+    await studentService.updateProfile(student.id, { avatarUrl: newUrl });
+  };
 
   return (
     <div className={styles.container}>
       {/* 1. Profil asosiy kartochkasi */}
       <section className={styles.profileCard}>
-        <div className={styles.avatar}>
-          <span>{initials}</span>
+        <div
+          className={styles.avatarWrapper}
+          onClick={() => setIsAvatarModalOpen(true)}
+          title="Rasmni o'zgartirish"
+        >
+          <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={68} />
+          <span className={styles.avatarEditBtn}>📷</span>
         </div>
         <div className={styles.profileInfo}>
           <h2 className={styles.fullName}>{fullName}</h2>
           <div className={styles.roleBadgeGroup}>
             <span className={`${styles.badge} ${styles.badgeRole}`}>
               {student.age ? `${student.age} yosh` : "O'quvchi"}
+              {student.birthYear && ` · ${student.birthYear}-yil`}
             </span>
+            {student.levelGroup && (
+              <span className={`${styles.badge} ${styles.badgeLevel}`}>
+                {LEVEL_META[student.levelGroup]?.label ?? `${student.levelGroup} toifa`} ({LEVEL_META[student.levelGroup]?.formula})
+              </span>
+            )}
             {access && (
               <span
                 className={`${styles.badge} ${access.open ? styles.badgeActive : styles.badgeInactive}`}
@@ -65,6 +92,34 @@ export function StudentProfilePage() {
             )}
           </div>
         </div>
+      </section>
+
+      {/* 1.5. Yozma uy vazifasi holati */}
+      <section className={styles.homeworkCard}>
+        <div className={styles.homeworkHeader}>
+          <div className={styles.homeworkTitle}>
+            <span>📝 Yozma uy vazifasi</span>
+          </div>
+          {studentHomework ? (
+            <span
+              className={`${styles.badge} ${
+                studentHomework.status === 'bajardi'
+                  ? styles.statusBajardi
+                  : studentHomework.status === 'chala'
+                    ? styles.statusChala
+                    : styles.statusBajarmadi
+              }`}
+            >
+              {HOMEWORK_STATUS_META[studentHomework.status]?.icon}{' '}
+              {HOMEWORK_STATUS_META[studentHomework.status]?.label}
+            </span>
+          ) : (
+            <span className={`${styles.badge} ${styles.statusChala}`}>Hali tekshirilmagan</span>
+          )}
+        </div>
+        <p className={styles.homeworkDesc}>
+          Ustoz bergan qog'ozdagi misollar holati. (Yozma uy vazifasi intizom uchun, yulduzcha berilmaydi).
+        </p>
       </section>
 
       {/* 2. Yulduzchalar balansi kartasi */}
@@ -174,6 +229,15 @@ export function StudentProfilePage() {
           🚪 Tizimdan chiqish
         </button>
       </section>
+
+      {isAvatarModalOpen && (
+        <AvatarPickerModal
+          studentId={student.id}
+          currentAvatarUrl={student.avatarUrl}
+          onSelect={handleAvatarSelect}
+          onClose={() => setIsAvatarModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { useSession } from '@/shared/session/SessionContext';
 import { type BottomNavItem, DashboardLayout } from '@/shared/ui/DashboardLayout';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
+import { useServices } from '@/shared/services/ServicesContext';
 import { ClosedAccountPage } from './ClosedAccountPage';
 import { CurrentStudentContext } from './CurrentStudentContext';
 
@@ -24,6 +25,14 @@ export function StudentLayout() {
   const stars = useStudentStars(studentId ?? '');
   const student = students?.find((s) => s.id === studentId) ?? null;
   const accountDeleted = students !== undefined && student === null;
+
+  const { students: studentService } = useServices();
+
+  useEffect(() => {
+    if (student?.id) {
+      void studentService.touchActive(student.id);
+    }
+  }, [student?.id, studentService]);
 
   useEffect(() => {
     if (accountDeleted) signOut();
@@ -42,7 +51,7 @@ export function StudentLayout() {
   // Desktop sidebar uchun to'liq bo'limlar
   const tabs = [
     { to: '/student', label: '🧮 Mashq', end: true },
-    { to: '/student/competition', label: hasPendingCompetition ? '⚡ Musobaqa •' : '⚡ Musobaqa' },
+    { to: '/student/competition', label: hasPendingCompetition ? '📝 Interaktiv vazifa •' : '📝 Interaktiv vazifa' },
     { to: '/student/leaderboard', label: '🏆 Reyting' },
     { to: '/student/results', label: '📈 Natijalarim' },
     { to: '/student/market', label: "🎁 Do'kon" },
@@ -52,7 +61,7 @@ export function StudentLayout() {
   // Mobile Bottom Navigation Bar uchun eng asosiy 4 ta bo'lim
   const bottomNavItems: BottomNavItem[] = [
     { to: '/student', label: 'Mashq', icon: '🧮', end: true },
-    { to: '/student/competition', label: 'Musobaqa', icon: '⚡', badge: hasPendingCompetition },
+    { to: '/student/competition', label: 'Uy vazifasi', icon: '📝', badge: hasPendingCompetition },
     { to: '/student/leaderboard', label: 'Reyting', icon: '🏆' },
     { to: '/student/profile', label: 'Profil', icon: '👤' },
   ];

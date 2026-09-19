@@ -28,6 +28,8 @@ export interface AuthGateway {
   onSessionEnded(listener: ChangeListener): Unsubscribe;
 }
 
+import type { HomeworkStatus, WrittenHomework } from '@/domain/homework';
+
 export type NewStudent = Omit<StudentAccount, 'id'>;
 
 export interface StudentRepository {
@@ -37,8 +39,23 @@ export interface StudentRepository {
   /** Throws `AppError('USERNAME_TAKEN')` when the username already exists. */
   create(student: NewStudent, password: string): Promise<StudentAccount>;
   setPassword(id: string, password: string): Promise<void>;
+  updateProfile(
+    id: string,
+    updates: Partial<Pick<Student, 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
+  ): Promise<void>;
+  touchActive(id: string): Promise<void>;
   remove(id: string): Promise<void>;
   subscribe(listener: ChangeListener): Unsubscribe;
+}
+
+export interface HomeworkRepository {
+  list(): Promise<WrittenHomework[]>;
+  setStatus(studentId: string, date: string, status: HomeworkStatus, notes?: string): Promise<WrittenHomework>;
+  subscribe(listener: ChangeListener): Unsubscribe;
+}
+
+export interface StorageGateway {
+  uploadAvatar(file: Blob, studentId: string): Promise<string>;
 }
 
 export interface ResultRepository {
@@ -88,6 +105,8 @@ export interface Ports {
   rooms: RoomRepository;
   payments: PaymentRepository;
   market: MarketRepository;
+  homework: HomeworkRepository;
+  storage: StorageGateway;
 }
 
 export interface Clock {

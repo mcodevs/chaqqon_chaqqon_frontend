@@ -42,35 +42,97 @@ export function subtractFromColumn(digit: number, amount: number): ColumnStep {
 }
 
 /**
- * Names the section that teaches adding `value` (±1…9) to `total`:
- * - formulasiz — ones column only, beads are enough;
- * - kichik     — ones column only, needs the 5-complement;
- * - katta      — needs the 10-complement and the ±1 lands directly on the next column;
- * - miks       — the ±1 itself needs a formula on the next column (a "family" cascade).
+ * Names the section that teaches adding `value` (positive or negative non-zero integer) to `total`:
+ * - formulasiz — beads in all columns are enough (direct move);
+ * - kichik     — no carries/borrows, needs 5-complement formula (+5-x or -5+x);
+ * - katta      — needs 10-complement (carry/borrow) and lands directly on higher columns;
+ * - miks       — a carry/borrow cascade needs a 5-complement or combination formula on a higher column.
  */
 export function classifyMove(total: number, value: number): SectionId {
   const amount = Math.abs(value);
   if (!Number.isInteger(total) || total < 0) throw new RangeError(`Invalid total ${total}`);
-  if (!Number.isInteger(value) || amount < 1 || amount > 9)
-    throw new RangeError(`Move must be ±1…9, got ${value}`);
+  if (!Number.isInteger(value) || amount < 1)
+    throw new RangeError(`Move must be non-zero integer, got ${value}`);
   if (total + value < 0) throw new RangeError(`Move ${value} would make total ${total} negative`);
 
-  const applyToColumn = value > 0 ? addToColumn : subtractFromColumn;
-  const techniques: ColumnTechnique[] = [];
-  let higherColumns = total;
-  let pending = amount;
+  const isAdd = value > 0;
+  let remainingTotal = total;
+  let remainingVal = amount;
+  let carryOrBorrow = 0;
 
-  while (pending > 0) {
-    const step = applyToColumn(higherColumns % 10, pending);
-    techniques.push(step.technique);
-    pending = step.overflow ? 1 : 0;
-    higherColumns = Math.floor(higherColumns / 10);
+  let hadCarryOrBorrow = false;
+  let hadSmallFriend = false;
+  let hadMiks = false;
+
+  let colIndex = 0;
+  while (remainingVal > 0 || carryOrBorrow > 0) {
+    let rodDigit = remainingTotal % 10;
+    const valDigit = remainingVal % 10;
+    remainingTotal = Math.floor(remainingTotal / 10);
+    remainingVal = Math.floor(remainingVal / 10);
+
+    let nextCarryOrBorrow = 0;
+
+    if (isAdd) {
+      if (carryOrBorrow > 0) {
+        hadCarryOrBorrow = true;
+        const stepCarry = addToColumn(rodDigit, carryOrBorrow);
+        rodDigit = stepCarry.digit;
+        if (stepCarry.technique === 'smallFriend') {
+          hadMiks = true;
+        }
+        if (stepCarry.overflow) {
+          nextCarryOrBorrow += 1;
+          if (colIndex > 0) hadMiks = true;
+        }
+      }
+
+      if (valDigit > 0) {
+        const stepVal = addToColumn(rodDigit, valDigit);
+        rodDigit = stepVal.digit;
+        if (stepVal.technique === 'smallFriend') {
+          hadSmallFriend = true;
+        } else if (stepVal.technique === 'bigFriend') {
+          hadCarryOrBorrow = true;
+        }
+        if (stepVal.overflow) {
+          nextCarryOrBorrow += 1;
+        }
+      }
+    } else {
+      if (carryOrBorrow > 0) {
+        hadCarryOrBorrow = true;
+        const stepBorrow = subtractFromColumn(rodDigit, carryOrBorrow);
+        rodDigit = stepBorrow.digit;
+        if (stepBorrow.technique === 'smallFriend') {
+          hadMiks = true;
+        }
+        if (stepBorrow.overflow) {
+          nextCarryOrBorrow += 1;
+          if (colIndex > 0) hadMiks = true;
+        }
+      }
+
+      if (valDigit > 0) {
+        const stepVal = subtractFromColumn(rodDigit, valDigit);
+        rodDigit = stepVal.digit;
+        if (stepVal.technique === 'smallFriend') {
+          hadSmallFriend = true;
+        } else if (stepVal.technique === 'bigFriend') {
+          hadCarryOrBorrow = true;
+        }
+        if (stepVal.overflow) {
+          nextCarryOrBorrow += 1;
+        }
+      }
+    }
+
+    carryOrBorrow = nextCarryOrBorrow;
+    colIndex++;
   }
 
-  return categorize(techniques);
-}
-
-function categorize([first, ...carried]: ColumnTechnique[]): SectionId {
-  if (carried.length === 0) return first === 'smallFriend' ? 'kichik' : 'formulasiz';
-  return carried.every((technique) => technique === 'direct') ? 'katta' : 'miks';
+  if (hadMiks) return 'miks';
+  if (hadCarryOrBorrow) return 'katta';
+  if (hadSmallFriend) return 'kichik';
+  return 'formulasiz';
 }

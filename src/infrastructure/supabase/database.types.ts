@@ -18,7 +18,20 @@ type ProfileRow = {
   first_name: string;
   last_name: string;
   age: number | null;
+  birth_year: number | null;
+  level_group: 'A' | 'B' | 'C' | 'D';
+  avatar_url: string | null;
+  last_active_at: string | null;
   created_at: string;
+};
+
+type WrittenHomeworkRow = {
+  id: string;
+  student_id: string;
+  date: string;
+  status: 'bajardi' | 'chala' | 'bajarmadi';
+  notes: string;
+  updated_at: string;
 };
 
 type RoomRow = {
@@ -124,13 +137,30 @@ export type Database = {
         Update: Partial<MarketOrderRow>;
         Relationships: [];
       };
+      written_homework: {
+        Row: WrittenHomeworkRow;
+        Insert: Pick<WrittenHomeworkRow, 'student_id' | 'status'> & Partial<WrittenHomeworkRow>;
+        Update: Partial<WrittenHomeworkRow>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
       teacher_exists: { Args: NoArgs; Returns: boolean };
       student_accounts: {
         Args: NoArgs;
-        Returns: Pick<ProfileRow, 'id' | 'username' | 'first_name' | 'last_name' | 'age'>[];
+        Returns: Pick<
+          ProfileRow,
+          | 'id'
+          | 'username'
+          | 'first_name'
+          | 'last_name'
+          | 'age'
+          | 'birth_year'
+          | 'level_group'
+          | 'avatar_url'
+          | 'last_active_at'
+        >[];
       };
     };
     Enums: { [_ in never]: never };

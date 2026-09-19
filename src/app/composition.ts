@@ -2,6 +2,7 @@ import type { AppServices } from '@/application/appServices';
 import { createAuthService } from '@/application/authService';
 import { createBillingService } from '@/application/billingService';
 import { createCompetitionService } from '@/application/competitionService';
+import { createHomeworkService } from '@/application/homeworkService';
 import { createMarketService } from '@/application/marketService';
 import type { Clock, Ports } from '@/application/ports';
 import { createResultService } from '@/application/resultService';
@@ -22,6 +23,8 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
     competition: createCompetitionService({ rooms: ports.rooms, generateId, clock }),
     billing: createBillingService({ payments: ports.payments, clock }),
     market: createMarketService({ market: ports.market, results: ports.results, generateId, clock }),
+    homework: createHomeworkService({ homework: ports.homework }),
+    storage: ports.storage,
   };
 }
 

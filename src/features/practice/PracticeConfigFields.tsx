@@ -40,6 +40,12 @@ export function PracticeConfigFields({ value, onChange }: PracticeConfigFieldsPr
       </div>
 
       <SliderField
+        label="Xonalar soni"
+        {...PRACTICE_LIMITS.digitCount}
+        value={value.digitCount}
+        onChange={(n) => set('digitCount', n)}
+      />
+      <SliderField
         label="Qator soni (necha son)"
         {...PRACTICE_LIMITS.rowCount}
         value={value.rowCount}

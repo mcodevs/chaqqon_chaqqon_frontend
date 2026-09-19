@@ -18,7 +18,7 @@ export function RoomMonitor({ room, progress, students, error, onStart, onClose 
   const isWaiting = room.status === 'waiting';
 
   return (
-    <Card title={`Musobaqa xonasi ${isWaiting ? '(kutmoqda)' : '(boshlandi)'}`}>
+    <Card title={`Uy vazifasi xonasi ${isWaiting ? '(kutmoqda)' : '(boshlandi)'}`}>
       <ul className={styles.monitor}>
         {room.participantIds.map((id) => {
           const entry = progress[id];

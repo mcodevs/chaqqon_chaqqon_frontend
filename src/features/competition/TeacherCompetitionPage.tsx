@@ -37,9 +37,9 @@ export function TeacherCompetitionPage() {
     <div className={styles.teacherRoomsList}>
       {activeRooms.length > 0 && !showSetup && (
         <div className={styles.teacherHeader}>
-          <span className={styles.hint}>Faol musobaqalar: {activeRooms.length} ta</span>
+          <span className={styles.hint}>Faol interaktiv vazifalar: {activeRooms.length} ta</span>
           <Button tone="pink" onClick={() => setShowSetup(true)}>
-            + Yangi xona ochish
+            + Yangi vazifa xonasi ochish
           </Button>
         </div>
       )}

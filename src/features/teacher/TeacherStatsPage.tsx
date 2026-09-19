@@ -104,7 +104,7 @@ export function TeacherStatsPage() {
               >
                 <div className={styles.studentRow}>
                   <div className={styles.studentMain}>
-                    <NameAvatar name={student.firstName} />
+                    <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} />
                     <div>
                       <div className={styles.studentName}>{fullName(student)}</div>
                       <div className={styles.studentSessions}>

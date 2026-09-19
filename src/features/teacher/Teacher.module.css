@@ -199,3 +199,148 @@
     flex: 1;
   }
 }
+
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: var(--space-2);
+}
+
+.selectInput {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 10px);
+  border: 2px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+.selectInput:focus {
+  border-color: var(--color-blue);
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.5rem;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-md, 12px);
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.filterSelect {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-line);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  outline: none;
+}
+
+.lastActiveText {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.onlineIndicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.badgeLevel {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
+.homeworkCheckSection {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.homeworkLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+}
+
+.hwButtonGroup {
+  display: inline-flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+}
+
+.hwBtn {
+  border: none;
+  background: var(--color-surface);
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--color-ink-soft);
+  transition: all 0.15s ease;
+  border-right: 1px solid var(--color-line);
+}
+
+.hwBtn:last-child {
+  border-right: none;
+}
+
+.hwBtn:hover {
+  background: #f1f5f9;
+}
+
+.hwBtnActiveBajardi {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.hwBtnActiveChala {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+.hwBtnActiveBajarmadi {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}

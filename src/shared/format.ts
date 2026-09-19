@@ -21,3 +21,46 @@ export function formatSeconds(seconds: number): string {
 export function formatSigned(value: number, isFirst: boolean): { sign: string; magnitude: number } {
   return { sign: isFirst ? '' : value < 0 ? '−' : '+', magnitude: Math.abs(value) };
 }
+
+export function formatLastActive(isoDate?: string | null): { text: string; isOnline: boolean } {
+  if (!isoDate) return { text: 'Hali kirmagan', isOnline: false };
+
+  const date = new Date(isoDate);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+
+  if (diffMinutes < 5) {
+    return { text: 'Hozir onlayn', isOnline: true };
+  }
+
+  const timeStr = date.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+
+  // Check if same calendar day
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return { text: `Bugun, ${timeStr}`, isOnline: false };
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) {
+    return { text: `Kecha, ${timeStr}`, isOnline: false };
+  }
+
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 7) {
+    return { text: `${diffDays} kun oldin`, isOnline: false };
+  }
+
+  return { text: formatDate(isoDate), isOnline: false };
+}

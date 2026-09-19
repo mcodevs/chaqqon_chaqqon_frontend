@@ -26,9 +26,20 @@ describe('classifyMove', () => {
 
   it('rejects moves outside the rules', () => {
     expect(() => classifyMove(3, -4)).toThrow(RangeError);
-    expect(() => classifyMove(3, 10)).toThrow(RangeError);
     expect(() => classifyMove(3, 0)).toThrow(RangeError);
+    expect(() => classifyMove(3, 1.5)).toThrow(RangeError);
     expect(() => classifyMove(-1, 2)).toThrow(RangeError);
+  });
+
+  it('classifies multi-digit moves correctly', () => {
+    expect(classifyMove(10, 23)).toBe('formulasiz');
+    expect(classifyMove(14, 23)).toBe('kichik');
+    expect(classifyMove(18, 15)).toBe('katta');
+    expect(classifyMove(48, 16)).toBe('miks');
+    expect(classifyMove(78, -25)).toBe('formulasiz');
+    expect(classifyMove(67, -24)).toBe('kichik');
+    expect(classifyMove(42, -18)).toBe('katta');
+    expect(classifyMove(52, -14)).toBe('miks');
   });
 });
 
