@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeListener, Unsubscribe } from '@/application/ports';
 
 export interface LiveQuery<T> {
@@ -13,6 +13,8 @@ export interface LiveQuery<T> {
  */
 export function useLiveQuery<T>({ load, subscribe }: LiveQuery<T>): T | undefined {
   const [data, setData] = useState<T>();
+  const loadRef = useRef(load);
+  loadRef.current = load;
 
   useEffect(() => {
     let latestRequest = 0;
@@ -20,9 +22,19 @@ export function useLiveQuery<T>({ load, subscribe }: LiveQuery<T>): T | undefine
 
     const refresh = () => {
       const request = ++latestRequest;
-      load().then(
+      loadRef.current().then(
         (value) => {
-          if (!disposed && request === latestRequest) setData(value);
+          if (!disposed && request === latestRequest) {
+            setData((prev) => {
+              if (Object.is(prev, value)) return prev;
+              try {
+                if (JSON.stringify(prev) === JSON.stringify(value)) return prev;
+              } catch {
+                // Ignore serialization errors
+              }
+              return value;
+            });
+          }
         },
         (error: unknown) => console.error(error),
       );

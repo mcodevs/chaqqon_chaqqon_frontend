@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { RoomSnapshot } from '@/application/competitionService';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
@@ -38,15 +38,17 @@ export function useActiveRooms(): RoomSnapshot[] | undefined {
 
 export function useStudentRoom(studentId: string): RoomSnapshot | undefined {
   const { competition } = useServices();
+  const load = useCallback(() => competition.getSnapshot(studentId), [competition, studentId]);
   return useLiveQuery({
-    load: () => competition.getSnapshot(studentId),
+    load,
     subscribe: competition.subscribe,
   });
 }
 
 export function useRoomSnapshot(): RoomSnapshot | undefined {
   const { competition } = useServices();
-  return useLiveQuery({ load: () => competition.getSnapshot(), subscribe: competition.subscribe });
+  const load = useCallback(() => competition.getSnapshot(), [competition]);
+  return useLiveQuery({ load, subscribe: competition.subscribe });
 }
 
 export function useMarketItems(): MarketItem[] | undefined {
@@ -61,8 +63,9 @@ export function useMarketOrders(): MarketOrder[] | undefined {
 
 export function useStudentStars(studentId: string): StudentStarsBalance | undefined {
   const { market } = useServices();
+  const load = useCallback(() => market.getStudentStars(studentId), [market, studentId]);
   return useLiveQuery({
-    load: () => market.getStudentStars(studentId),
+    load,
     subscribe: market.subscribe,
   });
 }
