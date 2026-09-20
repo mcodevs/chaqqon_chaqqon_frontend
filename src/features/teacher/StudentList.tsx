@@ -29,6 +29,15 @@ function accessLabel({ open, paidUntil }: StudentAccess): string {
     : `Yopiq · ${formatCalendarDate(paidUntil)} kuni tugagan`;
 }
 
+function getStudentAge(birthYear?: number | null, age?: number | null): number | null {
+  if (birthYear && birthYear > 1900) {
+    const currentYear = new Date().getFullYear();
+    const calculated = currentYear - birthYear;
+    return calculated >= 0 ? calculated : null;
+  }
+  return age ?? null;
+}
+
 export function StudentList({ students, payments, today, onCredentialsIssued }: StudentListProps) {
   const { students: studentService, billing, homework } = useServices();
   const recordPayment = useAsyncAction(billing.recordPayment);
@@ -141,6 +150,7 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
           const editing = editingId === student.id;
           const lastActive = formatLastActive(student.lastActiveAt);
           const studentHw = homeworkList?.find((h) => h.studentId === student.id && h.date === today);
+          const studentAge = getStudentAge(student.birthYear, student.age);
 
           return (
             <li key={student.id} className={styles.item}>
@@ -149,7 +159,7 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                 <div className={styles.info}>
                   <div className={styles.name}>
                     {fullName(student)}
-                    {student.birthYear && ` (${student.birthYear}-yil)`}
+                    {studentAge !== null && `, ${studentAge} yosh`}
                     <span className={styles.badgeLevel} style={{ marginLeft: 6 }}>
                       {student.levelGroup ?? 'A'} toifa
                     </span>
