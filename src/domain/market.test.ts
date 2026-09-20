@@ -30,31 +30,30 @@ const makeResult = (mode: PracticeResult['mode'], correct: number, total: number
 });
 
 describe('market domain', () => {
-  it('calculates earned stars correctly from classroom competitions and interactive homeworks (4 hw = 1 star)', () => {
+  it('calculates earned stars correctly (classroom = 0, online = 1 star per 40 correct)', () => {
     const results = [
-      makeResult('practice', 5, 5), // solo -> 0 stars
-      makeResult('online', 4, 5), // 1st online
-      makeResult('online', 3, 5), // 2nd online
-      makeResult('online', 5, 5), // 3rd online
-      makeResult('online', 4, 5), // 4th online -> 1 star earned here
-      makeResult('classroom', 5, 5), // classroom 100% -> 5 + 2 bonus = 7 stars
+      makeResult('practice', 10, 10), // solo -> 0 stars
+      makeResult('classroom', 10, 10), // classroom -> 0 stars
+      makeResult('online', 25, 30), // online: 25 correct
+      makeResult('online', 15, 20), // online: 15 correct (total 40 correct -> 1 star)
+      makeResult('online', 39, 40), // online: 39 correct (total 79 correct -> still 1 star)
     ];
 
-    expect(calculateEarnedStars(results, 's1')).toBe(8); // 1 (from 4 online) + 7 (from classroom)
+    expect(calculateEarnedStars(results, 's1')).toBe(1); // floor(79 / 40) = 1 star
     expect(calculateEarnedStars(results, 's2')).toBe(0);
+
+    const moreResults = [...results, makeResult('online', 1, 1)]; // total 80 correct -> 2 stars
+    expect(calculateEarnedStars(moreResults, 's1')).toBe(2);
   });
 
   it('prevents earning stars on levels easier than student assigned level', () => {
     const results = [
-      makeResult('online', 4, 5), // config is 'formulasiz' (Level A)
-      makeResult('online', 4, 5),
-      makeResult('online', 4, 5),
-      makeResult('online', 4, 5),
+      makeResult('online', 40, 40), // config is 'formulasiz' (Level A)
     ];
 
     // If student is level 'C' (katta do'st), formulasiz (A) yields 0 stars
     expect(calculateEarnedStars(results, 's1', 'C')).toBe(0);
-    // If student is level 'A', 4 online yield 1 star
+    // If student is level 'A', 40 correct in Level A yields 1 star
     expect(calculateEarnedStars(results, 's1', 'A')).toBe(1);
   });
 
@@ -93,7 +92,8 @@ describe('market domain', () => {
   });
 
   it('computes total balance and affordability', () => {
-    const results = [makeResult('classroom', 5, 5)]; // 5 + 2 = 7 stars
+    // 280 correct in online mode -> 280 / 40 = 7 stars
+    const results = [makeResult('online', 280, 300)];
     const orders: MarketOrder[] = [
       {
         id: 'o1',

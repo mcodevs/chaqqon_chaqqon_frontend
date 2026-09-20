@@ -28,7 +28,7 @@ export function StudentCompetitionPage() {
     return message("Vazifa boshlanishini kuting — ustoz tayyor bo'lganda avtomatik boshlanadi.");
   }
   if (progress[student.id]?.finished && reviewingRoomId !== room.id) {
-    return message("Siz ushbu uy vazifasini yakunladingiz! Har 4 ta to'liq bajarilgan vazifa uchun 1 ta yulduz beriladi.");
+    return message("Siz ushbu uy vazifasini yakunladingiz! Har 40 ta to'g'ri ishlangan misol uchun 1 ta yulduz beriladi.");
   }
 
   return (

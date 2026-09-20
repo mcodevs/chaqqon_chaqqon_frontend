@@ -33,8 +33,8 @@ import { type LevelGroup, LEVEL_INDEX, SECTION_TO_LEVEL } from './users';
 
 /**
  * Calculates earned stars:
- * - Classroom competition ('classroom'): 1 star per correct answer + 2 bonus stars if 100% accurate.
- * - Interactive homework ('online'): 1 star per 4 completed homeworks (Math.floor(completed / 4)).
+ * - Classroom competition ('classroom'): awards 0 stars.
+ * - Interactive homework ('online'): 1 star per 40 correctly answered problems (Math.floor(totalCorrect / 40)).
  * - Solo practice ('practice'): awards 0 stars.
  * - If studentLevel is specified, results on sections easier than the student's level are ignored.
  */
@@ -43,12 +43,11 @@ export function calculateEarnedStars(
   studentId: string,
   studentLevel?: LevelGroup,
 ): number {
-  let classroomEarned = 0;
-  let onlineCompletedCount = 0;
+  let onlineCorrectCount = 0;
 
   for (const r of results) {
     if (r.studentId !== studentId) continue;
-    if (r.mode !== 'online' && r.mode !== 'classroom') continue;
+    if (r.mode !== 'online') continue;
 
     // Check if problem is easier than the student's assigned level group
     if (studentLevel) {
@@ -58,21 +57,12 @@ export function calculateEarnedStars(
       }
     }
 
-    if (r.mode === 'classroom') {
-      classroomEarned += r.correct;
-      if (r.total > 0 && r.correct === r.total) {
-        classroomEarned += 2; // Perfect score bonus
-      }
-    } else if (r.mode === 'online') {
-      // Completed interactive homework room
-      if (r.total > 0 && r.correct >= 0) {
-        onlineCompletedCount++;
-      }
+    if (r.correct > 0) {
+      onlineCorrectCount += r.correct;
     }
   }
 
-  const onlineStars = Math.floor(onlineCompletedCount / 4);
-  return classroomEarned + onlineStars;
+  return Math.floor(onlineCorrectCount / 40);
 }
 
 /**

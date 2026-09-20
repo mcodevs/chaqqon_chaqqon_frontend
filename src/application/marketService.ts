@@ -6,11 +6,20 @@ import {
   computeStudentStars,
 } from '@/domain/market';
 import { AppError } from './errors';
-import type { ChangeListener, Clock, IdGenerator, MarketRepository, ResultRepository, Unsubscribe } from './ports';
+import type {
+  ChangeListener,
+  Clock,
+  IdGenerator,
+  MarketRepository,
+  ResultRepository,
+  StudentRepository,
+  Unsubscribe,
+} from './ports';
 
 interface MarketDependencies {
   market: MarketRepository;
   results: ResultRepository;
+  students?: StudentRepository;
   generateId: IdGenerator;
   clock: Clock;
 }
@@ -22,15 +31,20 @@ export interface NewMarketItemInput {
   stock: number | null;
 }
 
-export function createMarketService({ market, results, generateId, clock }: MarketDependencies) {
+export function createMarketService({ market, results, students, generateId, clock }: MarketDependencies) {
   return {
     listItems: () => market.listItems(),
     listOrders: () => market.listOrders(),
     subscribe: (listener: ChangeListener): Unsubscribe => market.subscribe(listener),
 
     async getStudentStars(studentId: string) {
-      const [allResults, allOrders] = await Promise.all([results.list(), market.listOrders()]);
-      return computeStudentStars(studentId, allResults, allOrders);
+      const [allResults, allOrders, studentList] = await Promise.all([
+        results.list(),
+        market.listOrders(),
+        students ? students.list() : Promise.resolve([]),
+      ]);
+      const currentStudent = studentList.find((s) => s.id === studentId);
+      return computeStudentStars(studentId, allResults, allOrders, currentStudent?.levelGroup);
     },
 
     async saveItem(input: NewMarketItemInput & { id?: string }): Promise<MarketItem> {
@@ -51,16 +65,18 @@ export function createMarketService({ market, results, generateId, clock }: Mark
     },
 
     async buyItem(studentId: string, itemId: string): Promise<MarketOrder> {
-      const [items, allResults, allOrders] = await Promise.all([
+      const [items, allResults, allOrders, studentList] = await Promise.all([
         market.listItems(),
         results.list(),
         market.listOrders(),
+        students ? students.list() : Promise.resolve([]),
       ]);
 
       const item = items.find((i) => i.id === itemId);
       if (!item) throw new AppError('ITEM_NOT_FOUND');
 
-      const stars = computeStudentStars(studentId, allResults, allOrders);
+      const currentStudent = studentList.find((s) => s.id === studentId);
+      const stars = computeStudentStars(studentId, allResults, allOrders, currentStudent?.levelGroup);
       if (!canAfford(stars.balance, item)) {
         throw new AppError('INSUFFICIENT_STARS');
       }
