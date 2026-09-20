@@ -1,6 +1,7 @@
 import { type Random, pickOne, randomInt } from '../random';
 import type { PracticeConfig, SectionId } from './config';
-import { classifyMove } from './soroban';
+import { classifyMove, describeMove } from './soroban';
+import { type Topic, allowedByTopic, getTopic, matchesTopic, topicMaxTotal } from './topics';
 
 export interface Problem {
   /** Signed rows; negative values are subtractions. */
@@ -8,7 +9,8 @@ export interface Problem {
   answer: number;
 }
 
-type ProblemShape = Pick<PracticeConfig, 'section' | 'rowCount'> & Partial<Pick<PracticeConfig, 'digitCount'>>;
+type ProblemShape = Pick<PracticeConfig, 'section' | 'rowCount'> &
+  Partial<Pick<PracticeConfig, 'digitCount' | 'topicId'>>;
 
 interface Draft {
   numbers: number[];
@@ -38,11 +40,16 @@ const OPENINGS: Record<Exclude<SectionId, 'miks'>, readonly number[]> = {
 export function generateProblem(shape: ProblemShape, random: Random): Problem {
   if (shape.rowCount < 2) throw new RangeError('A problem needs at least two rows');
 
-  const required = requiredHits(shape);
-  let best = draftProblem(shape, random);
+  const topic = getTopic(shape.topicId);
+  const digitCount = shape.digitCount ?? 1;
+  const draw = topic
+    ? () => draftTopicProblem(topic, digitCount, shape.rowCount, random)
+    : () => draftProblem(shape, random);
+  const required = topic ? requiredTopicHits(topic, shape.rowCount) : requiredHits(shape);
 
+  let best = draw();
   for (let attempt = 1; attempt < MAX_ATTEMPTS && best.hits < required; attempt++) {
-    const draft = draftProblem(shape, random);
+    const draft = draw();
     if (draft.hits > best.hits) best = draft;
   }
 
@@ -82,6 +89,115 @@ function draftProblem(shape: ProblemShape, random: Random): Draft {
   }
 
   return { numbers, hits };
+}
+
+/*
+ * Topic drills (see topics.ts) walk the same way as section drills, but every candidate row is read
+ * with `describeMove`, so the walk can tell the drilled move from the rows that merely set it up.
+ * Candidates are sampled rather than fully enumerated — the three-digit move list is 1800 long and
+ * a draft may be redone dozens of times.
+ */
+const CANDIDATE_LIMIT = 48;
+const CANDIDATE_TRIES = 200;
+const LOOKAHEAD_TRIES = 40;
+
+function draftTopicProblem(topic: Topic, requestedDigits: number, rowCount: number, random: Random): Draft {
+  const digitCount = topic.digitCounts.includes(requestedDigits) ? requestedDigits : topic.digitCounts[0];
+  const moves = MOVES_BY_DIGIT_COUNT[digitCount];
+  const maxTotal = topicMaxTotal(topic, digitCount);
+
+  const numbers = [topicOpening(digitCount, maxTotal, random)];
+  let total = numbers[0];
+  let hits = 0;
+
+  while (numbers.length < rowCount) {
+    const { matching, others } = scanMoves(topic, total, moves, maxTotal, random);
+    let value: number;
+
+    if (matching.length > 0) {
+      value = pickOne(random, matching);
+      hits++;
+    } else if (others.length > 0) {
+      // Prefer a row that brings the drilled move within reach on the next step.
+      const setups = others.filter((move) => hasTargetAfter(topic, total + move, moves, maxTotal, random));
+      value = pickOne(random, setups.length > 0 ? setups : others);
+    } else {
+      const escape = anyMove(total, moves, maxTotal, random);
+      if (escape === null) break;
+      value = escape;
+    }
+
+    numbers.push(value);
+    total += value;
+  }
+
+  return { numbers, hits };
+}
+
+function topicOpening(digitCount: number, maxTotal: number, random: Random): number {
+  const min = digitCount === 1 ? 1 : 10 ** (digitCount - 1);
+  const max = Math.min(10 ** digitCount - 1, maxTotal);
+  return randomInt(random, min, max);
+}
+
+function scanMoves(
+  topic: Topic,
+  total: number,
+  moves: readonly number[],
+  maxTotal: number,
+  random: Random,
+): { matching: number[]; others: number[] } {
+  const matching: number[] = [];
+  const others: number[] = [];
+
+  for (let tries = 0; tries < CANDIDATE_TRIES; tries++) {
+    if (matching.length + others.length >= CANDIDATE_LIMIT) break;
+    const value = pickOne(random, moves);
+    const next = total + value;
+    if (next < 0 || next > maxTotal) continue;
+
+    const facts = describeMove(total, value);
+    if (!allowedByTopic(topic, facts)) continue;
+    if (matchesTopic(topic, facts)) matching.push(value);
+    else others.push(value);
+  }
+
+  return { matching, others };
+}
+
+function hasTargetAfter(
+  topic: Topic,
+  total: number,
+  moves: readonly number[],
+  maxTotal: number,
+  random: Random,
+): boolean {
+  for (let tries = 0; tries < LOOKAHEAD_TRIES; tries++) {
+    const value = pickOne(random, moves);
+    const next = total + value;
+    if (next < 0 || next > maxTotal) continue;
+    const facts = describeMove(total, value);
+    if (allowedByTopic(topic, facts) && matchesTopic(topic, facts)) return true;
+  }
+  return false;
+}
+
+/** Last resort when the pool has no legal row left: keep the problem the requested length. */
+function anyMove(total: number, moves: readonly number[], maxTotal: number, random: Random): number | null {
+  for (let tries = 0; tries < CANDIDATE_TRIES; tries++) {
+    const value = pickOne(random, moves);
+    const next = total + value;
+    if (next >= 0 && next <= maxTotal) return value;
+  }
+  return null;
+}
+
+function requiredTopicHits(topic: Topic, rowCount: number): number {
+  const moves = rowCount - 1;
+  if (topic.target.crossing !== undefined || topic.target.technique === 'mix') return 1;
+  if (topic.target.technique === 'big10') return Math.max(1, Math.ceil(moves * 0.4));
+  if (topic.target.technique === 'small5') return Math.max(1, Math.ceil(moves * 0.5));
+  return Math.max(1, Math.ceil(moves * 0.6));
 }
 
 function requiredHits({ section, rowCount, digitCount = 1 }: ProblemShape): number {

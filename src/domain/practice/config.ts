@@ -1,8 +1,15 @@
+import { getTopic, isTopicId } from './topics';
+
 export const SECTION_IDS = ['formulasiz', 'kichik', 'katta', 'miks'] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 export interface PracticeConfig {
   section: SectionId;
+  /**
+   * Optional drill inside the section — one named topic from the curriculum (see topics.ts),
+   * e.g. `kichik+4` or `o100-6mf`. Without it the whole section is practised.
+   */
+  topicId?: string;
   /** How many numbers are flashed in one problem. */
   rowCount: number;
   /** Time from one number to the next, blank included (see `numberTiming`). */
@@ -34,6 +41,22 @@ export const DEFAULT_PRACTICE_CONFIG: PracticeConfig = {
   digitCount: 1,
 };
 
+/** Clamps `value` into a topic's own limits: its section, digit counts and shortest problem. */
+function applyTopic(config: PracticeConfig): PracticeConfig {
+  const topic = getTopic(config.topicId);
+  if (!topic) return { ...config, topicId: undefined };
+
+  const digitCount = topic.digitCounts.includes(config.digitCount) ? config.digitCount : topic.digitCounts[0];
+
+  return {
+    ...config,
+    topicId: topic.id,
+    section: topic.section,
+    digitCount,
+    rowCount: Math.max(config.rowCount, topic.minRowCount),
+  };
+}
+
 export function isSectionId(value: unknown): value is SectionId {
   return typeof value === 'string' && (SECTION_IDS as readonly string[]).includes(value);
 }
@@ -46,8 +69,9 @@ export function normalizePracticeConfig(value: unknown): PracticeConfig {
   const input = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
   const defaults = DEFAULT_PRACTICE_CONFIG;
 
-  return {
+  return applyTopic({
     section: isSectionId(input.section) ? input.section : defaults.section,
+    topicId: isTopicId(input.topicId) ? input.topicId : undefined,
     rowCount: clampToRange(input.rowCount, PRACTICE_LIMITS.rowCount, defaults.rowCount),
     secondsPerNumber: clampToRange(
       input.secondsPerNumber,
@@ -56,7 +80,7 @@ export function normalizePracticeConfig(value: unknown): PracticeConfig {
     ),
     problemCount: clampToRange(input.problemCount, PRACTICE_LIMITS.problemCount, defaults.problemCount),
     digitCount: clampToRange(input.digitCount, PRACTICE_LIMITS.digitCount, defaults.digitCount),
-  };
+  });
 }
 
 function clampToRange(value: unknown, { min, max, step }: Range, fallback: number): number {
