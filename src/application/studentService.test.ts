@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { createTestDependencies, fakeHasher } from '@/testing/fakes';
 import { createStudentService } from './studentService';
 
-const input = { firstName: ' Ali ', lastName: 'Valiyev', age: 8, username: 'Ali10', password: '1234' };
+const input = {
+  firstName: ' Ali ',
+  lastName: 'Valiyev',
+  age: 8,
+  avatarUrl: 'preset:boy_glasses',
+  username: 'Ali10',
+  password: '1234',
+};
 
 describe('studentService', () => {
   it('adds a student and returns the plain credentials once', async () => {
@@ -11,7 +18,7 @@ describe('studentService', () => {
 
     const { student, credentials } = await service.add(input);
 
-    expect(student).toMatchObject({ firstName: 'Ali', username: 'ali10' });
+    expect(student).toMatchObject({ firstName: 'Ali', username: 'ali10', avatarUrl: 'preset:boy_glasses' });
     expect(credentials).toEqual({ username: 'ali10', password: '1234' });
     expect((await deps.records.list())[0].passwordHash).not.toContain('1234$');
   });

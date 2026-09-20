@@ -75,8 +75,22 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
           password,
         },
       );
+      if (created?.id && (student.avatarUrl || student.birthYear || student.levelGroup)) {
+        const updates: Database['public']['Tables']['profiles']['Update'] = {};
+        if (student.avatarUrl) updates.avatar_url = student.avatarUrl;
+        if (student.birthYear) updates.birth_year = student.birthYear;
+        if (student.levelGroup) updates.level_group = student.levelGroup;
+        await client.from('profiles').update(updates).eq('id', created.id);
+      }
       changes.notify();
-      return created;
+      return created
+        ? {
+            ...created,
+            avatarUrl: student.avatarUrl ?? created.avatarUrl,
+            birthYear: student.birthYear ?? created.birthYear,
+            levelGroup: student.levelGroup ?? created.levelGroup,
+          }
+        : created;
     },
 
     async setPassword(id, password) {

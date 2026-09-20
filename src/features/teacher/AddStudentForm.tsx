@@ -2,8 +2,10 @@ import { type ChangeEvent, type FormEvent, useState } from 'react';
 import type { StudentCredentials } from '@/application/studentService';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useServices } from '@/shared/services/ServicesContext';
+import { AvatarPickerModal } from '@/shared/ui/AvatarPickerModal';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
+import { NameAvatar } from '@/shared/ui/NameAvatar';
 import { ErrorMessage } from '@/shared/ui/Notice';
 import { TextField } from '@/shared/ui/TextField';
 import styles from './Teacher.module.css';
@@ -16,6 +18,7 @@ const EMPTY_FORM = {
   age: '',
   birthYear: '',
   levelGroup: 'A' as LevelGroup,
+  avatarUrl: null as string | null,
   username: '',
   password: '',
 };
@@ -23,6 +26,8 @@ const EMPTY_FORM = {
 export function AddStudentForm({ onCreated }: { onCreated: (credentials: StudentCredentials) => void }) {
   const { students } = useServices();
   const [form, setForm] = useState(EMPTY_FORM);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [tempStudentId] = useState(() => crypto.randomUUID());
   const addStudent = useAsyncAction(students.add);
 
   const update = (field: keyof typeof EMPTY_FORM) => (event: ChangeEvent<HTMLInputElement>) =>
@@ -40,6 +45,7 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
       age: form.age.trim() === '' ? null : Number(form.age),
       birthYear: form.birthYear.trim() === '' ? null : Number(form.birthYear),
       levelGroup: form.levelGroup,
+      avatarUrl: form.avatarUrl,
       username: form.username,
       password: form.password,
     });
@@ -52,6 +58,30 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
   return (
     <Card title="Yangi o'quvchi qo'shish">
       <form onSubmit={handleSubmit} noValidate>
+        {/* Profil rasmi (Avatar) tanlash */}
+        <div className={styles.editAvatarRow} style={{ marginBottom: 14 }}>
+          <NameAvatar name={form.firstName || "O'quvchi"} avatarUrl={form.avatarUrl} size={48} />
+          <div>
+            <button
+              type="button"
+              className={styles.editAvatarBtn}
+              onClick={() => setShowAvatarPicker(true)}
+            >
+              🎨 Profil rasmini tanlash
+            </button>
+            {form.avatarUrl && (
+              <button
+                type="button"
+                className={styles.linkButton}
+                style={{ marginLeft: 10, color: 'var(--color-coral)' }}
+                onClick={() => setForm((curr) => ({ ...curr, avatarUrl: null }))}
+              >
+                Olib tashlash
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className={styles.formGrid}>
           <TextField label="Ism" value={form.firstName} onChange={update('firstName')} />
           <TextField label="Familiya" value={form.lastName} onChange={update('lastName')} />
@@ -102,6 +132,14 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
           </Button>
         </div>
       </form>
+      {showAvatarPicker && (
+        <AvatarPickerModal
+          studentId={tempStudentId}
+          currentAvatarUrl={form.avatarUrl}
+          onSelect={(newUrl) => setForm((curr) => ({ ...curr, avatarUrl: newUrl }))}
+          onClose={() => setShowAvatarPicker(false)}
+        />
+      )}
     </Card>
   );
 }

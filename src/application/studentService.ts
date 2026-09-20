@@ -28,6 +28,7 @@ export interface NewStudentInput extends StudentCredentials {
   age: number | null;
   birthYear?: number | null;
   levelGroup?: LevelGroup;
+  avatarUrl?: string | null;
 }
 
 export interface CreatedStudent {
@@ -81,6 +82,7 @@ export function createStudentService({ students, random }: StudentDependencies) 
           age: input.age,
           birthYear: input.birthYear ?? null,
           levelGroup: input.levelGroup ?? 'A',
+          avatarUrl: input.avatarUrl ?? null,
           username,
         },
         password,
