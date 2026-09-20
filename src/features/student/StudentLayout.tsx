@@ -56,7 +56,8 @@ export function StudentLayout() {
 
   // Desktop sidebar uchun to'liq bo'limlar
   const tabs = [
-    { to: '/student', label: '🧮 Mashq', end: true },
+    { to: '/student', label: '⚡ Mashq', end: true },
+    { to: '/student/abacus', label: '🧮 Abakus' },
     {
       to: '/student/competition',
       label: hasPendingCompetition ? '📝 Interaktiv vazifa •' : '📝 Interaktiv vazifa',
@@ -67,9 +68,10 @@ export function StudentLayout() {
     { to: '/student/profile', label: '👤 Profil' },
   ];
 
-  // Mobile Bottom Navigation Bar uchun eng asosiy 4 ta bo'lim
+  // Mobile Bottom Navigation Bar uchun eng asosiy bo'limlar
   const bottomNavItems: BottomNavItem[] = [
-    { to: '/student', label: 'Mashq', icon: '🧮', end: true },
+    { to: '/student', label: 'Mashq', icon: '⚡', end: true },
+    { to: '/student/abacus', label: 'Abakus', icon: '🧮' },
     { to: '/student/competition', label: 'Uy vazifasi', icon: '📝', badge: hasPendingCompetition },
     { to: '/student/leaderboard', label: 'Reyting', icon: '🏆' },
     { to: '/student/profile', label: 'Profil', icon: '👤' },

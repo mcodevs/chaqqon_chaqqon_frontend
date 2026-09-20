@@ -7,6 +7,7 @@ const DESKTOP_TABS = [
   { to: '/teacher/competition', label: '📝 Interaktiv vazifalar' },
   { to: '/teacher/stats', label: '📊 Statistika' },
   { to: '/teacher/classroom', label: '🏫 Sinf musobaqasi' },
+  { to: '/teacher/abacus', label: '🧮 Abakus' },
   { to: '/teacher/market', label: "🎁 Do'kon" },
   { to: '/teacher/leaderboard', label: '🏆 Reyting' },
   { to: '/teacher/profile', label: '👤 Profil' },

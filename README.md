@@ -98,7 +98,8 @@ Qatlamlar faqat ichkariga bog'lanadi: `presentation → application → domain`.
 ```
 src/
 ├── domain/            Toza biznes qoidalar — React, storage, brauzerdan mustaqil
-│   ├── practice/      soroban (harakat tasnifi), problem (generator), session (reducer + vaqt qoidalari)
+│   ├── practice/      soroban (harakat tasnifi), abacus (toshlar va formula qadamlari),
+│   │                  problem (generator), session (reducer + vaqt qoidalari)
 │   ├── classroom.ts competition.ts leaderboard.ts results.ts users.ts random.ts
 ├── application/       Use-case servislar, portlar (AuthGateway, repozitoriylar), AppError kodlari
 ├── infrastructure/
@@ -106,8 +107,8 @@ src/
 │   ├── supabase/      Supabase backend'i: Auth, Postgres (RLS), Realtime, Edge Function chaqiruvlari
 │   └── storage/ security/ shared/
 ├── app/               Composition root (backend tanlovi), provider'lar, router, guard'lar
-├── features/          Sahifalar: auth, teacher, student, practice, competition (onlayn xona va
-│                      classroom/ — sinf musobaqasi), leaderboard
+├── features/          Sahifalar: auth, teacher, student, practice, abacus (vizual soroban),
+│                      competition (onlayn xona va classroom/ — sinf musobaqasi), leaderboard
 ├── shared/            Qayta ishlatiladigan UI, hook'lar, i18n (xato matnlari), servis konteksti
 ├── styles/            Dizayn tokenlari va global stil
 └── testing/           Test uchun in-memory bog'liqliklar
@@ -132,6 +133,16 @@ supabase/
   (`ChaqqonChaqqon.jsx`) bilan barcha holatlarda ekvivalentligi testda tekshiriladi.
   Tasodifiylik `Random` orqali uzatiladi, shuning uchun testlar deterministik.
 
+- **Vizual abakus** (`features/abacus/`, `shared/ui/Soroban.tsx`) — bolaga sorobanning o'zini o'rgatadi.
+  Uch rejim bor: **Erkin** (toshlarni bosib son yasash, xonalar soni 3–7 tagacha), **Sonni ter**
+  (berilgan sonni abakusda terish, ketma-ket to'g'ri javoblar sanaladi) va **Formula** (misol
+  bosqichma-bosqich: har qadamda qaysi tosh qayerga ketishi ko'rsatiladi). Uchala rejim ham ustozda
+  (`/teacher/abacus` — proyektorda ko'rsatish uchun) va o'quvchida (`/student/abacus`) bir xil ishlaydi.
+- **Toshlar mantiqi** `domain/practice/abacus.ts` da: ustun = 5 lik tosh + 4 ta birlik tosh; toshni
+  bosganda barmoq bilan surgandek qo'shnilari ham siljiydi. `planMove(total, value)` esa harakatni
+  o'qituvchi tartibida qadamlarga ajratadi — ustun yetmasa, 10 ning juftligi olinadi va keyingi xonaga
+  o'tkazma yuboriladi, o'tkazma ham xuddi shunday rejalashtiriladi (95 + 8 kabi zanjir ham ishlaydi).
+  Qadamlar `soroban.ts` dagi ustun qoidalariga tayanadi, shuning uchun mashq bilan formula nomi bitta.
 - **Mashq sessiyasi** toza reducer'da (`domain/practice/session.ts`) boshqariladi. Sessiyada bir yoki bir
   nechta "lane" bo'ladi: oddiy mashqda bitta, sinf musobaqasida har bir o'quvchiga bittadan. Barcha lane'lar
   bir vaqtda o'tadi. Tartib: "Tayyor turing…" (0,9 s), keyin sonlar, so'ng javob. Oddiy mashqda to'g'ri

@@ -1,0 +1,230 @@
+/* ---------- Page ---------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.intro {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+/* The abacus is the subject of every mode, so it always sits centred and alone. */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* ---------- Readouts ---------- */
+
+.readout {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-hero);
+  line-height: 1;
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.caption {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Legend ---------- */
+
+.legend {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-soft);
+}
+
+.legendSummary {
+  font: var(--text-body);
+  color: var(--content-primary);
+  cursor: pointer;
+}
+
+.legendList {
+  margin: var(--space-3) 0 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+/* ---------- Number drill ---------- */
+
+.target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.targetNumber {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-hero);
+  line-height: 1;
+  color: var(--brand-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.solved {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font: var(--text-body-lg);
+}
+
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--surface-soft);
+  color: var(--content-secondary);
+  font: var(--text-caption);
+}
+
+.sample {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ---------- Formula tutor ---------- */
+
+.moves {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.move {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-soft);
+  color: var(--content-tertiary);
+  font: var(--text-body-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.moveDone {
+  color: var(--content-secondary);
+}
+
+/* The row being worked on — the one the beads on screen are moving for. */
+.moveCurrent {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--space-8) + var(--space-2));
+  text-align: center;
+}
+
+.formula {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-h3);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepText {
+  margin: 0;
+  font: var(--text-body-lg);
+  color: var(--content-primary);
+  max-width: 34ch;
+}
+
+.answer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-h2);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
+/* ---------- Setup ---------- */
+
+.fieldBlock {
+  margin-bottom: var(--space-4);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: var(--size-body);
+  font-weight: 700;
+  color: var(--content-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--size-body);
+}

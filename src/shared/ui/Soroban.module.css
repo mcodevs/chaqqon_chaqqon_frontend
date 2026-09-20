@@ -1,0 +1,171 @@
+/*
+ * A soroban drawn with the grid: one column per rod, three bands (heaven, bar, earth).
+ * Everything is sized from `--rod-w`, so the same markup works on a phone, on a card
+ * and on a projector. Beads move with `transform`, which is what makes them feel real.
+ */
+
+.frame {
+  --rod-w: clamp(34px, 9vw, 52px);
+  --unit: calc(var(--rod-w) * 0.66);
+  --bar-h: max(6px, calc(var(--unit) * 0.28));
+
+  display: inline-block;
+  padding: calc(var(--unit) * 0.45);
+  border-radius: var(--radius-md);
+  background: var(--abacus-frame);
+  border: 2px solid var(--abacus-frame-edge);
+  box-shadow: var(--elevation-2);
+  max-width: 100%;
+}
+
+.sm {
+  --rod-w: clamp(26px, 7vw, 38px);
+}
+
+.lg {
+  --rod-w: clamp(38px, 11vw, 64px);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--rods), var(--rod-w));
+  grid-template-rows: calc(var(--unit) * 2) var(--bar-h) calc(var(--unit) * 5);
+  background: var(--abacus-field);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* ---------- Rod bands ---------- */
+
+.cell {
+  position: relative;
+  transition: background var(--motion-base) var(--ease-standard);
+}
+
+.cell[data-highlight='true'] {
+  background: var(--brand-primary-soft);
+}
+
+/* The rod itself: a thin line the beads slide on. */
+.rail {
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  width: max(2px, calc(var(--rod-w) * 0.07));
+  transform: translateX(-50%);
+  background: var(--abacus-rod);
+}
+
+.earthCell .rail {
+  /* The rod stops short of the frame, the way a real one is seated. */
+  inset-block: 0 calc(var(--unit) * 0.12);
+}
+
+/* ---------- The reckoning bar ---------- */
+
+.bar {
+  grid-column: 1 / -1;
+  position: relative;
+  background: var(--abacus-bar);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%),
+    inset 0 -1px 0 rgb(0 0 0 / 22%);
+}
+
+/* Unit marks every third rod, as on a real soroban. */
+.dot {
+  position: absolute;
+  top: 50%;
+  width: max(3px, calc(var(--rod-w) * 0.1));
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  background: var(--abacus-label);
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
+}
+
+/* ---------- Beads ---------- */
+
+.bead {
+  position: absolute;
+  left: 50%;
+  width: calc(var(--rod-w) * 0.88);
+  height: var(--unit);
+  padding: 0;
+  border: 0;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--bead-color) 82%, white) 0%,
+    var(--bead-color) 48%,
+    color-mix(in srgb, var(--bead-color) 78%, black) 100%
+  );
+  /* A flattened bicone — the shape a soroban bead actually has. */
+  clip-path: polygon(50% 0%, 88% 26%, 100% 50%, 88% 74%, 50% 100%, 12% 74%, 0% 50%, 12% 26%);
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 28%));
+  transition: transform var(--motion-base) var(--ease-standard);
+  --bead-color: var(--abacus-bead);
+}
+
+.bead[data-active='true'] {
+  --bead-color: var(--abacus-bead-active);
+}
+
+button.bead {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.bead:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 1px;
+  clip-path: none;
+  border-radius: var(--radius-sm);
+}
+
+/* The 5-bead rests at the top and comes down to the bar to be counted. */
+.heavenBead {
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.heavenBead[data-active='true'] {
+  transform: translate(-50%, var(--unit));
+}
+
+/* Earth bead `--i` rests one slot below its counted position. */
+.earthBead {
+  top: calc((var(--i) + 1) * var(--unit));
+  transform: translateX(-50%);
+}
+
+.earthBead[data-active='true'] {
+  transform: translate(-50%, calc(var(--unit) * -1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bead {
+    transition: none;
+  }
+}
+
+/* ---------- Digit readout ---------- */
+
+.digits {
+  display: grid;
+  grid-template-columns: repeat(var(--rods), var(--rod-w));
+  margin-top: calc(var(--unit) * 0.3);
+}
+
+.digit {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-body);
+  color: var(--abacus-label);
+  opacity: 0.8;
+}
+
+.digit[data-highlight='true'] {
+  opacity: 1;
+  color: var(--abacus-bead-active);
+}

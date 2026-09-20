@@ -120,6 +120,18 @@
   --medal-silver: #9aa0ab;
   --medal-bronze: #b9743c;
 
+  /* ---------- Colour: abacus ---------- */
+  /* Wood and beads are illustration, like the mascot digits — not UI colours. */
+  --abacus-frame: #8a5a33;
+  --abacus-frame-edge: #6b4324;
+  --abacus-field: #fbf3e7;
+  --abacus-rod: #cdb094;
+  --abacus-bar: #7a4f2c;
+  --abacus-bead: #e0c9a8;
+  --abacus-bead-active: #e2892c;
+  /* Digits and unit marks printed on the wood. */
+  --abacus-label: #f7ecdc;
+
   /* ---------- Elevation ---------- */
   --elevation-0: none;
   --elevation-1: 0 1px 2px rgba(36, 31, 43, 0.05);
@@ -178,6 +190,15 @@
     --medal-silver: #a9b0bc;
     --medal-bronze: #c98d5c;
 
+    --abacus-frame: #4a3626;
+    --abacus-frame-edge: #2b1e14;
+    --abacus-field: #241c16;
+    --abacus-rod: #6a5442;
+    --abacus-bar: #5d4531;
+    --abacus-bead: #6d5a46;
+    --abacus-bead-active: #eaa64f;
+    --abacus-label: #d3bfa6;
+
     --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4);
     --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.45);
     --elevation-3: 0 12px 28px rgba(0, 0, 0, 0.5);
@@ -229,6 +250,15 @@
   --medal-gold: #e8bb55;
   --medal-silver: #a9b0bc;
   --medal-bronze: #c98d5c;
+
+  --abacus-frame: #4a3626;
+  --abacus-frame-edge: #2b1e14;
+  --abacus-field: #241c16;
+  --abacus-rod: #6a5442;
+  --abacus-bar: #5d4531;
+  --abacus-bead: #6d5a46;
+  --abacus-bead-active: #eaa64f;
+  --abacus-label: #d3bfa6;
 
   --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.45);

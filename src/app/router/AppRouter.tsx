@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+import { AbacusPage } from '@/features/abacus/AbacusPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { ClassroomPage } from '@/features/competition/classroom/ClassroomPage';
 import { StudentCompetitionPage } from '@/features/competition/StudentCompetitionPage';
@@ -41,6 +42,7 @@ export function AppRouter() {
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="competition" element={<TeacherCompetitionPage />} />
         <Route path="classroom" element={<ClassroomPage />} />
+        <Route path="abacus" element={<AbacusPage />} />
         <Route path="market" element={<TeacherMarketPage />} />
         <Route path="profile" element={<TeacherProfilePage />} />
       </Route>
@@ -54,6 +56,7 @@ export function AppRouter() {
         }
       >
         <Route index element={<PracticePage />} />
+        <Route path="abacus" element={<AbacusPage />} />
         <Route path="results" element={<ResultsPage />} />
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="competition" element={<StudentCompetitionPage />} />

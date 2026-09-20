@@ -29,3 +29,6 @@ supabase/.branches
 .vercel
 .env*
 !.env.example
+
+# Lokal sinov hisoblari — parollar hech qachon repozitoriyga tushmaydi
+test-accounts.local.md

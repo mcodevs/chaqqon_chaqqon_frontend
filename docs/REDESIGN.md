@@ -98,6 +98,7 @@ olayotganini bilmaydi.
 | `--info` / `--info-soft` / `--info-content`          | `#2d77c9` / `#e7f1fc` / `#1f5795` | ...                   | Neytral ma'lumot                            |
 | `--data-1…5`                                         | violet/ko'k/yashil/amber/pushti   | yoritilgan variantlar | Diagramma, bo'lim ranglari                  |
 | `--medal-gold/silver/bronze`                         | `#e0a32b` / `#9aa0ab` / `#b9743c` | yoritilgan            | Reyting medallari                           |
+| `--abacus-*`                                         | yog'och, suyak, amber             | quyuq yog'och         | Vizual soroban (illyustratsiya palitrasi)   |
 
 **Kontrast (o'lchangan, WCAG AA = 4.5):**
 
