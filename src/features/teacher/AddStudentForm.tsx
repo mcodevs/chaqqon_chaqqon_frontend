@@ -15,7 +15,6 @@ import { LEVEL_GROUPS, LEVEL_META, type LevelGroup } from '@/domain/users';
 const EMPTY_FORM = {
   firstName: '',
   lastName: '',
-  age: '',
   birthYear: '',
   levelGroup: 'A' as LevelGroup,
   avatarUrl: null as string | null,
@@ -42,7 +41,7 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
     const created = await addStudent.run({
       firstName: form.firstName,
       lastName: form.lastName,
-      age: form.age.trim() === '' ? null : Number(form.age),
+      age: null,
       birthYear: form.birthYear.trim() === '' ? null : Number(form.birthYear),
       levelGroup: form.levelGroup,
       avatarUrl: form.avatarUrl,
@@ -85,13 +84,6 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
         <div className={styles.formGrid}>
           <TextField label="Ism" value={form.firstName} onChange={update('firstName')} />
           <TextField label="Familiya" value={form.lastName} onChange={update('lastName')} />
-          <TextField
-            label="Yoshi"
-            type="number"
-            inputMode="numeric"
-            value={form.age}
-            onChange={update('age')}
-          />
           <TextField
             label="Tug'ilgan yili"
             type="number"

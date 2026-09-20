@@ -149,7 +149,6 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                 <div className={styles.info}>
                   <div className={styles.name}>
                     {fullName(student)}
-                    {student.age !== null && `, ${student.age} yosh`}
                     {student.birthYear && ` (${student.birthYear}-yil)`}
                     <span className={styles.badgeLevel} style={{ marginLeft: 6 }}>
                       {student.levelGroup ?? 'A'} toifa

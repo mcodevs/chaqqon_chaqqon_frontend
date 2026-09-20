@@ -75,8 +75,7 @@ export function StudentProfilePage() {
           <h2 className={styles.fullName}>{fullName}</h2>
           <div className={styles.roleBadgeGroup}>
             <span className={`${styles.badge} ${styles.badgeRole}`}>
-              {student.age ? `${student.age} yosh` : "O'quvchi"}
-              {student.birthYear && ` · ${student.birthYear}-yil`}
+              {student.birthYear ? `${student.birthYear}-yil` : "O'quvchi"}
             </span>
             {student.levelGroup && (
               <span className={`${styles.badge} ${styles.badgeLevel}`}>

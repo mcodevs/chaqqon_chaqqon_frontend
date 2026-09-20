@@ -19,7 +19,6 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
   const { students } = useServices();
   const [firstName, setFirstName] = useState(student.firstName);
   const [lastName, setLastName] = useState(student.lastName ?? '');
-  const [age, setAge] = useState(student.age !== null ? String(student.age) : '');
   const [birthYear, setBirthYear] = useState(student.birthYear ? String(student.birthYear) : '');
   const [levelGroup, setLevelGroup] = useState<LevelGroup>(student.levelGroup ?? 'A');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(student.avatarUrl ?? null);
@@ -35,7 +34,6 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
     const success = await updateProfile.run(student.id, {
       firstName: cleanFirstName,
       lastName: lastName.trim(),
-      age: age.trim() === '' ? null : Number(age),
       birthYear: birthYear.trim() === '' ? null : Number(birthYear),
       levelGroup,
       avatarUrl,
@@ -78,13 +76,6 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
           onChange={(e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
         />
         <TextField
-          label="Yoshi"
-          type="number"
-          inputMode="numeric"
-          value={age}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setAge(e.target.value)}
-        />
-        <TextField
           label="Tug'ilgan yili"
           type="number"
           inputMode="numeric"
@@ -92,7 +83,7 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
           value={birthYear}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setBirthYear(e.target.value)}
         />
-        <label className={styles.fieldLabel} style={{ gridColumn: 'span 2' }}>
+        <label className={styles.fieldLabel}>
           <span>Bilim darajasi (Toifa)</span>
           <select
             value={levelGroup}
