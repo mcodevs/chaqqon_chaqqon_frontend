@@ -17,6 +17,7 @@ import { useSession } from '@/shared/session/SessionContext';
 import { AvatarPickerModal } from '@/shared/ui/AvatarPickerModal';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
 import { useCurrentStudent } from './CurrentStudentContext';
+import { ThemeToggle } from '@/shared/theme/ThemeToggle';
 import styles from './StudentProfilePage.module.css';
 
 export function StudentProfilePage() {
@@ -79,13 +80,12 @@ export function StudentProfilePage() {
             </span>
             {student.levelGroup && (
               <span className={`${styles.badge} ${styles.badgeLevel}`}>
-                {LEVEL_META[student.levelGroup]?.label ?? `${student.levelGroup} toifa`} ({LEVEL_META[student.levelGroup]?.formula})
+                {LEVEL_META[student.levelGroup]?.label ?? `${student.levelGroup} toifa`} (
+                {LEVEL_META[student.levelGroup]?.formula})
               </span>
             )}
             {access && (
-              <span
-                className={`${styles.badge} ${access.open ? styles.badgeActive : styles.badgeInactive}`}
-              >
+              <span className={`${styles.badge} ${access.open ? styles.badgeActive : styles.badgeInactive}`}>
                 {access.open ? '✓ Faol hisob' : '✕ Toʻlov muddati oʻtgan'}
               </span>
             )}
@@ -153,9 +153,7 @@ export function StudentProfilePage() {
         <div className={styles.menuCard}>
           <Link to="/student/results" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
-              <div className={styles.menuIconWrap} style={{ background: '#e0f2fe', color: '#0284c7' }}>
-                📈
-              </div>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconInfo}`}>📈</div>
               <div className={styles.menuItemText}>
                 <span className={styles.menuItemTitle}>Natijalarim tarixi</span>
                 <span className={styles.menuItemDesc}>Kunlik tahlil, foizlar va oʻsish grafigi</span>
@@ -168,9 +166,7 @@ export function StudentProfilePage() {
 
           <Link to="/student/market" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
-              <div className={styles.menuIconWrap} style={{ background: '#fef3c7', color: '#d97706' }}>
-                🎁
-              </div>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconWarning}`}>🎁</div>
               <div className={styles.menuItemText}>
                 <span className={styles.menuItemTitle}>Sovgʻalar doʻkoni</span>
                 <span className={styles.menuItemDesc}>Yulduzchalarni ajoyib sovgʻalarga almashtiring</span>
@@ -183,9 +179,7 @@ export function StudentProfilePage() {
 
           <Link to="/student/leaderboard" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
-              <div className={styles.menuIconWrap} style={{ background: '#fdf2f8', color: '#db2777' }}>
-                🏆
-              </div>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🏆</div>
               <div className={styles.menuItemText}>
                 <span className={styles.menuItemTitle}>Peshqadamlar reytingi</span>
                 <span className={styles.menuItemDesc}>Guruhdagi oʻquvchilar orasidagi oʻrningiz</span>
@@ -198,6 +192,16 @@ export function StudentProfilePage() {
         </div>
       </section>
 
+      {/* Ko'rinish sozlamasi — mobilda sidebar ko'rinmagani uchun shu yerda ham turadi */}
+      <section className={styles.sectionBlock}>
+        <div className={styles.sectionTitle}>Koʻrinish</div>
+        <div className={styles.menuCard}>
+          <div className={styles.themeRow}>
+            <ThemeToggle />
+          </div>
+        </div>
+      </section>
+
       {/* 5. To'lov va hisob ma'lumotlari */}
       {access && (
         <section className={styles.sectionBlock}>
@@ -205,9 +209,7 @@ export function StudentProfilePage() {
           <div className={styles.menuCard}>
             <div className={styles.menuItem}>
               <div className={styles.menuItemLeft}>
-                <div className={styles.menuIconWrap} style={{ background: '#ecfdf5', color: '#059669' }}>
-                  💳
-                </div>
+                <div className={`${styles.menuIconWrap} ${styles.menuIconSuccess}`}>💳</div>
                 <div className={styles.menuItemText}>
                   <span className={styles.menuItemTitle}>
                     {access.paidUntil ? `Toʻlangan: ${formatDate(access.paidUntil)} gacha` : 'Muddatsiz'}

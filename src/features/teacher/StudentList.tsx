@@ -9,6 +9,7 @@ import { useWrittenHomework } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
+import { MenuButton } from '@/shared/ui/MenuButton';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
 import { EmptyState, ErrorMessage } from '@/shared/ui/Notice';
 import { EditStudentForm } from './EditStudentForm';
@@ -28,6 +29,12 @@ function accessLabel({ open, paidUntil }: StudentAccess): string {
     ? `${formatCalendarDate(paidUntil)} gacha ochiq`
     : `Yopiq · ${formatCalendarDate(paidUntil)} kuni tugagan`;
 }
+
+const HOMEWORK_OPTIONS = [
+  { status: 'bajardi' as HomeworkStatus, label: 'Bajardi', icon: '✓', activeClass: 'hwDone' },
+  { status: 'chala' as HomeworkStatus, label: 'Chala', icon: '~', activeClass: 'hwPartial' },
+  { status: 'bajarmadi' as HomeworkStatus, label: 'Bajarmadi', icon: '✕', activeClass: 'hwMissed' },
+];
 
 function getStudentAge(birthYear?: number | null, age?: number | null): number | null {
   if (birthYear && birthYear > 1900) {
@@ -142,7 +149,13 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
       <ErrorMessage>
         {recordPayment.error ?? cancelPayment.error ?? resetPassword.error ?? removeStudent.error}
       </ErrorMessage>
-      {filteredStudents.length === 0 && <EmptyState>O'quvchilar topilmadi.</EmptyState>}
+      {filteredStudents.length === 0 && (
+        <EmptyState icon="🔍" title="O'quvchi topilmadi">
+          {students.length === 0
+            ? "Hali o'quvchi qo'shilmagan. Yuqoridagi tugma orqali birinchisini qo'shing."
+            : 'Tanlangan filtrga mos o‘quvchi yo‘q — filtrni kengaytiring.'}
+        </EmptyState>
+      )}
       <ul className={styles.list}>
         {filteredStudents.map((student) => {
           const access = accessOf(payments, student.id, today);
@@ -156,27 +169,32 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
             <li key={student.id} className={styles.item}>
               <div className={styles.row}>
                 <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={44} />
+
                 <div className={styles.info}>
                   <div className={styles.name}>
-                    {fullName(student)}
-                    {studentAge !== null && `, ${studentAge} yosh`}
-                    <span className={styles.badgeLevel} style={{ marginLeft: 6 }}>
-                      {student.levelGroup ?? 'A'} toifa
+                    <span className={styles.nameText}>
+                      {fullName(student)}
+                      {studentAge !== null && `, ${studentAge} yosh`}
                     </span>
+                    <span className={styles.badgeLevel}>{student.levelGroup ?? 'A'} toifa</span>
                   </div>
+
                   <div className={styles.meta}>
-                    login: <b>{student.username}</b> ·{' '}
-                    <span className={styles.lastActiveText}>
+                    <span>
+                      login: <b>{student.username}</b>
+                    </span>
+                    <span className={lastActive.isOnline ? styles.metaOnline : undefined}>
                       {lastActive.isOnline && <span className={styles.onlineIndicator} />}
-                      <span style={{ color: lastActive.isOnline ? '#059669' : '#64748b' }}>
-                        {lastActive.text}
-                      </span>
+                      {lastActive.text}
                     </span>
                   </div>
-                  <div
-                    className={`${styles.access} ${access.open ? styles.accessOpen : styles.accessClosed}`}
-                  >
-                    {accessLabel(access)}
+
+                  <div className={styles.statusRow}>
+                    <span
+                      className={`${styles.access} ${access.open ? styles.accessOpen : styles.accessClosed}`}
+                    >
+                      {accessLabel(access)}
+                    </span>
                     {access.latest && (
                       <button
                         type="button"
@@ -188,50 +206,33 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                       </button>
                     )}
                   </div>
-
-                  {/* Yozma uy vazifasi statusini tezkor belgilash */}
-                  <div className={styles.homeworkCheckSection}>
-                    <span className={styles.homeworkLabel}>Yozma uy vazifasi:</span>
-                    <div className={styles.hwButtonGroup}>
-                      <button
-                        type="button"
-                        className={`${styles.hwBtn} ${studentHw?.status === 'bajardi' ? styles.hwBtnActiveBajardi : ''}`}
-                        onClick={() => handleHomeworkStatus(student.id, 'bajardi')}
-                      >
-                        ✓ Bajardi
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.hwBtn} ${studentHw?.status === 'chala' ? styles.hwBtnActiveChala : ''}`}
-                        onClick={() => handleHomeworkStatus(student.id, 'chala')}
-                      >
-                        ⚠ Chala
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.hwBtn} ${studentHw?.status === 'bajarmadi' ? styles.hwBtnActiveBajarmadi : ''}`}
-                        onClick={() => handleHomeworkStatus(student.id, 'bajarmadi')}
-                      >
-                        ✕ Bajarmadi
-                      </button>
-                    </div>
-                  </div>
                 </div>
+
+                {/* Bugungi yozma uy vazifasi — bir marta bosiladigan uchta holat */}
+                <div className={styles.homework} role="group" aria-label="Yozma uy vazifasi">
+                  {HOMEWORK_OPTIONS.map((option) => {
+                    const active = studentHw?.status === option.status;
+                    return (
+                      <button
+                        key={option.status}
+                        type="button"
+                        aria-pressed={active}
+                        title={`Yozma uy vazifasi: ${option.label}`}
+                        className={`${styles.hwBtn} ${active ? styles[option.activeClass] : ''}`}
+                        onClick={() => handleHomeworkStatus(student.id, option.status)}
+                      >
+                        <span aria-hidden="true">{option.icon}</span>
+                        <span className={styles.hwLabel}>{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className={styles.rowActions}>
                   <Button
                     size="sm"
-                    variant="soft"
-                    tone="blue"
-                    onClick={() => {
-                      setEditingId(editing ? null : student.id);
-                      setPayingId(null);
-                    }}
-                  >
-                    {editing ? 'Yopish' : 'Tahrirlash'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    tone="green"
+                    variant="secondary"
+                    tone="success"
                     aria-expanded={paying}
                     onClick={() => {
                       setPayingId(paying ? null : student.id);
@@ -240,12 +241,33 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                   >
                     To'ladi
                   </Button>
-                  <Button size="sm" variant="soft" tone="blue" onClick={() => handleReset(student)}>
-                    Yangi parol
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    aria-expanded={editing}
+                    onClick={() => {
+                      setEditingId(editing ? null : student.id);
+                      setPayingId(null);
+                    }}
+                  >
+                    {editing ? 'Yopish' : 'Tahrirlash'}
                   </Button>
-                  <Button size="sm" variant="soft" tone="coral" onClick={() => handleRemove(student)}>
-                    O'chirish
-                  </Button>
+                  <MenuButton
+                    label={`${student.firstName} uchun boshqa amallar`}
+                    actions={[
+                      {
+                        label: 'Yangi parol',
+                        icon: '🔑',
+                        onSelect: () => void handleReset(student),
+                      },
+                      {
+                        label: "O'chirish",
+                        icon: '🗑',
+                        danger: true,
+                        onSelect: () => handleRemove(student),
+                      },
+                    ]}
+                  />
                 </div>
               </div>
               {paying && (

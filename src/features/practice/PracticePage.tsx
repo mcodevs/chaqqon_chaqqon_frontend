@@ -46,9 +46,9 @@ export function PracticePage() {
 
   if (!run) {
     return (
-      <Card title="Bo'limni tanlang">
+      <Card title="Mashqni sozlang">
         <PracticeConfigFields value={config} onChange={setConfig} />
-        <Button tone="coral" block onClick={start}>
+        <Button size="lg" block onClick={start}>
           Boshlash!
         </Button>
       </Card>
@@ -65,7 +65,7 @@ export function PracticePage() {
         <>
           {saved && <div className={styles.summaryNote}>Natija saqlandi ✓</div>}
           <ErrorMessage>{recordResult.error}</ErrorMessage>
-          <Button tone="violet" block onClick={() => setRun(null)}>
+          <Button size="lg" block onClick={() => setRun(null)}>
             Yana mashq qilish
           </Button>
         </>

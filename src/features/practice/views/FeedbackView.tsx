@@ -16,7 +16,7 @@ export function FeedbackView({ attempt, isLast, onNext }: FeedbackViewProps) {
         {attempt.isCorrect ? "To'g'ri! 🎉" : "Noto'g'ri"}
       </div>
       {!attempt.isCorrect && <ColumnSum problem={attempt.problem} userAnswer={attempt.answer} />}
-      <Button tone="blue" block autoFocus onClick={onNext} className={styles.nextButton}>
+      <Button size="lg" block autoFocus onClick={onNext} className={styles.nextButton}>
         {isLast ? 'Yakunlash' : 'Keyingi misol'}
       </Button>
     </div>

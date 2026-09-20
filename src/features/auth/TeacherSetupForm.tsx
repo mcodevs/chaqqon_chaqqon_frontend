@@ -46,7 +46,7 @@ export function TeacherSetupForm({ onAuthenticated }: { onAuthenticated: (sessio
         onChange={(e) => setPasswordConfirmation(e.target.value)}
       />
       <ErrorMessage>{register.error}</ErrorMessage>
-      <Button type="submit" block tone="violet" disabled={register.pending}>
+      <Button type="submit" size="lg" block disabled={register.pending}>
         Hisob yaratish
       </Button>
     </form>

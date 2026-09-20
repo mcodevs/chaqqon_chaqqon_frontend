@@ -52,7 +52,7 @@ export function LoginForm({ onAuthenticated }: { onAuthenticated: (session: Sess
         onChange={(e) => setPassword(e.target.value)}
       />
       <ErrorMessage>{login.error}</ErrorMessage>
-      <Button type="submit" block tone={role === 'teacher' ? 'violet' : 'coral'} disabled={login.pending}>
+      <Button type="submit" size="lg" block disabled={login.pending}>
         Kirish
       </Button>
     </form>

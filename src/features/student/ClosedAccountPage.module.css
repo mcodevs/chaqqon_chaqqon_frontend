@@ -3,19 +3,19 @@
 }
 
 .icon {
-  font-size: 44px;
+  font-size: var(--size-display);
   line-height: 1;
   margin-bottom: var(--space-2);
 }
 
 .title {
   margin: 0 0 var(--space-2);
-  font-size: 22px;
+  font-size: var(--size-h2);
 }
 
 .text {
   margin: 0 0 var(--space-2);
-  color: var(--color-ink-soft);
+  color: var(--content-secondary);
   font-weight: 600;
 }
 

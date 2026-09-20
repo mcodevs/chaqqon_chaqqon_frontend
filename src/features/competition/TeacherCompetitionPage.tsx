@@ -27,9 +27,7 @@ export function TeacherCompetitionPage() {
   if (!students || !payments || !activeRooms) return <LoadingScreen />;
 
   const closedIds = closedStudentIds(students, payments, today);
-  const busyIds = new Set(
-    activeRooms.flatMap((snap) => (snap.room ? snap.room.participantIds : [])),
-  );
+  const busyIds = new Set(activeRooms.flatMap((snap) => (snap.room ? snap.room.participantIds : [])));
 
   const isFormOpen = activeRooms.length === 0 || showSetup;
 
@@ -38,9 +36,7 @@ export function TeacherCompetitionPage() {
       {activeRooms.length > 0 && !showSetup && (
         <div className={styles.teacherHeader}>
           <span className={styles.hint}>Faol interaktiv vazifalar: {activeRooms.length} ta</span>
-          <Button tone="pink" onClick={() => setShowSetup(true)}>
-            + Yangi vazifa xonasi ochish
-          </Button>
+          <Button onClick={() => setShowSetup(true)}>+ Yangi vazifa xonasi ochish</Button>
         </div>
       )}
 
@@ -73,4 +69,3 @@ export function TeacherCompetitionPage() {
     </div>
   );
 }
-

@@ -2,26 +2,51 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
   text-align: left;
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-muted);
+  font: var(--text-caption);
+  color: var(--content-secondary);
 }
 
 .input {
   width: 100%;
-  border: 2px solid var(--color-line);
-  border-radius: 12px;
-  padding: 11px 13px;
-  font-size: 15px;
-  background: var(--color-surface);
+  min-height: var(--touch-target);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  font: var(--text-body-lg);
+  color: var(--content-primary);
+  background: var(--surface-card);
+  outline: none;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+.input::placeholder {
+  color: var(--content-tertiary);
+  font-weight: 600;
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--content-tertiary);
+}
+
+/* The ring doubles the border instead of replacing it, so the field never jumps. */
+.input:focus-visible {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 22%, transparent);
   outline: none;
 }
 
-.input:focus {
-  border-color: var(--color-violet);
+.input:disabled {
+  background: var(--surface-soft);
+  color: var(--content-disabled);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--danger);
 }

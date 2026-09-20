@@ -1,7 +1,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -11,9 +11,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: var(--color-surface-soft);
-  border-radius: 16px;
-  padding: 10px 12px;
+  background: var(--surface-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
 }
 
 .rank {
@@ -25,24 +25,24 @@
   height: 26px;
   border-radius: 50%;
   font-weight: 800;
-  font-size: 13px;
-  background: var(--color-line);
-  color: var(--color-muted);
+  font-size: var(--size-body);
+  background: var(--border-subtle);
+  color: var(--content-tertiary);
 }
 
 .gold {
   background: var(--medal-gold);
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 .silver {
   background: var(--medal-silver);
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 .bronze {
   background: var(--medal-bronze);
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 .name {
@@ -55,14 +55,14 @@
 }
 
 .nameSub {
-  font-size: 11px;
-  color: var(--color-subtle);
+  font-size: var(--size-caption);
+  color: var(--content-tertiary);
   font-weight: 700;
 }
 
 .score {
   font-family: var(--font-display);
   font-weight: 800;
-  color: var(--color-green);
-  font-size: 16px;
+  color: var(--success);
+  font-size: var(--size-body-lg);
 }

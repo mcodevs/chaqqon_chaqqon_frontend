@@ -4,7 +4,8 @@ import { useServices } from '@/shared/services/ServicesContext';
 import { useMarketItems, useMarketOrders, useStudentStars } from '@/shared/services/queries';
 import { canAfford, type MarketItem, type MarketOrder } from '@/domain/market';
 import { toErrorMessage } from '@/shared/i18n/errorMessages';
-import { LoadingScreen } from '@/shared/ui/LoadingScreen';
+import { Skeleton } from '@/shared/ui/LoadingScreen';
+import { EmptyState } from '@/shared/ui/Notice';
 import styles from './StudentMarketPage.module.css';
 
 export function StudentMarketPage() {
@@ -28,7 +29,9 @@ export function StudentMarketPage() {
 
     try {
       await market.buyItem(student.id, item.id);
-      setSuccessMessage(`Tabriklaymiz! "${item.title}" muvaffaqiyatli xarid qilindi. O'qituvchingiz yaqin orada topshiradi!`);
+      setSuccessMessage(
+        `Tabriklaymiz! "${item.title}" muvaffaqiyatli xarid qilindi. O'qituvchingiz yaqin orada topshiradi!`,
+      );
     } catch (err: unknown) {
       setErrorMessage(toErrorMessage(err));
     } finally {
@@ -44,7 +47,17 @@ export function StudentMarketPage() {
   }, [orders, student.id]);
 
   if (!items || !orders) {
-    return <LoadingScreen />;
+    // Keeps the page's own shape — banner, then the gift grid — while the data lands.
+    return (
+      <div className={styles.container}>
+        <Skeleton height={140} radius="var(--radius-lg)" />
+        <div className={styles.grid}>
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={index} height={220} radius="var(--radius-lg)" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -56,7 +69,8 @@ export function StudentMarketPage() {
           <div>
             <h1 className={styles.title}>Yutuqlar Do'koni</h1>
             <p className={styles.subtitle}>
-              Interaktiv vazifalarda qatnashing, har 40 ta to'g'ri ishlangan misol uchun yulduzchalar to'plang va ajoyib sovg'alarga ega bo'ling!
+              Interaktiv vazifalarda qatnashing, har 40 ta to'g'ri ishlangan misol uchun yulduzchalar to'plang
+              va ajoyib sovg'alarga ega bo'ling!
             </p>
           </div>
         </div>
@@ -65,13 +79,15 @@ export function StudentMarketPage() {
           <span className={styles.balanceLabel}>Mening balansim</span>
           <div className={styles.balanceValue}>
             <span className={styles.starIcon}>⭐</span>
-            <span className={styles.balanceNum}>
-              {starsData ? balance : '...'}
-            </span>
+            <span className={styles.balanceNum}>{starsData ? balance : '...'}</span>
           </div>
           <div className={styles.starsBreakdown}>
-            <span>Jami to'plangan: <strong>{starsData?.earnedStars ?? 0} ⭐</strong></span>
-            <span>Sarflangan: <strong>{starsData?.spentStars ?? 0} ⭐</strong></span>
+            <span>
+              Jami to'plangan: <strong>{starsData?.earnedStars ?? 0} ⭐</strong>
+            </span>
+            <span>
+              Sarflangan: <strong>{starsData?.spentStars ?? 0} ⭐</strong>
+            </span>
           </div>
         </div>
       </div>
@@ -79,20 +95,24 @@ export function StudentMarketPage() {
       {successMessage && (
         <div className={styles.successAlert} role="alert">
           <span>🎉 {successMessage}</span>
-          <button onClick={() => setSuccessMessage(null)} className={styles.dismissBtn}>×</button>
+          <button onClick={() => setSuccessMessage(null)} className={styles.dismissBtn}>
+            ×
+          </button>
         </div>
       )}
 
       {errorMessage && (
         <div className={styles.errorAlert} role="alert">
           <span>⚠️ {errorMessage}</span>
-          <button onClick={() => setErrorMessage(null)} className={styles.dismissBtn}>×</button>
+          <button onClick={() => setErrorMessage(null)} className={styles.dismissBtn}>
+            ×
+          </button>
         </div>
       )}
 
       {/* Items Showcase */}
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Mavjud Sovg'alar</h2>
+        <h2 className={styles.sectionTitle}>Mavjud sovg'alar</h2>
 
         {items.length === 0 ? (
           <div className={styles.emptyCard}>
@@ -114,13 +134,9 @@ export function StudentMarketPage() {
                     {item.imageUrl && item.imageUrl.startsWith('http') ? (
                       <img src={item.imageUrl} alt={item.title} className={styles.itemImg} />
                     ) : (
-                      <div className={styles.itemEmoji}>
-                        {item.imageUrl || '🎁'}
-                      </div>
+                      <div className={styles.itemEmoji}>{item.imageUrl || '🎁'}</div>
                     )}
-                    <span className={styles.costBadge}>
-                      ⭐ {item.costStars}
-                    </span>
+                    <span className={styles.costBadge}>⭐ {item.costStars}</span>
                   </div>
 
                   <div className={styles.itemBody}>
@@ -142,15 +158,13 @@ export function StudentMarketPage() {
                       onClick={() => handleBuy(item)}
                       className={`${styles.buyBtn} ${affordable && !isOutOfStock ? styles.canBuy : ''}`}
                     >
-                      {isBuying ? (
-                        'Xarid qilinmoqda...'
-                      ) : isOutOfStock ? (
-                        'Tugagan'
-                      ) : affordable ? (
-                        'Sotib olish'
-                      ) : (
-                        `Yana ${starsNeeded} ⭐ kerak`
-                      )}
+                      {isBuying
+                        ? 'Xarid qilinmoqda...'
+                        : isOutOfStock
+                          ? 'Tugagan'
+                          : affordable
+                            ? 'Sotib olish'
+                            : `Yana ${starsNeeded} ⭐ kerak`}
                     </button>
                   </div>
                 </div>
@@ -162,9 +176,11 @@ export function StudentMarketPage() {
 
       {/* Orders History */}
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Mening Buyurtmalarim</h2>
+        <h2 className={styles.sectionTitle}>Mening buyurtmalarim</h2>
         {studentOrders.length === 0 ? (
-          <div className={styles.emptySub}>Hozircha hech narsa xarid qilmagansiz.</div>
+          <EmptyState icon="🛍" title="Hali xarid yo'q">
+            Yulduzcha to'plang va yuqoridagi sovg'alardan birini tanlang.
+          </EmptyState>
         ) : (
           <div className={styles.ordersList}>
             {studentOrders.map((order: MarketOrder) => {

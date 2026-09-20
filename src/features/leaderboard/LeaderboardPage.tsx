@@ -4,7 +4,7 @@ import { fullName } from '@/domain/users';
 import { useResults, useStudents } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
-import { LoadingScreen } from '@/shared/ui/LoadingScreen';
+import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
 import styles from './LeaderboardPage.module.css';
 
@@ -18,11 +18,20 @@ export function LeaderboardPage() {
     [students, results],
   );
 
-  if (!rows) return <LoadingScreen />;
+  if (!rows)
+    return (
+      <Card title="Sinf reytingi">
+        <SkeletonList rows={6} />
+      </Card>
+    );
 
   return (
     <Card title="Sinf reytingi">
-      {rows.length === 0 && <EmptyState>Hali natijalar yo'q.</EmptyState>}
+      {rows.length === 0 && (
+        <EmptyState icon="🏁" title="Reyting hali bo'sh">
+          Birinchi mashq yakunlangach, o'quvchilar shu yerda paydo bo'ladi.
+        </EmptyState>
+      )}
       <ol className={styles.list}>
         {rows.map((row, index) => (
           <li key={row.student.id} className={styles.row}>

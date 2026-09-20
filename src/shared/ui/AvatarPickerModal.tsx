@@ -62,7 +62,7 @@ export function AvatarPickerModal({
           </button>
         </div>
 
-        {error && <div style={{ color: '#ef4444', fontSize: '0.85rem' }}>{error}</div>}
+        {error && <div className={styles.error}>{error}</div>}
 
         {/* 1. Camera & Gallery buttons */}
         <div className={styles.uploadSection}>

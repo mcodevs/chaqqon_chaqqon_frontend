@@ -1,6 +1,6 @@
 .title {
-  font-size: 17px;
-  margin-bottom: 14px;
+  font-size: var(--size-body-lg);
+  margin-bottom: var(--space-3);
 }
 
 .roleToggle {

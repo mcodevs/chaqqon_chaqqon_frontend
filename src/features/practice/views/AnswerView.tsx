@@ -33,7 +33,7 @@ export function AnswerView({ problemNumber, problemCount, onSubmit }: AnswerView
         value={value}
         onChange={(event) => setValue(event.target.value)}
       />
-      <Button type="submit" tone="green" block disabled={!isValid}>
+      <Button type="submit" size="lg" block disabled={!isValid}>
         Javobni yuborish
       </Button>
     </form>

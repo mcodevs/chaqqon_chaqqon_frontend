@@ -5,25 +5,36 @@
 
 .option {
   flex: 1;
-  border: 2px solid var(--color-line);
-  background: var(--color-surface);
-  border-radius: 12px;
-  padding: 10px;
+  min-height: var(--touch-target);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-card);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
   font-family: var(--font-display);
-  font-weight: 800;
-  color: var(--color-muted);
+  font-weight: 700;
+  font-size: var(--size-body);
+  color: var(--content-secondary);
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard);
+}
+
+.option:hover {
+  background: var(--surface-hover);
+  color: var(--content-primary);
 }
 
 .boxed .option[aria-checked='true'] {
-  background: var(--color-blue);
-  border-color: var(--color-blue);
-  color: #fff;
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: var(--brand-on-primary);
 }
 
 .pill {
   gap: 0;
-  padding: 4px;
-  background: var(--color-line-soft);
+  padding: var(--space-1);
+  background: var(--surface-sunken);
   border-radius: var(--radius-md);
 }
 
@@ -32,11 +43,17 @@
   background: transparent;
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
-  font-weight: 700;
+  min-height: 36px;
 }
 
 .pill .option[aria-checked='true'] {
-  background: var(--color-surface);
-  color: var(--color-ink);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  box-shadow: var(--elevation-1);
+}
+
+@media (pointer: coarse) {
+  .pill .option {
+    min-height: var(--touch-target);
+  }
 }

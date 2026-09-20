@@ -1,21 +1,21 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   max-width: 680px;
   margin: 0 auto;
   width: 100%;
 }
 
 .profileCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg, 20px);
-  padding: 1.5rem 1.25rem;
+  padding: var(--space-5) var(--space-4);
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  box-shadow: var(--shadow-card);
+  gap: var(--space-4);
+  box-shadow: var(--elevation-2);
   position: relative;
   overflow: hidden;
 }
@@ -23,67 +23,67 @@
 .avatar {
   width: 68px;
   height: 68px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #ffd93d 0%, #ffa94d 100%);
-  color: #ffffff;
+  border-radius: var(--radius-lg);
+  background: var(--warning);
+  color: var(--surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.2rem;
-  box-shadow: 0 8px 20px rgba(255, 169, 77, 0.3);
+  font-size: var(--size-display);
+  box-shadow: var(--elevation-2);
   flex-shrink: 0;
 }
 
 .profileInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
   min-width: 0;
   flex: 1;
 }
 
 .fullName {
-  font-size: 1.35rem;
+  font-size: var(--size-h2);
   font-weight: 900;
-  color: var(--color-ink);
+  color: var(--content-primary);
   margin: 0;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--size-body);
   font-weight: 700;
-  background: var(--color-surface-soft);
-  color: var(--color-ink-soft);
-  border: 1px solid var(--color-line);
+  background: var(--surface-soft);
+  color: var(--content-secondary);
+  border: 1px solid var(--border-subtle);
   width: fit-content;
 }
 
 .sectionBlock {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .sectionTitle {
-  font-size: 0.8rem;
+  font-size: var(--size-body);
   font-weight: 800;
-  color: var(--color-muted);
+  color: var(--content-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding-left: 0.5rem;
+  padding-left: var(--space-2);
 }
 
 .menuCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg, 20px);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--elevation-1);
   display: flex;
   flex-direction: column;
 }
@@ -92,11 +92,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.15rem;
+  padding: var(--space-4) var(--space-4);
   text-decoration: none;
-  color: var(--color-ink);
+  color: var(--content-primary);
   transition: background 0.15s ease;
-  border-bottom: 1px solid var(--color-line-soft);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .menuItem:last-child {
@@ -104,24 +104,24 @@
 }
 
 .menuItem:active {
-  background: var(--color-surface-soft);
+  background: var(--surface-soft);
 }
 
 .menuItemLeft {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: var(--space-3);
   min-width: 0;
 }
 
 .menuIconWrap {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: var(--size-h3);
   flex-shrink: 0;
 }
 
@@ -132,15 +132,15 @@
 }
 
 .menuItemTitle {
-  font-size: 0.95rem;
+  font-size: var(--size-body-lg);
   font-weight: 800;
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 .menuItemDesc {
-  font-size: 0.75rem;
+  font-size: var(--size-caption);
   font-weight: 600;
-  color: var(--color-muted);
+  color: var(--content-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -149,44 +149,71 @@
 .menuItemRight {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--color-subtle);
+  gap: var(--space-2);
+  color: var(--content-tertiary);
   font-weight: 700;
 }
 
 .arrowIcon {
-  font-size: 1rem;
-  color: var(--color-subtle);
+  font-size: var(--size-body-lg);
+  color: var(--content-tertiary);
   transition: transform 0.15s ease;
 }
 
 .menuItem:hover .arrowIcon {
   transform: translateX(3px);
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 .logoutSection {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 }
 
 .logoutBtn {
   width: 100%;
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-  border: 1px solid rgba(214, 71, 63, 0.2);
-  padding: 0.85rem 1rem;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md, 16px);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: var(--size-body-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .logoutBtn:active {
   transform: scale(0.98);
-  background: rgba(214, 71, 63, 0.15);
+  background: var(--danger-soft);
+}
+
+/* Menu icons pick a data colour by role — a fixed set, never an ad-hoc hex. */
+.menuIconInfo {
+  background: var(--info-soft);
+  color: var(--info-content);
+}
+
+.menuIconWarning {
+  background: var(--warning-soft);
+  color: var(--warning-content);
+}
+
+.menuIconBrand {
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+}
+
+.menuIconSuccess {
+  background: var(--success-soft);
+  color: var(--success-content);
+}
+
+.themeRow {
+  padding: var(--space-3);
 }

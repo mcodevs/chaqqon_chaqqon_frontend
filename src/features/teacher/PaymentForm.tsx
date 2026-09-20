@@ -71,10 +71,10 @@ export function PaymentForm({ firstName, access, today, pending, onSave, onCance
           : `Ertangi kundan ${MAX_PREPAID_MONTHS} oygacha bo'lgan sanani tanlang.`}
       </p>
       <div className={styles.buttonRow}>
-        <Button type="submit" size="sm" tone="green" disabled={!valid || pending}>
+        <Button type="submit" size="sm" disabled={!valid || pending}>
           Saqlash
         </Button>
-        <Button size="sm" variant="soft" tone="coral" onClick={onCancel}>
+        <Button size="sm" variant="outline" onClick={onCancel}>
           Bekor
         </Button>
       </div>

@@ -11,13 +11,7 @@ interface FlashViewProps {
   secondsPerNumber?: number;
 }
 
-export function FlashView({
-  problemNumber,
-  problemCount,
-  phase,
-  numbers,
-  numberIndex,
-}: FlashViewProps) {
+export function FlashView({ problemNumber, problemCount, phase, numbers, numberIndex }: FlashViewProps) {
   return (
     <div className={styles.stage}>
       <div className={styles.progress}>

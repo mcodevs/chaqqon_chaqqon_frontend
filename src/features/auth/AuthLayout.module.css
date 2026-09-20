@@ -13,23 +13,24 @@
   z-index: 2;
   width: 100%;
   max-width: 380px;
-  padding: 28px 26px;
-  background: var(--color-surface);
+  padding: var(--space-6) var(--space-5);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-raised);
+  box-shadow: var(--elevation-3);
   text-align: center;
 }
 
 .brand {
-  font-size: 28px;
-  color: var(--color-coral);
+  font: var(--text-h1);
+  color: var(--brand-primary);
+  margin-bottom: var(--space-1);
 }
 
 .brandSub {
-  margin: 0 0 18px;
-  color: var(--color-muted);
-  font-weight: 700;
-  font-size: 13px;
+  margin: 0 0 var(--space-5);
+  color: var(--content-secondary);
+  font: var(--text-body);
 }
 
 .floating {

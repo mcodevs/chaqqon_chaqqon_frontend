@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "dev:local": "VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= vite --port 5174 --strictPort"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

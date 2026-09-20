@@ -1,17 +1,12 @@
 import { useMemo, useState } from 'react';
 import { type PracticeMode, accuracyPercent } from '@/domain/results';
-import {
-  type TimeRange,
-  computeStudentStats,
-  filterResultsByRange,
-} from '@/domain/statistics';
+import { type TimeRange, computeStudentStats, filterResultsByRange } from '@/domain/statistics';
 import { SECTION_META } from '@/features/practice/sections';
 import { formatDate } from '@/shared/format';
 import { useResults, useSchoolToday } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
-import { LoadingScreen } from '@/shared/ui/LoadingScreen';
+import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
-import { toneColor } from '@/shared/ui/tone';
 import { useCurrentStudent } from './CurrentStudentContext';
 import styles from './ResultsPage.module.css';
 
@@ -40,7 +35,12 @@ export function ResultsPage() {
 
   const stats = useMemo(() => computeStudentStats(filteredResults), [filteredResults]);
 
-  if (!results) return <LoadingScreen />;
+  if (!results)
+    return (
+      <Card title="Mashqlar tarixi">
+        <SkeletonList rows={5} avatar={false} />
+      </Card>
+    );
 
   const maxDailyTotal = Math.max(...stats.dailyActivity.map((d) => d.total), 1);
 
@@ -74,25 +74,23 @@ export function ResultsPage() {
       {/* 2. Asosiy KPI bloklari */}
       <div className={styles.kpiGrid}>
         <div className={styles.kpiCard}>
-          <div className={styles.kpiValue} style={{ color: 'var(--color-success)' }}>
+          <div className={`${styles.kpiValue} ${styles.kpiValueLead}`}>
             {stats.totalSessions > 0 ? `${stats.accuracy}%` : '—'}
           </div>
           <div className={styles.kpiLabel}>Aniqlik</div>
         </div>
         <div className={styles.kpiCard}>
-          <div className={styles.kpiValue} style={{ color: 'var(--color-blue)' }}>
-            {stats.totalSessions} ta
-          </div>
+          <div className={styles.kpiValue}>{stats.totalSessions} ta</div>
           <div className={styles.kpiLabel}>Mashqlar</div>
         </div>
         <div className={styles.kpiCard}>
-          <div className={styles.kpiValue} style={{ color: 'var(--color-violet)' }}>
+          <div className={styles.kpiValue}>
             {stats.totalCorrect} / {stats.totalProblems}
           </div>
           <div className={styles.kpiLabel}>To'g'ri misol</div>
         </div>
         <div className={styles.kpiCard}>
-          <div className={styles.kpiValue} style={{ color: 'var(--color-orange)' }}>
+          <div className={styles.kpiValue}>
             {stats.averageSecondsPerNumber > 0 ? `${stats.averageSecondsPerNumber} s` : '—'}
           </div>
           <div className={styles.kpiLabel}>O'rtacha tezlik</div>
@@ -106,15 +104,13 @@ export function ResultsPage() {
             {Object.entries(stats.bySection).map(([sectionId, sec]) => {
               const meta = SECTION_META[sec.section];
               const percent = sec.total > 0 ? sec.accuracy : 0;
-              const color = toneColor(meta.tone);
+              const color = meta.color;
               return (
                 <div key={sectionId} className={styles.sectionItem}>
                   <div className={styles.sectionItemHeader}>
                     <span className={styles.sectionName}>{meta.label}</span>
                     <span className={styles.sectionStats}>
-                      {sec.sessions > 0
-                        ? `${percent}% (${sec.correct}/${sec.total} to'g'ri)`
-                        : "Ishlanmagan"}
+                      {sec.sessions > 0 ? `${percent}% (${sec.correct}/${sec.total} to'g'ri)` : 'Ishlanmagan'}
                     </span>
                   </div>
                   <div className={styles.sectionTrack}>
@@ -141,20 +137,22 @@ export function ResultsPage() {
               const heightPercent = Math.max(Math.round((day.total / maxDailyTotal) * 100), 8);
               const formattedDate = day.date.slice(5); // MM-DD
               return (
-                <div key={day.date} className={styles.chartColumn} title={`${day.date}: ${day.correct}/${day.total} to'g'ri (${day.accuracy}%)`}>
+                <div
+                  key={day.date}
+                  className={styles.chartColumn}
+                  title={`${day.date}: ${day.correct}/${day.total} to'g'ri (${day.accuracy}%)`}
+                >
                   <span className={styles.chartValue}>{day.total}</span>
                   <div className={styles.barWrapper}>
                     <div
-                      className={styles.bar}
-                      style={{
-                        height: `${heightPercent}%`,
-                        background:
-                          day.accuracy >= 80
-                            ? 'var(--color-success)'
-                            : day.accuracy >= 50
-                              ? 'var(--color-orange)'
-                              : 'var(--color-danger)',
-                      }}
+                      className={`${styles.bar} ${
+                        day.accuracy >= 80
+                          ? styles.barGood
+                          : day.accuracy >= 50
+                            ? styles.barMid
+                            : styles.barLow
+                      }`}
+                      style={{ height: `${heightPercent}%` }}
                     />
                   </div>
                   <span className={styles.chartDate}>{formattedDate}</span>
@@ -168,7 +166,9 @@ export function ResultsPage() {
       {/* 5. Natijalar tarixi */}
       <Card title="Mashqlar tarixi">
         {filteredResults.length === 0 && (
-          <EmptyState>Ushbu davrda natijalar mavjud emas.</EmptyState>
+          <EmptyState icon="📊" title="Bu davrda natija yo'q">
+            Boshqa davrni tanlang yoki bugun bitta mashq qilib ko'ring.
+          </EmptyState>
         )}
         <ul className={styles.list}>
           {filteredResults.map((result) => {
@@ -176,7 +176,7 @@ export function ResultsPage() {
             const badge = MODE_BADGES[result.mode];
             return (
               <li key={result.id} className={styles.row}>
-                <span className={styles.badge} style={{ background: toneColor(section.tone) }}>
+                <span className={styles.badge} style={{ background: section.soft, color: section.color }}>
                   {accuracyPercent(result.correct, result.total)}%
                 </span>
                 <div>

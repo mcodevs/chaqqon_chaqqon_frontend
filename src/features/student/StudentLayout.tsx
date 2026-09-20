@@ -13,6 +13,7 @@ import { type BottomNavItem, DashboardLayout } from '@/shared/ui/DashboardLayout
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import { useServices } from '@/shared/services/ServicesContext';
 import { ClosedAccountPage } from './ClosedAccountPage';
+import styles from './StudentLayout.module.css';
 import { CurrentStudentContext } from './CurrentStudentContext';
 
 export function StudentLayout() {
@@ -56,7 +57,10 @@ export function StudentLayout() {
   // Desktop sidebar uchun to'liq bo'limlar
   const tabs = [
     { to: '/student', label: '🧮 Mashq', end: true },
-    { to: '/student/competition', label: hasPendingCompetition ? '📝 Interaktiv vazifa •' : '📝 Interaktiv vazifa' },
+    {
+      to: '/student/competition',
+      label: hasPendingCompetition ? '📝 Interaktiv vazifa •' : '📝 Interaktiv vazifa',
+    },
     { to: '/student/leaderboard', label: '🏆 Reyting' },
     { to: '/student/results', label: '📈 Natijalarim' },
     { to: '/student/market', label: "🎁 Do'kon" },
@@ -72,23 +76,8 @@ export function StudentLayout() {
   ];
 
   const starsBadge = (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
-        background: 'var(--color-surface)',
-        border: '2px solid var(--color-yellow)',
-        padding: '5px 10px',
-        borderRadius: '12px',
-        fontWeight: 800,
-        fontSize: '13px',
-        color: '#b38100',
-        boxShadow: '0 2px 8px rgba(255, 217, 61, 0.25)',
-      }}
-      title="Yulduzchalaringiz balansi"
-    >
-      <span>⭐</span>
+    <div className={styles.starsBadge} title="Yulduzchalaringiz balansi">
+      <span aria-hidden="true">⭐</span>
       <span>{stars?.balance ?? 0}</span>
     </div>
   );

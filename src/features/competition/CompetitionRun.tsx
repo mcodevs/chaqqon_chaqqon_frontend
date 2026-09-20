@@ -72,7 +72,7 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
             <span className={styles.startBadge}>{config.secondsPerNumber} s</span>
             <span className={styles.startBadge}>{config.problemCount} ta misol</span>
           </div>
-          <Button tone="coral" block onClick={handleStart}>
+          <Button size="lg" block onClick={handleStart}>
             Boshlash!
           </Button>
         </div>
@@ -99,7 +99,7 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
       summaryActions={
         <>
           <ErrorMessage>{error}</ErrorMessage>
-          <Button tone="violet" block onClick={onDismiss}>
+          <Button size="lg" block onClick={onDismiss}>
             Yopish
           </Button>
         </>
@@ -107,4 +107,3 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
     />
   );
 }
-

@@ -3,53 +3,98 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  border: 2px solid transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   font-family: var(--font-display);
   font-weight: 700;
-  border-radius: 16px;
+  white-space: nowrap;
   transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease,
-    opacity 0.15s ease;
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .button:not(:disabled):active {
-  transform: translateY(2px);
-  box-shadow: none;
+  transform: translateY(1px);
+}
+
+/* ---------- Sizes ---------- */
+/* Heights come from the touch target: 44px is the smallest comfortable tap. */
+.sm {
+  font-size: var(--size-body);
+  min-height: 36px;
+  padding: 0 var(--space-3);
 }
 
 .md {
-  font-size: 16px;
-  padding: 12px 18px;
+  font-size: var(--size-body-lg);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
 }
 
-.sm {
-  font-size: 13px;
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
+.lg {
+  font-size: var(--size-h3);
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-lg);
+}
+
+/* A mouse can hit a 36px button; a finger cannot. */
+@media (pointer: coarse) {
+  .sm {
+    min-height: var(--touch-target);
+    padding: 0 var(--space-4);
+  }
 }
 
 .block {
   width: 100%;
 }
 
-.solid {
+/* ---------- Variants ---------- */
+.primary {
   background: var(--button-color);
-  color: #fff;
-  box-shadow: var(--shadow-press);
+  color: var(--brand-on-primary);
+  box-shadow: var(--elevation-1);
 }
 
-.soft {
-  background: color-mix(in srgb, var(--button-color) 14%, white);
-  color: color-mix(in srgb, var(--button-color) 80%, black);
+.primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--button-color) 88%, black);
+  box-shadow: var(--elevation-2);
+}
+
+.secondary {
+  background: var(--button-soft);
+  color: var(--button-content);
+}
+
+.secondary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--button-soft) 80%, var(--button-color));
 }
 
 .outline {
-  background: var(--color-surface);
-  border-color: var(--color-line);
-  color: var(--color-ink);
+  background: var(--surface-card);
+  border-color: var(--border-strong);
+  color: var(--content-primary);
+}
+
+.outline:not(:disabled):hover {
+  background: var(--surface-hover);
+  border-color: var(--button-color);
+  color: var(--button-content);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--button-content);
+}
+
+.ghost:not(:disabled):hover {
+  background: var(--button-soft);
 }

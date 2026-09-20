@@ -61,7 +61,7 @@ export function FlashRound({ state, participants, secondsPerNumber, isLastRound,
       </div>
       <footer className={styles.controls}>
         {phase === 'feedback' ? (
-          <Button tone="blue" autoFocus onClick={onNext}>
+          <Button autoFocus onClick={onNext}>
             {isLastRound ? 'Natijalar' : 'Keyingi misol'}
           </Button>
         ) : (

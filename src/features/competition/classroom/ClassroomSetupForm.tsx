@@ -32,7 +32,7 @@ export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSe
   };
 
   return (
-    <Card title="Sinf musobaqasi">
+    <Card>
       <p className={styles.intro}>
         Ekran tanlangan o'quvchilar soniga qarab bo'linadi. Har bir panelda o'z misoli bir vaqtda
         ko'rsatiladi: o'quvchilar javobni aytadi, siz uni panelga kiritasiz.
@@ -45,7 +45,7 @@ export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSe
         onChange={setSelectedIds}
       />
       <PracticeConfigFields value={config} onChange={setConfig} />
-      <Button tone="violet" block disabled={missing > 0} onClick={start}>
+      <Button size="lg" block disabled={missing > 0} onClick={start}>
         {missing > 0 ? `Yana kamida ${missing} ta o'quvchi tanlang` : 'Boshlash'}
       </Button>
     </Card>

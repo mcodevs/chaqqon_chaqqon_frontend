@@ -58,21 +58,16 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
     <Card title="Yangi o'quvchi qo'shish">
       <form onSubmit={handleSubmit} noValidate>
         {/* Profil rasmi (Avatar) tanlash */}
-        <div className={styles.editAvatarRow} style={{ marginBottom: 14 }}>
+        <div className={styles.editAvatarRow}>
           <NameAvatar name={form.firstName || "O'quvchi"} avatarUrl={form.avatarUrl} size={48} />
           <div>
-            <button
-              type="button"
-              className={styles.editAvatarBtn}
-              onClick={() => setShowAvatarPicker(true)}
-            >
+            <button type="button" className={styles.editAvatarBtn} onClick={() => setShowAvatarPicker(true)}>
               🎨 Profil rasmini tanlash
             </button>
             {form.avatarUrl && (
               <button
                 type="button"
                 className={styles.linkButton}
-                style={{ marginLeft: 10, color: 'var(--color-coral)' }}
                 onClick={() => setForm((curr) => ({ ...curr, avatarUrl: null }))}
               >
                 Olib tashlash
@@ -116,10 +111,10 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
         </div>
         <ErrorMessage>{addStudent.error}</ErrorMessage>
         <div className={styles.buttonRow}>
-          <Button tone="blue" variant="soft" onClick={suggestCredentials}>
+          <Button variant="outline" onClick={suggestCredentials}>
             Login/parol tavsiya qil
           </Button>
-          <Button type="submit" tone="green" disabled={addStudent.pending}>
+          <Button type="submit" disabled={addStudent.pending}>
             Qo'shish
           </Button>
         </div>

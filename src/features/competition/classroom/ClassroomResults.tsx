@@ -59,14 +59,14 @@ export function ClassroomResults({
       {save.error && (
         <div className={styles.saveError}>
           <ErrorMessage>{save.error}</ErrorMessage>
-          <Button size="sm" variant="soft" tone="coral" onClick={onRetrySave}>
+          <Button size="sm" variant="outline" tone="danger" onClick={onRetrySave}>
             Qayta saqlash
           </Button>
         </div>
       )}
 
       <div className={styles.resultActions}>
-        <Button tone="violet" disabled={save.pending} onClick={onRematch}>
+        <Button disabled={save.pending} onClick={onRematch}>
           Yana o'ynash
         </Button>
         <Button variant="outline" onClick={onClose}>

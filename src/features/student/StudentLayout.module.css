@@ -1,0 +1,14 @@
+/* The star balance rides in the app bar: a status, not a button. */
+.starsBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-body);
+  white-space: nowrap;
+}

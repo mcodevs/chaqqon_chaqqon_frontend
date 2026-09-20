@@ -29,7 +29,11 @@ export function StudentPicker({
 
   return (
     <>
-      {students.length === 0 && <EmptyState>Avval o'quvchi qo'shing.</EmptyState>}
+      {students.length === 0 && (
+        <EmptyState icon="👥" title="O'quvchi yo'q">
+          Musobaqa uchun avval "O'quvchilar" bo'limidan o'quvchi qo'shing.
+        </EmptyState>
+      )}
       <div className={styles.picker} role="group" aria-label="Ishtirokchilar">
         {students.map((student) => {
           const selected = selectedIds.includes(student.id);

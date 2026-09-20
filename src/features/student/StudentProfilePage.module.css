@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   max-width: 680px;
   margin: 0 auto;
   width: 100%;
@@ -9,26 +9,30 @@
 
 /* Profil kartochkasi */
 .profileCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg, 20px);
-  padding: 1.5rem 1.25rem;
+  padding: var(--space-5) var(--space-4);
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  box-shadow: var(--shadow-card);
+  gap: var(--space-4);
+  box-shadow: var(--elevation-2);
   position: relative;
   overflow: hidden;
 }
 
+/* A soft brand wash in the corner: enough to lift the card, not a smudge. */
 .profileCard::after {
   content: '';
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(155, 93, 229, 0.12) 0%, transparent 70%);
+  inset: -40% -20% auto auto;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand-primary) 10%, transparent) 0%,
+    transparent 68%
+  );
   pointer-events: none;
 }
 
@@ -47,14 +51,14 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--info);
   color: white;
   border: 2px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  font-size: var(--size-body);
+  box-shadow: var(--elevation-2);
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -66,31 +70,31 @@
 .avatar {
   width: 68px;
   height: 68px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, var(--color-violet) 0%, #6366f1 50%, var(--color-pink) 100%);
-  color: #ffffff;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary) 50%, var(--data-5) 100%);
+  color: var(--surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: var(--size-h1);
   font-weight: 900;
-  box-shadow: 0 8px 20px rgba(155, 93, 229, 0.28);
+  box-shadow: var(--elevation-2);
   flex-shrink: 0;
 }
 
 .profileInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
   min-width: 0;
   flex: 1;
 }
 
 .fullName {
-  font-size: 1.35rem;
+  font-size: var(--size-h2);
   font-weight: 900;
-  color: var(--color-ink);
+  color: var(--content-primary);
   margin: 0;
   line-height: 1.2;
   white-space: nowrap;
@@ -101,68 +105,73 @@
 .roleBadgeGroup {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-top: 0.2rem;
+  margin-top: var(--space-1);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 20px;
-  font-size: 0.78rem;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--size-caption);
   font-weight: 700;
 }
 
 .badgeRole {
-  background: var(--color-surface-soft);
-  color: var(--color-ink-soft);
-  border: 1px solid var(--color-line);
+  background: var(--surface-soft);
+  color: var(--content-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 .badgeActive {
-  background: var(--color-success-soft);
-  color: var(--color-success);
-  border: 1px solid rgba(62, 162, 76, 0.2);
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid var(--success);
 }
 
 .badgeInactive {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-  border: 1px solid rgba(214, 71, 63, 0.2);
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
 }
 
 /* Yulduzchalar va balans kartasi */
 .starsCard {
-  background: linear-gradient(135deg, #fff9e6 0%, #fff2be 100%);
-  border: 2px solid #ffd93d;
+  background: var(--warning-soft);
+  border: 2px solid var(--warning);
   border-radius: var(--radius-lg, 20px);
-  padding: 1.25rem;
+  padding: var(--space-4);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(255, 217, 61, 0.2);
-  gap: 1rem;
+  box-shadow: var(--elevation-2);
+  gap: var(--space-4);
 }
 
 .starsContent {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .starsIcon {
-  font-size: 2.5rem;
+  font-size: var(--size-display);
   line-height: 1;
-  filter: drop-shadow(0 4px 10px rgba(255, 180, 0, 0.4));
+  filter: drop-shadow(var(--elevation-1));
   animation: floatBounce 3s ease-in-out infinite;
 }
 
 @keyframes floatBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 .starsDetails {
@@ -171,36 +180,38 @@
 }
 
 .starsLabel {
-  font-size: 0.78rem;
+  font-size: var(--size-caption);
   font-weight: 800;
-  color: #a87900;
+  color: var(--warning-content);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .starsCount {
-  font-size: 1.85rem;
+  font-size: var(--size-h1);
   font-weight: 900;
-  color: #7a5800;
+  color: var(--warning-content);
   line-height: 1.1;
   font-family: var(--font-display);
 }
 
 .starsActionBtn {
-  background: #ffffff;
-  color: #a87900;
-  border: 2px solid #ffd93d;
-  padding: 0.6rem 1rem;
+  background: var(--surface-card);
+  color: var(--warning-content);
+  border: 2px solid var(--warning);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md, 14px);
   font-weight: 800;
-  font-size: 0.88rem;
+  font-size: var(--size-body);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(255, 217, 61, 0.25);
-  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: var(--elevation-2);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
 }
 
 .starsActionBtn:active {
@@ -211,30 +222,30 @@
 .statsRow {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .statItem {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md, 16px);
-  padding: 1rem;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  box-shadow: var(--shadow-sm);
+  gap: var(--space-1);
+  box-shadow: var(--elevation-1);
 }
 
 .statItemLabel {
-  font-size: 0.78rem;
+  font-size: var(--size-caption);
   font-weight: 700;
-  color: var(--color-muted);
+  color: var(--content-tertiary);
 }
 
 .statItemValue {
-  font-size: 1.35rem;
+  font-size: var(--size-h2);
   font-weight: 900;
-  color: var(--color-ink);
+  color: var(--content-primary);
   font-family: var(--font-display);
 }
 
@@ -242,24 +253,24 @@
 .sectionBlock {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .sectionTitle {
-  font-size: 0.8rem;
+  font-size: var(--size-body);
   font-weight: 800;
-  color: var(--color-muted);
+  color: var(--content-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding-left: 0.5rem;
+  padding-left: var(--space-2);
 }
 
 .menuCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg, 20px);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--elevation-1);
   display: flex;
   flex-direction: column;
 }
@@ -268,11 +279,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.15rem;
+  padding: var(--space-4) var(--space-4);
   text-decoration: none;
-  color: var(--color-ink);
+  color: var(--content-primary);
   transition: background 0.15s ease;
-  border-bottom: 1px solid var(--color-line-soft);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .menuItem:last-child {
@@ -280,24 +291,24 @@
 }
 
 .menuItem:active {
-  background: var(--color-surface-soft);
+  background: var(--surface-soft);
 }
 
 .menuItemLeft {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: var(--space-3);
   min-width: 0;
 }
 
 .menuIconWrap {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: var(--size-h3);
   flex-shrink: 0;
 }
 
@@ -308,15 +319,15 @@
 }
 
 .menuItemTitle {
-  font-size: 0.95rem;
+  font-size: var(--size-body-lg);
   font-weight: 800;
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 .menuItemDesc {
-  font-size: 0.75rem;
+  font-size: var(--size-caption);
   font-weight: 600;
-  color: var(--color-muted);
+  color: var(--content-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -325,49 +336,51 @@
 .menuItemRight {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--color-subtle);
+  gap: var(--space-2);
+  color: var(--content-tertiary);
   font-weight: 700;
 }
 
 .arrowIcon {
-  font-size: 1rem;
-  color: var(--color-subtle);
+  font-size: var(--size-body-lg);
+  color: var(--content-tertiary);
   transition: transform 0.15s ease;
 }
 
 .menuItem:hover .arrowIcon {
   transform: translateX(3px);
-  color: var(--color-ink);
+  color: var(--content-primary);
 }
 
 /* Chiqish tugmasi */
 .logoutSection {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .logoutBtn {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-  border: 1px solid rgba(214, 71, 63, 0.2);
-  padding: 0.85rem 1rem;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md, 16px);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: var(--size-body-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 
 .logoutBtn:active {
   transform: scale(0.98);
-  background: rgba(214, 71, 63, 0.15);
+  background: var(--danger-soft);
 }
 
 @media (max-width: 480px) {
@@ -381,60 +394,85 @@
 }
 
 .badgeLevel {
-  background: #fdf2f8;
-  color: #db2777;
-  border: 1px solid #fbcfe8;
+  background: var(--brand-primary-soft);
+  color: var(--data-5);
+  border: 1px solid var(--border-subtle);
 }
 
 .homeworkCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg, 20px);
-  padding: 1.25rem;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  box-shadow: var(--shadow-card);
+  gap: var(--space-3);
+  box-shadow: var(--elevation-2);
 }
 
 .homeworkHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .homeworkTitle {
-  font-size: 1rem;
+  font-size: var(--size-body-lg);
   font-weight: 800;
-  color: var(--color-ink);
+  color: var(--content-primary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .statusBajardi {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
+  background: var(--success-soft);
+  color: var(--success-content);
+  border: 1px solid var(--success-soft);
 }
 
 .statusChala {
-  background: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fde68a;
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  border: 1px solid var(--warning-soft);
 }
 
 .statusBajarmadi {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger-soft);
 }
 
 .homeworkDesc {
-  font-size: 0.82rem;
-  color: var(--color-ink-soft);
+  font-size: var(--size-body);
+  color: var(--content-secondary);
   line-height: 1.4;
   margin: 0;
+}
+
+/* Menu icons pick a data colour by role — a fixed set, never an ad-hoc hex. */
+.menuIconInfo {
+  background: var(--info-soft);
+  color: var(--info-content);
+}
+
+.menuIconWarning {
+  background: var(--warning-soft);
+  color: var(--warning-content);
+}
+
+.menuIconBrand {
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+}
+
+.menuIconSuccess {
+  background: var(--success-soft);
+  color: var(--success-content);
+}
+
+.themeRow {
+  padding: var(--space-3);
 }

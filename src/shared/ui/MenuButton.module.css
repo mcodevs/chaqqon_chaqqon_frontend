@@ -1,0 +1,81 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--content-secondary);
+  font-size: var(--size-h3);
+  line-height: 1;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.trigger:hover,
+.trigger[aria-expanded='true'] {
+  background: var(--surface-hover);
+  color: var(--content-primary);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 30;
+  min-width: 176px;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-3);
+  animation: menuIn var(--motion-fast) var(--ease-decelerate);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  font: var(--text-body);
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+.item:hover {
+  background: var(--surface-hover);
+}
+
+.itemIcon {
+  width: 18px;
+  text-align: center;
+}
+
+.danger {
+  color: var(--danger-content);
+}
+
+.danger:hover {
+  background: var(--danger-soft);
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

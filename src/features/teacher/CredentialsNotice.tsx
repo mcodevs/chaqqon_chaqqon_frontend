@@ -20,7 +20,7 @@ export function CredentialsNotice({ credentials, onDismiss }: CredentialsNoticeP
         <dd>{credentials.password}</dd>
       </dl>
       <p className={styles.credentialsHint}>Parol faqat hozir ko'rinadi. Yo'qolsa, uni yangilash mumkin.</p>
-      <Button tone="violet" size="sm" onClick={onDismiss}>
+      <Button size="sm" onClick={onDismiss}>
         Yozib oldim
       </Button>
     </Card>

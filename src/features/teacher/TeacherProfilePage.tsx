@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useSession } from '@/shared/session/SessionContext';
+import { ThemeToggle } from '@/shared/theme/ThemeToggle';
 import styles from './TeacherProfilePage.module.css';
 
 export function TeacherProfilePage() {
@@ -24,9 +25,7 @@ export function TeacherProfilePage() {
         <div className={styles.menuCard}>
           <Link to="/teacher/classroom" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
-              <div className={styles.menuIconWrap} style={{ background: '#fef3c7', color: '#d97706' }}>
-                🏫
-              </div>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconWarning}`}>🏫</div>
               <div className={styles.menuItemText}>
                 <span className={styles.menuItemTitle}>Sinf musobaqasi (Katta ekran)</span>
                 <span className={styles.menuItemDesc}>Dars paytida proyektor yoki monitorda koʻrsatish</span>
@@ -39,12 +38,12 @@ export function TeacherProfilePage() {
 
           <Link to="/teacher/market" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
-              <div className={styles.menuIconWrap} style={{ background: '#ede9fe', color: '#7c3aed' }}>
-                🎁
-              </div>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🎁</div>
               <div className={styles.menuItemText}>
                 <span className={styles.menuItemTitle}>Sovgʻalar doʻkoni boshqaruvi</span>
-                <span className={styles.menuItemDesc}>Sovgʻalar roʻyxatini toʻldirish va narxlarini belgilash</span>
+                <span className={styles.menuItemDesc}>
+                  Sovgʻalar roʻyxatini toʻldirish va narxlarini belgilash
+                </span>
               </div>
             </div>
             <div className={styles.menuItemRight}>
@@ -54,9 +53,7 @@ export function TeacherProfilePage() {
 
           <Link to="/teacher/leaderboard" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
-              <div className={styles.menuIconWrap} style={{ background: '#fce7f3', color: '#db2777' }}>
-                🏆
-              </div>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🏆</div>
               <div className={styles.menuItemText}>
                 <span className={styles.menuItemTitle}>Peshqadamlar reytingi</span>
                 <span className={styles.menuItemDesc}>Barcha oʻquvchilarning reyting va medallari</span>
@@ -66,6 +63,16 @@ export function TeacherProfilePage() {
               <span className={styles.arrowIcon}>›</span>
             </div>
           </Link>
+        </div>
+      </section>
+
+      {/* Ko'rinish sozlamasi — mobilda sidebar ko'rinmagani uchun shu yerda ham turadi */}
+      <section className={styles.sectionBlock}>
+        <div className={styles.sectionTitle}>Koʻrinish</div>
+        <div className={styles.menuCard}>
+          <div className={styles.themeRow}>
+            <ThemeToggle />
+          </div>
         </div>
       </section>
 

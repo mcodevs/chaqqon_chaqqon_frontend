@@ -59,9 +59,7 @@ export function AnswerRound({ participants, correctSoFar, onSubmit }: AnswerRoun
       </div>
       <footer className={styles.controls}>
         <span className={styles.controlsHint}>Bo'sh qoldirilgan javob noto'g'ri hisoblanadi</span>
-        <Button tone="green" onClick={submit}>
-          Tekshirish
-        </Button>
+        <Button onClick={submit}>Tekshirish</Button>
       </footer>
     </>
   );

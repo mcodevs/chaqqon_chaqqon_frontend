@@ -98,7 +98,10 @@ export function TeacherMarketPage() {
       await market.updateOrderStatus(orderId, status);
       setFeedback({
         type: 'success',
-        message: status === 'delivered' ? "Sovg'a o'quvchiga topshirildi!" : 'Buyurtma bekor qilindi va yulduzchalar qaytarildi.',
+        message:
+          status === 'delivered'
+            ? "Sovg'a o'quvchiga topshirildi!"
+            : 'Buyurtma bekor qilindi va yulduzchalar qaytarildi.',
       });
     } catch (err: unknown) {
       setFeedback({ type: 'error', message: toErrorMessage(err) });
@@ -109,7 +112,9 @@ export function TeacherMarketPage() {
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
-    const sorted = [...orders].sort((a: MarketOrder, b: MarketOrder) => b.createdAt.localeCompare(a.createdAt));
+    const sorted = [...orders].sort((a: MarketOrder, b: MarketOrder) =>
+      b.createdAt.localeCompare(a.createdAt),
+    );
     if (filterStatus === 'all') return sorted;
     return sorted.filter((ord: MarketOrder) => ord.status === filterStatus);
   }, [orders, filterStatus]);
@@ -127,8 +132,12 @@ export function TeacherMarketPage() {
     <div className={styles.container}>
       {feedback && (
         <div className={feedback.type === 'success' ? styles.successAlert : styles.errorAlert} role="alert">
-          <span>{feedback.type === 'success' ? '✅' : '⚠️'} {feedback.message}</span>
-          <button onClick={() => setFeedback(null)} className={styles.dismissBtn}>×</button>
+          <span>
+            {feedback.type === 'success' ? '✅' : '⚠️'} {feedback.message}
+          </span>
+          <button onClick={() => setFeedback(null)} className={styles.dismissBtn}>
+            ×
+          </button>
         </div>
       )}
 
@@ -272,9 +281,7 @@ export function TeacherMarketPage() {
         <div className={styles.ordersHeader}>
           <div className={styles.ordersTitleFlex}>
             <h2 className={styles.sectionTitle}>O'quvchilar Buyurtmalari</h2>
-            {pendingCount > 0 && (
-              <span className={styles.pendingBadge}>{pendingCount} ta kutilmoqda</span>
-            )}
+            {pendingCount > 0 && <span className={styles.pendingBadge}>{pendingCount} ta kutilmoqda</span>}
           </div>
 
           {/* Filter Tabs */}
@@ -355,15 +362,15 @@ export function TeacherMarketPage() {
                             order.status === 'pending'
                               ? styles.badgePending
                               : order.status === 'delivered'
-                              ? styles.badgeDelivered
-                              : styles.badgeCancelled
+                                ? styles.badgeDelivered
+                                : styles.badgeCancelled
                           }`}
                         >
                           {order.status === 'pending'
                             ? 'Kutilmoqda'
                             : order.status === 'delivered'
-                            ? 'Topshirildi'
-                            : 'Bekor qilindi'}
+                              ? 'Topshirildi'
+                              : 'Bekor qilindi'}
                         </span>
                       </td>
                       <td>

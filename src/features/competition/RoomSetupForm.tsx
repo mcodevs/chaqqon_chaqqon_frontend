@@ -76,11 +76,11 @@ export function RoomSetupForm({
 
       <ErrorMessage>{error}</ErrorMessage>
       <div className={onCancel ? styles.actions : undefined}>
-        <Button tone="pink" block={!onCancel} disabled={selectedIds.length === 0 || pending} onClick={submit}>
+        <Button block={!onCancel} disabled={selectedIds.length === 0 || pending} onClick={submit}>
           Xona ochish
         </Button>
         {onCancel && (
-          <Button tone="coral" variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel}>
             Bekor qilish
           </Button>
         )}

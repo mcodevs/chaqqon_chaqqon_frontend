@@ -1,16 +1,22 @@
 .block {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .label {
   display: block;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-ink-soft);
-  margin-bottom: 6px;
+  font: var(--text-body);
+  color: var(--content-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.label b {
+  color: var(--content-primary);
+  font-weight: 800;
 }
 
 .slider {
   width: 100%;
-  accent-color: var(--color-coral);
+  height: var(--space-5);
+  accent-color: var(--brand-primary);
+  cursor: pointer;
 }

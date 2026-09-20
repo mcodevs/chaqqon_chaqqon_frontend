@@ -15,20 +15,34 @@ export function StudentCompetitionPage() {
   if (!snapshot) return <LoadingScreen />;
 
   const { room, progress } = snapshot;
-  const message = (text: string) => (
+  const message = (icon: string, title: string, text: string) => (
     <Card>
-      <EmptyState>{text}</EmptyState>
+      <EmptyState icon={icon} title={title}>
+        {text}
+      </EmptyState>
     </Card>
   );
 
   if (!room || !room.participantIds.includes(student.id)) {
-    return message("Hozircha faol interaktiv uy vazifasi yo'q. Ustoz xona ochganda shu yerda ko'rinadi.");
+    return message(
+      '📭',
+      "Hozircha vazifa yo'q",
+      "Ustoz interaktiv xona ochganda, vazifa shu yerda o'zi paydo bo'ladi.",
+    );
   }
   if (room.status === 'waiting') {
-    return message("Vazifa boshlanishini kuting — ustoz tayyor bo'lganda avtomatik boshlanadi.");
+    return message(
+      '⏳',
+      'Tayyor turing',
+      'Ustoz boshlaganda vazifa avtomatik ishga tushadi — sahifadan chiqmang.',
+    );
   }
   if (progress[student.id]?.finished && reviewingRoomId !== room.id) {
-    return message("Siz ushbu uy vazifasini yakunladingiz! Har 40 ta to'g'ri ishlangan misol uchun 1 ta yulduz beriladi.");
+    return message(
+      '🎉',
+      'Vazifa yakunlandi!',
+      "Har 40 ta to'g'ri ishlangan misol uchun 1 ta yulduz beriladi.",
+    );
   }
 
   return (

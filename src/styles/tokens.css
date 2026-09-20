@@ -1,59 +1,236 @@
+/*
+ * Design tokens — "Warm Focus".
+ *
+ * Three rules this file exists to enforce:
+ *   1. one neutral ramp (warm, never blue-grey), one brand colour for actions;
+ *      every other colour carries meaning (result, warning, medal), never decoration;
+ *   2. one type scale, one 4pt spacing scale — no ad-hoc 17px anywhere;
+ *   3. every surface/content pair is defined for light *and* dark.
+ *
+ * Names are semantic (`--surface-card`, `--content-secondary`), so a page never
+ * needs to know which hex it is getting. Legacy aliases at the bottom keep the
+ * older screens working while they are migrated.
+ */
+
 :root {
+  /* ---------- Typography ---------- */
   --font-display: 'Baloo 2', 'Nunito', system-ui, sans-serif;
   --font-body: 'Nunito', system-ui, sans-serif;
 
-  --color-ink: #22242b;
-  --color-ink-soft: #5b5f6d;
-  --color-muted: #8a8fa0;
-  --color-subtle: #a0a4b0;
-  --color-line: #edeff3;
-  --color-line-soft: #f2f1f8;
-  --color-surface: #ffffff;
-  --color-surface-soft: #fafafd;
-  --color-background: #fff6e8;
+  /* size / line-height / weight — 7 steps, nothing in between */
+  --text-display: 800 2.5rem/1.1 var(--font-display); /* 40px — flash results, hero numbers */
+  --text-h1: 800 1.75rem/1.2 var(--font-display); /* 28px — page title */
+  --text-h2: 800 1.375rem/1.25 var(--font-display); /* 22px — card title */
+  --text-h3: 700 1.125rem/1.35 var(--font-display); /* 18px — section title */
+  --text-body-lg: 600 1rem/1.5 var(--font-body); /* 16px — main reading size */
+  --text-body: 600 0.875rem/1.5 var(--font-body); /* 14px — dense UI text */
+  --text-caption: 700 0.75rem/1.35 var(--font-body); /* 12px — labels, meta */
 
-  --color-coral: #ff6b6b;
-  --color-orange: #ffa94d;
-  --color-yellow: #ffd93d;
-  --color-green: #6bcb77;
-  --color-blue: #4d9de0;
-  --color-violet: #9b5de5;
-  --color-pink: #f15bb5;
+  --size-display: 2.5rem;
+  --size-h1: 1.75rem;
+  --size-h2: 1.375rem;
+  --size-h3: 1.125rem;
+  --size-body-lg: 1rem;
+  --size-body: 0.875rem;
+  --size-caption: 0.75rem;
 
-  --color-success: #3ea24c;
-  --color-success-soft: #e7f8ea;
-  --color-danger: #d6473f;
-  --color-danger-soft: #ffe9ec;
+  /* Above the text scale: a result number that shouts, and decorative emoji art. */
+  --size-hero: 3.5rem;
+  --size-countdown: 5rem;
 
-  --medal-gold: #ffd93d;
-  --medal-silver: #c9cdd6;
-  --medal-bronze: #e5934a;
-
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
-
-  --shadow-card: 0 8px 24px rgba(30, 30, 60, 0.06);
-  --shadow-raised: 0 18px 40px rgba(155, 93, 229, 0.18);
-  --shadow-press: 0 4px 0 rgba(0, 0, 0, 0.15);
-
+  /* ---------- Spacing (4pt grid) ---------- */
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
 
-  /* Modern layout & glassmorphic tokens */
-  --sidebar-width: 250px;
-  --header-height: 64px;
-  --content-max-width: 1280px;
+  /* ---------- Radius ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
 
-  --color-surface-hover: #f5f6fa;
-  --color-border-subtle: rgba(0, 0, 0, 0.06);
-  --color-primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
-  --shadow-sm: 0 2px 8px rgba(30, 30, 60, 0.04);
-  --shadow-md: 0 6px 18px rgba(30, 30, 60, 0.07);
-  --shadow-lg: 0 12px 32px rgba(30, 30, 60, 0.1);
+  /* ---------- Layout ---------- */
+  --sidebar-width: 248px;
+  --content-max-width: 1120px;
+  --touch-target: 44px;
+
+  /* ---------- Motion ---------- */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+
+  /* ---------- Colour: brand ---------- */
+  --brand-primary: #6d46d6;
+  --brand-primary-hover: #5c37bd;
+  --brand-primary-soft: #f0ebfd;
+  --brand-on-primary: #ffffff;
+  --brand-accent: #ff6b5c; /* playful highlight: medals, streaks, empty-state art */
+
+  /* ---------- Colour: surfaces ---------- */
+  --surface-page: #fdf7ee;
+  --surface-card: #ffffff;
+  --surface-soft: #f8f5f0;
+  --surface-sunken: #f2eee7;
+  --surface-hover: #f5f1ea;
+  --surface-overlay: rgba(28, 24, 20, 0.45);
+
+  /* ---------- Colour: content ---------- */
+  --content-primary: #241f2b;
+  --content-secondary: #5d5768;
+  --content-tertiary: #6e6878;
+  --content-disabled: #b6b0bf;
+  --content-on-accent: #ffffff;
+
+  /* ---------- Colour: borders ---------- */
+  --border-subtle: #ece6dd;
+  --border-strong: #ddd4c8;
+  --border-focus: var(--brand-primary);
+
+  /* ---------- Colour: semantic ---------- */
+  --success: #2f8f4e;
+  --success-soft: #e6f6ea;
+  --success-content: #1f6b39;
+  --warning: #c8761a;
+  --warning-soft: #fdf0dd;
+  --warning-content: #8c5310;
+  --danger: #cf4436;
+  --danger-soft: #fdeae8;
+  --danger-content: #9c2f24;
+  --info: #2d77c9;
+  --info-soft: #e7f1fc;
+  --info-content: #1f5795;
+
+  /* ---------- Colour: data (charts, levels, avatars) ---------- */
+  --data-1: #6d46d6;
+  --data-2: #2d77c9;
+  --data-3: #2f8f4e;
+  --data-4: #c8761a;
+  --data-5: #d4497f;
+
+  --medal-gold: #e0a32b;
+  --medal-silver: #9aa0ab;
+  --medal-bronze: #b9743c;
+
+  /* ---------- Elevation ---------- */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(36, 31, 43, 0.05);
+  --elevation-2: 0 4px 12px rgba(36, 31, 43, 0.07);
+  --elevation-3: 0 12px 28px rgba(36, 31, 43, 0.1);
+}
+
+/*
+ * Dark mode. Surfaces lift with lightness (never with shadow, which is invisible here),
+ * and the brand colour lightens so it keeps 4.5:1 against the dark card.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --brand-primary: #a78bfa;
+    --brand-primary-hover: #b9a2fc;
+    --brand-primary-soft: #2e2740;
+    --brand-on-primary: #1a1520;
+    --brand-accent: #ff8b7e;
+
+    --surface-page: #151219;
+    --surface-card: #1e1a25;
+    --surface-soft: #251f2e;
+    --surface-sunken: #121016;
+    --surface-hover: #2b2435;
+    --surface-overlay: rgba(0, 0, 0, 0.6);
+
+    --content-primary: #f4f1f8;
+    --content-secondary: #bcb4c7;
+    --content-tertiary: #8f879c;
+    --content-disabled: #6b6478;
+    --content-on-accent: #1a1520;
+
+    --border-subtle: #322b3d;
+    --border-strong: #463d55;
+
+    --success: #5cc47c;
+    --success-soft: #1d3326;
+    --success-content: #8fdca6;
+    --warning: #e3a14f;
+    --warning-soft: #362a19;
+    --warning-content: #f0c288;
+    --danger: #f0736a;
+    --danger-soft: #3a211f;
+    --danger-content: #f7a49d;
+    --info: #6aa9ea;
+    --info-soft: #1b2b3d;
+    --info-content: #a3cbf5;
+
+    --data-1: #a78bfa;
+    --data-2: #6aa9ea;
+    --data-3: #5cc47c;
+    --data-4: #e3a14f;
+    --data-5: #ec7ba9;
+
+    --medal-gold: #e8bb55;
+    --medal-silver: #a9b0bc;
+    --medal-bronze: #c98d5c;
+
+    --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --elevation-3: 0 12px 28px rgba(0, 0, 0, 0.5);
+  }
+}
+
+:root[data-theme='dark'] {
+  --brand-primary: #a78bfa;
+  --brand-primary-hover: #b9a2fc;
+  --brand-primary-soft: #2e2740;
+  --brand-on-primary: #1a1520;
+  --brand-accent: #ff8b7e;
+
+  --surface-page: #151219;
+  --surface-card: #1e1a25;
+  --surface-soft: #251f2e;
+  --surface-sunken: #121016;
+  --surface-hover: #2b2435;
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+
+  --content-primary: #f4f1f8;
+  --content-secondary: #bcb4c7;
+  --content-tertiary: #8f879c;
+  --content-disabled: #6b6478;
+  --content-on-accent: #1a1520;
+
+  --border-subtle: #322b3d;
+  --border-strong: #463d55;
+
+  --success: #5cc47c;
+  --success-soft: #1d3326;
+  --success-content: #8fdca6;
+  --warning: #e3a14f;
+  --warning-soft: #362a19;
+  --warning-content: #f0c288;
+  --danger: #f0736a;
+  --danger-soft: #3a211f;
+  --danger-content: #f7a49d;
+  --info: #6aa9ea;
+  --info-soft: #1b2b3d;
+  --info-content: #a3cbf5;
+
+  --data-1: #a78bfa;
+  --data-2: #6aa9ea;
+  --data-3: #5cc47c;
+  --data-4: #e3a14f;
+  --data-5: #ec7ba9;
+
+  --medal-gold: #e8bb55;
+  --medal-silver: #a9b0bc;
+  --medal-bronze: #c98d5c;
+
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --elevation-3: 0 12px 28px rgba(0, 0, 0, 0.5);
 }

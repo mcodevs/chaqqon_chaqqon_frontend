@@ -88,7 +88,7 @@ export function ClassroomMatch({ setup, onRematch, onClose }: ClassroomMatchProp
               {fullscreen.active ? "To'liq ekrandan chiqish" : "To'liq ekran"}
             </Button>
           )}
-          <Button size="sm" variant="soft" tone="coral" onClick={stop}>
+          <Button size="sm" variant="outline" tone="danger" onClick={stop}>
             {state.phase === 'finished' ? 'Yopish' : "To'xtatish"}
           </Button>
         </div>

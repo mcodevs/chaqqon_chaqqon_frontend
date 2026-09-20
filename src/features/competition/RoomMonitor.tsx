@@ -39,12 +39,8 @@ export function RoomMonitor({ room, progress, students, error, onStart, onClose 
       </ul>
       <ErrorMessage>{error}</ErrorMessage>
       <div className={styles.actions}>
-        {isWaiting && (
-          <Button tone="green" onClick={onStart}>
-            Boshlash
-          </Button>
-        )}
-        <Button tone="coral" onClick={onClose}>
+        {isWaiting && <Button onClick={onStart}>Boshlash</Button>}
+        <Button variant="outline" onClick={onClose}>
           Xonani yopish
         </Button>
       </div>

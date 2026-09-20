@@ -13,28 +13,73 @@ body {
 }
 
 body {
-  font-family: var(--font-body);
-  color: var(--color-ink);
-  background-color: var(--color-background);
-  background-image:
-    radial-gradient(circle at 10% 10%, #ffe9c7 0%, transparent 40%),
-    radial-gradient(circle at 90% 20%, #dff3ff 0%, transparent 45%),
-    radial-gradient(circle at 50% 100%, #fbe3f0 0%, transparent 40%);
-  background-attachment: fixed;
+  font: var(--text-body-lg);
+  color: var(--content-primary);
+  background-color: var(--surface-page);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+ * One soft warm wash behind the cards — enough to keep the page from reading as
+ * a white sheet, quiet enough that card edges stay the strongest boundary.
+ * Dark mode drops it: on a dark page the same wash turns into muddy banding.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      60rem 40rem at 12% -10%,
+      color-mix(in srgb, var(--brand-accent) 12%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(50rem 35rem at 100% 0%, color-mix(in srgb, var(--info) 12%, transparent), transparent 55%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) body::before {
+    opacity: 0.35;
+  }
+}
+
+:root[data-theme='dark'] body::before {
+  opacity: 0.35;
 }
 
 h1,
 h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--content-primary);
+}
+
+h1 {
+  font: var(--text-h1);
+}
+
+h2 {
+  font: var(--text-h2);
+}
+
 h3 {
-  font-family: var(--font-display);
-  margin: 0 0 6px;
-  line-height: 1.2;
+  font: var(--text-h3);
+}
+
+p {
+  margin: 0;
 }
 
 button,
-input {
-  font: inherit;
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
   color: inherit;
 }
 
@@ -46,9 +91,21 @@ button:disabled {
   cursor: not-allowed;
 }
 
+a {
+  color: var(--brand-primary);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+/* One focus ring everywhere: 2px brand + 2px offset reads on every surface. */
 :focus-visible {
-  outline: 3px solid var(--color-violet);
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand-primary) 22%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -58,5 +115,6 @@ button:disabled {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

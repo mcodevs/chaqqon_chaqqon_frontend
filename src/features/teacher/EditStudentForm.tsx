@@ -54,11 +54,7 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
       <div className={styles.editAvatarRow}>
         <NameAvatar name={firstName || student.firstName} avatarUrl={avatarUrl} size={48} />
         <div>
-          <button
-            type="button"
-            className={styles.editAvatarBtn}
-            onClick={() => setShowAvatarPicker(true)}
-          >
+          <button type="button" className={styles.editAvatarBtn} onClick={() => setShowAvatarPicker(true)}>
             🎨 Profil rasmini tanlash
           </button>
         </div>
@@ -101,11 +97,11 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
 
       <ErrorMessage>{updateProfile.error}</ErrorMessage>
 
-      <div className={styles.buttonRow} style={{ marginTop: 12 }}>
-        <Button type="button" variant="soft" onClick={onCancel}>
+      <div className={styles.buttonRow}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Bekor qilish
         </Button>
-        <Button type="submit" tone="green" disabled={updateProfile.pending}>
+        <Button type="submit" disabled={updateProfile.pending}>
           {updateProfile.pending ? 'Saqlanmoqda...' : 'Saqlash'}
         </Button>
       </div>
