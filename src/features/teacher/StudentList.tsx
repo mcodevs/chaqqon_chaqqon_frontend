@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { StudentCredentials } from '@/application/studentService';
 import { type CalendarDate, type Payment, type StudentAccess, accessOf } from '@/domain/billing';
 import type { HomeworkStatus } from '@/domain/homework';
@@ -38,6 +38,13 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
 
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
+
+  // Re-evaluate relative last-active times every 30 seconds
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(timer);
+  }, []);
 
   /** Whose "To'ladi" form is open. */
   const [payingId, setPayingId] = useState<string | null>(null);

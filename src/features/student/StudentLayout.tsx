@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { accessOf } from '@/domain/billing';
 import {
@@ -27,14 +27,17 @@ export function StudentLayout() {
   const accountDeleted = students !== undefined && student === null;
 
   const { students: studentService } = useServices();
-  const lastTouchRef = useRef<number>(0);
-
   useEffect(() => {
-    if (student?.id && Date.now() - lastTouchRef.current > 120_000) {
-      lastTouchRef.current = Date.now();
-      void studentService.touchActive(student.id);
-    }
-  }, [student?.id, studentService]);
+    if (!studentId) return;
+
+    void studentService.touchActive(studentId);
+
+    const interval = setInterval(() => {
+      void studentService.touchActive(studentId);
+    }, 90_000);
+
+    return () => clearInterval(interval);
+  }, [studentId, studentService]);
 
   useEffect(() => {
     if (accountDeleted) signOut();

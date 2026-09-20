@@ -17,13 +17,13 @@ export function useWrittenHomework(): WrittenHomework[] | undefined {
 
 export function useStudents(): Student[] | undefined {
   const { students } = useServices();
-  return useLiveQuery({ load: students.list, subscribe: students.subscribe });
+  return useLiveQuery({ load: students.list, subscribe: students.subscribe, pollIntervalMs: 30_000 });
 }
 
 /** Teacher-only: includes usernames. */
 export function useStudentAccounts(): StudentAccount[] | undefined {
   const { students } = useServices();
-  return useLiveQuery({ load: students.listAccounts, subscribe: students.subscribe });
+  return useLiveQuery({ load: students.listAccounts, subscribe: students.subscribe, pollIntervalMs: 30_000 });
 }
 
 export function useResults(): PracticeResult[] | undefined {

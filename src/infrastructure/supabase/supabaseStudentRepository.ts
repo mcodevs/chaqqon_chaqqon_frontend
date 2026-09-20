@@ -36,7 +36,13 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
 
     async touchActive(id) {
       // Fire and forget, don't block user interactions if offline or fail
-      void client.from('profiles').update({ last_active_at: new Date().toISOString() }).eq('id', id);
+      void client
+        .from('profiles')
+        .update({ last_active_at: new Date().toISOString() })
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) console.error('Failed to touch active status:', error);
+        });
     },
 
     async listAccounts() {
