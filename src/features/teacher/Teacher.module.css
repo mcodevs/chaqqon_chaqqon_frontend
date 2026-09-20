@@ -344,3 +344,51 @@
   background: #ef4444 !important;
   color: #ffffff !important;
 }
+
+.editForm {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line-soft);
+}
+
+.editFormHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.editFormTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.editAvatarRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  border: 1px solid var(--color-line-soft);
+}
+
+.editAvatarBtn {
+  background: #f1f5f9;
+  border: 1px solid var(--color-line);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--color-ink);
+  transition: all 0.2s ease;
+}
+
+.editAvatarBtn:hover {
+  background: #e2e8f0;
+}

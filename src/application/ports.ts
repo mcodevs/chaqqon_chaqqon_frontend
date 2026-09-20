@@ -41,7 +41,7 @@ export interface StudentRepository {
   setPassword(id: string, password: string): Promise<void>;
   updateProfile(
     id: string,
-    updates: Partial<Pick<Student, 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
+    updates: Partial<Pick<Student, 'firstName' | 'lastName' | 'age' | 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
   ): Promise<void>;
   touchActive(id: string): Promise<void>;
   remove(id: string): Promise<void>;

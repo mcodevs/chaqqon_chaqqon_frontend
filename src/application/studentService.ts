@@ -96,10 +96,20 @@ export function createStudentService({ students, random }: StudentDependencies) 
       return { username: account.username, password };
     },
 
-    updateProfile: (
+    async updateProfile(
       id: string,
-      updates: Partial<Pick<Student, 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
-    ) => students.updateProfile(id, updates),
+      updates: Partial<
+        Pick<Student, 'firstName' | 'lastName' | 'age' | 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>
+      >,
+    ) {
+      if (updates.firstName !== undefined && !updates.firstName.trim()) {
+        throw new AppError('STUDENT_FIELDS_REQUIRED');
+      }
+      if (updates.age !== undefined && !isValidAge(updates.age)) {
+        throw new AppError('INVALID_AGE');
+      }
+      return students.updateProfile(id, updates);
+    },
 
     touchActive: (id: string) => students.touchActive(id),
 

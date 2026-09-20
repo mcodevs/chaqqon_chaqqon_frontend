@@ -162,6 +162,17 @@ export type Database = {
           | 'last_active_at'
         >[];
       };
+      update_student_profile: {
+        Args: {
+          student_id: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          age?: number | null;
+          birth_year?: number | null;
+          level_group?: string | null;
+        };
+        Returns: void;
+      };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

@@ -24,13 +24,27 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
 
     async updateProfile(id, updates) {
       const rowUpdates: Database['public']['Tables']['profiles']['Update'] = {};
+      if (updates.firstName !== undefined) rowUpdates.first_name = updates.firstName.trim();
+      if (updates.lastName !== undefined) rowUpdates.last_name = updates.lastName.trim();
+      if (updates.age !== undefined) rowUpdates.age = updates.age;
       if (updates.birthYear !== undefined) rowUpdates.birth_year = updates.birthYear;
       if (updates.levelGroup !== undefined) rowUpdates.level_group = updates.levelGroup;
       if (updates.avatarUrl !== undefined) rowUpdates.avatar_url = updates.avatarUrl;
       if (updates.lastActiveAt !== undefined) rowUpdates.last_active_at = updates.lastActiveAt;
 
       const { error } = await client.from('profiles').update(rowUpdates).eq('id', id);
-      if (error) throw error;
+      if (error) {
+        // Fall back to RPC if direct table update has column grant issue
+        const { error: rpcError } = await client.rpc('update_student_profile', {
+          student_id: id,
+          first_name: updates.firstName !== undefined ? updates.firstName.trim() : null,
+          last_name: updates.lastName !== undefined ? updates.lastName.trim() : null,
+          age: updates.age ?? null,
+          birth_year: updates.birthYear ?? null,
+          level_group: updates.levelGroup ?? null,
+        });
+        if (rpcError) throw error;
+      }
       changes.notify();
     },
 

@@ -62,4 +62,35 @@ describe('studentService', () => {
     expect(suggestion.username).toMatch(/^gayrat\d{2}$/);
     expect(suggestion.password).toMatch(/^\d{4}$/);
   });
+
+  it('updates student profile and validates input', async () => {
+    const deps = createTestDependencies();
+    const service = createStudentService(deps);
+    const { student } = await service.add(input);
+
+    await service.updateProfile(student.id, {
+      firstName: 'Alisher',
+      lastName: 'Valiyev',
+      age: 9,
+      birthYear: 2017,
+      levelGroup: 'B',
+    });
+
+    const [updated] = await service.list();
+    expect(updated).toMatchObject({
+      firstName: 'Alisher',
+      lastName: 'Valiyev',
+      age: 9,
+      birthYear: 2017,
+      levelGroup: 'B',
+    });
+
+    await expect(service.updateProfile(student.id, { firstName: '   ' })).rejects.toMatchObject({
+      code: 'STUDENT_FIELDS_REQUIRED',
+    });
+
+    await expect(service.updateProfile(student.id, { age: 150 })).rejects.toMatchObject({
+      code: 'INVALID_AGE',
+    });
+  });
 });

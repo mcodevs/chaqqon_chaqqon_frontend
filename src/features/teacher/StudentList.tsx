@@ -11,6 +11,7 @@ import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
 import { EmptyState, ErrorMessage } from '@/shared/ui/Notice';
+import { EditStudentForm } from './EditStudentForm';
 import { PaymentForm } from './PaymentForm';
 import styles from './Teacher.module.css';
 
@@ -48,6 +49,8 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
 
   /** Whose "To'ladi" form is open. */
   const [payingId, setPayingId] = useState<string | null>(null);
+  /** Whose "Tahrirlash" form is open. */
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Extract unique birth years from student list
   const availableYears = useMemo(() => {
@@ -135,6 +138,7 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
         {filteredStudents.map((student) => {
           const access = accessOf(payments, student.id, today);
           const paying = payingId === student.id;
+          const editing = editingId === student.id;
           const lastActive = formatLastActive(student.lastActiveAt);
           const studentHw = homeworkList?.find((h) => h.studentId === student.id && h.date === today);
 
@@ -207,9 +211,23 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                 <div className={styles.rowActions}>
                   <Button
                     size="sm"
+                    variant="soft"
+                    tone="blue"
+                    onClick={() => {
+                      setEditingId(editing ? null : student.id);
+                      setPayingId(null);
+                    }}
+                  >
+                    {editing ? 'Yopish' : 'Tahrirlash'}
+                  </Button>
+                  <Button
+                    size="sm"
                     tone="green"
                     aria-expanded={paying}
-                    onClick={() => setPayingId(paying ? null : student.id)}
+                    onClick={() => {
+                      setPayingId(paying ? null : student.id);
+                      setEditingId(null);
+                    }}
                   >
                     To'ladi
                   </Button>
@@ -229,6 +247,13 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
                   pending={recordPayment.pending}
                   onSave={(paidUntil) => void handlePayment(student, paidUntil)}
                   onCancel={() => setPayingId(null)}
+                />
+              )}
+              {editing && (
+                <EditStudentForm
+                  student={student}
+                  onSaved={() => setEditingId(null)}
+                  onCancel={() => setEditingId(null)}
                 />
               )}
             </li>
