@@ -4,7 +4,7 @@ import { createTestDependencies } from '@/testing/fakes';
 import { createBillingService } from './billingService';
 import { createStudentService } from './studentService';
 
-const ALI = { firstName: 'Ali', lastName: '', age: null, username: 'ali10', password: '1234' };
+const ALI = { firstName: 'Ali', lastName: '', username: 'ali10', password: '1234' };
 
 /** Billing is already in use when Ali joins. The test clock reads 2026-09-13, 15:00 in Tashkent. */
 async function withNewStudent() {

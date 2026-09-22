@@ -39,9 +39,22 @@ export function LeaderboardPage() {
             <NameAvatar name={row.student.firstName} avatarUrl={row.student.avatarUrl} />
             <div className={styles.name}>
               <div className={styles.nameMain}>{fullName(row.student)}</div>
-              <div className={styles.nameSub}>{row.sessions} ta mashq</div>
+              <div className={styles.nameSub}>
+                {row.sessions > 0
+                  ? `${row.sessions} ta mashq · ${row.accuracy}% aniqlik`
+                  : 'Hali mashq qilmagan'}
+              </div>
             </div>
-            <span className={styles.score}>{row.sessions > 0 ? `${row.accuracy}%` : '—'}</span>
+            <span className={styles.score}>
+              {row.sessions > 0 ? (
+                <>
+                  <span className={styles.scoreValue}>{row.correct}</span>
+                  <span className={styles.scoreUnit}>ball</span>
+                </>
+              ) : (
+                '—'
+              )}
+            </span>
           </li>
         ))}
       </ol>

@@ -5,7 +5,6 @@ import { createStudentService } from './studentService';
 const input = {
   firstName: ' Ali ',
   lastName: 'Valiyev',
-  age: 8,
   avatarUrl: 'preset:boy_glasses',
   username: 'Ali10',
   password: '1234',
@@ -44,7 +43,7 @@ describe('studentService', () => {
     [{ ...input, firstName: ' ' }, 'STUDENT_FIELDS_REQUIRED'],
     [{ ...input, username: 'ali 10' }, 'INVALID_USERNAME'],
     [{ ...input, password: '12' }, 'PASSWORD_TOO_SHORT'],
-    [{ ...input, age: 1.5 }, 'INVALID_AGE'],
+    [{ ...input, birthYear: 1.5 }, 'INVALID_BIRTH_YEAR'],
   ])('validates new students (%#)', async (invalid, code) => {
     const service = createStudentService(createTestDependencies());
     await expect(service.add(invalid)).rejects.toMatchObject({ code });
@@ -78,7 +77,6 @@ describe('studentService', () => {
     await service.updateProfile(student.id, {
       firstName: 'Alisher',
       lastName: 'Valiyev',
-      age: 9,
       birthYear: 2017,
       levelGroup: 'B',
     });
@@ -87,7 +85,6 @@ describe('studentService', () => {
     expect(updated).toMatchObject({
       firstName: 'Alisher',
       lastName: 'Valiyev',
-      age: 9,
       birthYear: 2017,
       levelGroup: 'B',
     });
@@ -96,8 +93,8 @@ describe('studentService', () => {
       code: 'STUDENT_FIELDS_REQUIRED',
     });
 
-    await expect(service.updateProfile(student.id, { age: 150 })).rejects.toMatchObject({
-      code: 'INVALID_AGE',
+    await expect(service.updateProfile(student.id, { birthYear: 12 })).rejects.toMatchObject({
+      code: 'INVALID_BIRTH_YEAR',
     });
   });
 });

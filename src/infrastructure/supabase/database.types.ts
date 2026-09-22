@@ -17,7 +17,6 @@ type ProfileRow = {
   username: string;
   first_name: string;
   last_name: string;
-  age: number | null;
   birth_year: number | null;
   level_group: 'A' | 'B' | 'C' | 'D';
   avatar_url: string | null;
@@ -155,7 +154,6 @@ export type Database = {
           | 'username'
           | 'first_name'
           | 'last_name'
-          | 'age'
           | 'birth_year'
           | 'level_group'
           | 'avatar_url'
@@ -167,7 +165,6 @@ export type Database = {
           student_id: string;
           first_name?: string | null;
           last_name?: string | null;
-          age?: number | null;
           birth_year?: number | null;
           level_group?: string | null;
         };

@@ -26,10 +26,6 @@ export interface RoomProgress {
   finished: boolean;
 }
 
-export function isRoomActive(room: Room | null): room is Room {
-  return room !== null && room.status !== 'finished';
-}
-
 export function emptyProgress(room: Room, studentId: string): RoomProgress {
   return {
     roomId: room.id,

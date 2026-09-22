@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { RoomSnapshot } from '@/application/competitionService';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
-import type { MarketItem, MarketOrder, StudentStarsBalance } from '@/domain/market';
+import { type MarketItem, type MarketOrder, type StudentStarsBalance, computeStarsByStudent } from '@/domain/market';
 import type { PracticeResult } from '@/domain/results';
+import { computeStudentStats } from '@/domain/statistics';
+import { type StreakInfo, computeStreak } from '@/domain/streak';
 import type { Student, StudentAccount } from '@/domain/users';
 import { useLiveQuery } from '@/shared/hooks/useLiveQuery';
 import { useServices } from './ServicesContext';
@@ -43,12 +45,6 @@ export function useStudentRoom(studentId: string): RoomSnapshot | undefined {
     load,
     subscribe: competition.subscribe,
   });
-}
-
-export function useRoomSnapshot(): RoomSnapshot | undefined {
-  const { competition } = useServices();
-  const load = useCallback(() => competition.getSnapshot(), [competition]);
-  return useLiveQuery({ load, subscribe: competition.subscribe });
 }
 
 export function useMarketItems(): MarketItem[] | undefined {
@@ -95,4 +91,52 @@ export function useSchoolToday(): CalendarDate {
   }, [billing]);
 
   return today;
+}
+
+/**
+ * Practice streaks are derived from results, so they need no extra query: every caller already has
+ * the result list in memory.
+ */
+export function useStudentStreak(studentId: string): StreakInfo | undefined {
+  const results = useResults();
+  const today = useSchoolToday();
+  return useMemo(() => {
+    if (!results) return undefined;
+    const mine = results.filter((result) => result.studentId === studentId);
+    return computeStreak(computeStudentStats(mine).dailyActivity, today);
+  }, [results, studentId, today]);
+}
+
+/** Every student's streak in one pass, for the teacher's roster. */
+export function useStreaksByStudent(): Map<string, StreakInfo> | undefined {
+  const results = useResults();
+  const today = useSchoolToday();
+  return useMemo(() => {
+    if (!results) return undefined;
+    const byStudent = new Map<string, PracticeResult[]>();
+    for (const result of results) {
+      const list = byStudent.get(result.studentId);
+      if (list) list.push(result);
+      else byStudent.set(result.studentId, [result]);
+    }
+    const streaks = new Map<string, StreakInfo>();
+    for (const [studentId, list] of byStudent) {
+      streaks.set(studentId, computeStreak(computeStudentStats(list).dailyActivity, today));
+    }
+    return streaks;
+  }, [results, today]);
+}
+
+/**
+ * Every student's star balance, for the teacher's roster. Stars are derived from results and
+ * orders, both of which the teacher already has loaded, so this costs no extra request.
+ */
+export function useStarsByStudent(): Map<string, StudentStarsBalance> | undefined {
+  const students = useStudents();
+  const results = useResults();
+  const orders = useMarketOrders();
+  return useMemo(
+    () => (students && results && orders ? computeStarsByStudent(students, results, orders) : undefined),
+    [students, results, orders],
+  );
 }

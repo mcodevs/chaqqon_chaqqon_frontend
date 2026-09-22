@@ -3,7 +3,7 @@ import {
   MIN_PASSWORD_LENGTH,
   type Student,
   type StudentAccount,
-  isValidAge,
+  isValidBirthYear,
   isValidUsername,
   normalizeUsername,
 } from '@/domain/users';
@@ -25,7 +25,6 @@ export interface StudentCredentials {
 export interface NewStudentInput extends StudentCredentials {
   firstName: string;
   lastName: string;
-  age: number | null;
   birthYear?: number | null;
   levelGroup?: LevelGroup;
   avatarUrl?: string | null;
@@ -70,7 +69,7 @@ export function createStudentService({ students, random }: StudentDependencies) 
       if (!firstName || !username || !password) throw new AppError('STUDENT_FIELDS_REQUIRED');
       if (!isValidUsername(username)) throw new AppError('INVALID_USERNAME');
       if (password.length < MIN_PASSWORD_LENGTH) throw new AppError('PASSWORD_TOO_SHORT');
-      if (!isValidAge(input.age)) throw new AppError('INVALID_AGE');
+      if (!isValidBirthYear(input.birthYear)) throw new AppError('INVALID_BIRTH_YEAR');
       if ((await students.listAccounts()).some((s) => s.username === username)) {
         throw new AppError('USERNAME_TAKEN');
       }
@@ -79,7 +78,6 @@ export function createStudentService({ students, random }: StudentDependencies) 
         {
           firstName,
           lastName: input.lastName.trim(),
-          age: input.age,
           birthYear: input.birthYear ?? null,
           levelGroup: input.levelGroup ?? 'A',
           avatarUrl: input.avatarUrl ?? null,
@@ -101,14 +99,14 @@ export function createStudentService({ students, random }: StudentDependencies) 
     async updateProfile(
       id: string,
       updates: Partial<
-        Pick<Student, 'firstName' | 'lastName' | 'age' | 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>
+        Pick<Student, 'firstName' | 'lastName' | 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>
       >,
     ) {
       if (updates.firstName !== undefined && !updates.firstName.trim()) {
         throw new AppError('STUDENT_FIELDS_REQUIRED');
       }
-      if (updates.age !== undefined && !isValidAge(updates.age)) {
-        throw new AppError('INVALID_AGE');
+      if (updates.birthYear !== undefined && !isValidBirthYear(updates.birthYear)) {
+        throw new AppError('INVALID_BIRTH_YEAR');
       }
       return students.updateProfile(id, updates);
     },

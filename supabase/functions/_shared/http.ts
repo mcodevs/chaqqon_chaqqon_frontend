@@ -13,7 +13,7 @@ export type FunctionErrorCode =
   | 'USERNAME_TAKEN'
   | 'INVALID_USERNAME'
   | 'PASSWORD_TOO_SHORT'
-  | 'INVALID_AGE'
+  | 'INVALID_BIRTH_YEAR'
   | 'STUDENT_NOT_FOUND'
   | 'INTERNAL';
 

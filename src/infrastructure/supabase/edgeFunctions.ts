@@ -11,7 +11,7 @@ const EXPLAINABLE_CODES = [
   'USERNAME_TAKEN',
   'INVALID_USERNAME',
   'PASSWORD_TOO_SHORT',
-  'INVALID_AGE',
+  'INVALID_BIRTH_YEAR',
   'STUDENT_NOT_FOUND',
 ] as const satisfies readonly AppErrorCode[];
 

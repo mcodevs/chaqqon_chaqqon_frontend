@@ -41,7 +41,7 @@ export interface StudentRepository {
   setPassword(id: string, password: string): Promise<void>;
   updateProfile(
     id: string,
-    updates: Partial<Pick<Student, 'firstName' | 'lastName' | 'age' | 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
+    updates: Partial<Pick<Student, 'firstName' | 'lastName' | 'birthYear' | 'levelGroup' | 'avatarUrl' | 'lastActiveAt'>>,
   ): Promise<void>;
   touchActive(id: string): Promise<void>;
   remove(id: string): Promise<void>;
@@ -56,6 +56,8 @@ export interface HomeworkRepository {
 
 export interface StorageGateway {
   uploadAvatar(file: Blob, studentId: string): Promise<string>;
+  /** A photo of the real gift the teacher is putting in the shop. */
+  uploadMarketImage(file: Blob): Promise<string>;
 }
 
 export interface ResultRepository {

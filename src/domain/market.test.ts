@@ -5,6 +5,7 @@ import {
   calculateEarnedStars,
   calculateSpentStars,
   canAfford,
+  computeStarsByStudent,
   computeStudentStars,
 } from './market';
 import type { PracticeConfig } from './practice/config';
@@ -125,5 +126,36 @@ describe('market domain', () => {
     expect(canAfford(stats.balance, cheapItem)).toBe(true);
     expect(canAfford(stats.balance, expensiveItem)).toBe(false);
     expect(canAfford(stats.balance, outOfStockItem)).toBe(false);
+  });
+});
+
+describe('computeStarsByStudent', () => {
+  it('gives every student their own balance from one shared history', () => {
+    const results: PracticeResult[] = [
+      { ...makeResult('online', 40, 40), studentId: 's1' },
+      { ...makeResult('online', 80, 80), studentId: 's2' },
+      // Solo practice earns nothing, so it must not lift s3 off zero.
+      { ...makeResult('practice', 200, 200), studentId: 's3' },
+    ];
+    const orders: MarketOrder[] = [
+      { id: 'o1', studentId: 's2', itemId: 'i1', itemTitle: 'Stiker', costStars: 1, status: 'pending', createdAt: '' },
+    ];
+
+    const stars = computeStarsByStudent([{ id: 's1' }, { id: 's2' }, { id: 's3' }], results, orders);
+
+    expect(stars.get('s1')).toMatchObject({ earnedStars: 1, spentStars: 0, balance: 1 });
+    expect(stars.get('s2')).toMatchObject({ earnedStars: 2, spentStars: 1, balance: 1 });
+    expect(stars.get('s3')).toMatchObject({ earnedStars: 0, balance: 0 });
+  });
+
+  it('honours each student\'s level group, so easier sections earn nothing', () => {
+    const results: PracticeResult[] = [{ ...makeResult('online', 40, 40), studentId: 's1' }];
+
+    // 'formulasiz' maps to level A, so a level-C student gets no stars for it.
+    const stars = computeStarsByStudent([{ id: 's1', levelGroup: 'C' }], results, []);
+    expect(stars.get('s1')?.balance).toBe(0);
+
+    const beginner = computeStarsByStudent([{ id: 's1', levelGroup: 'A' }], results, []);
+    expect(beginner.get('s1')?.balance).toBe(1);
   });
 });

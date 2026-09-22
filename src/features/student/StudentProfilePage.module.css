@@ -46,6 +46,8 @@
 
 .avatarEditBtn {
   position: absolute;
+  padding: 0;
+  font-family: inherit;
   bottom: -4px;
   right: -4px;
   width: 28px;
@@ -216,6 +218,59 @@
 
 .starsActionBtn:active {
   transform: scale(0.96);
+}
+
+/* Ketma-ket mashq kunlari (streak) */
+.streakCard {
+  background: color-mix(in srgb, var(--brand-accent) 12%, var(--surface-card));
+  border: 2px solid color-mix(in srgb, var(--brand-accent) 55%, transparent);
+  border-radius: var(--radius-lg, 20px);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-shadow: var(--elevation-2);
+}
+
+.streakContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.streakIcon {
+  font-size: var(--size-display);
+  line-height: 1;
+  filter: drop-shadow(var(--elevation-1));
+}
+
+.streakDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.streakLabel {
+  font-size: var(--size-caption);
+  font-weight: 800;
+  color: var(--brand-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.streakCount {
+  font-size: var(--size-h1);
+  font-weight: 900;
+  color: var(--content-primary);
+  line-height: 1.1;
+  font-family: var(--font-display);
+}
+
+.streakHint {
+  margin: 0;
+  font-size: var(--size-caption);
+  color: var(--content-secondary);
+  line-height: 1.4;
+  min-height: 1.4em;
 }
 
 /* Statistika mini bloklari */

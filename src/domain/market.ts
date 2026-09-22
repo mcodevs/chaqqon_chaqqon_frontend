@@ -99,6 +99,31 @@ export function computeStudentStars(
   };
 }
 
+/**
+ * Every student's balance at once, keyed by student id. The teacher's roster needs the whole class,
+ * and each balance is derived from the same result and order lists.
+ */
+export function computeStarsByStudent(
+  students: readonly { id: string; levelGroup?: LevelGroup | null }[],
+  results: readonly PracticeResult[],
+  orders: readonly MarketOrder[],
+): Map<string, StudentStarsBalance> {
+  return new Map(
+    students.map((student) => [
+      student.id,
+      computeStudentStars(student.id, results, orders, student.levelGroup ?? undefined),
+    ]),
+  );
+}
+
+/**
+ * An item's picture is either a real image — uploaded, linked, or inlined by the local backend —
+ * or a single emoji standing in for one.
+ */
+export function isItemPhoto(imageUrl: string | null | undefined): boolean {
+  return typeof imageUrl === 'string' && /^(https?:\/\/|data:image\/|blob:)/.test(imageUrl);
+}
+
 export function canAfford(balance: number, item: MarketItem): boolean {
   return balance >= item.costStars && (item.stock === null || item.stock > 0);
 }

@@ -81,63 +81,71 @@
   font: var(--text-body);
 }
 
-/* ---------- Student rows ---------- */
+.filterToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.filterToggle input {
+  accent-color: var(--brand-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* ---------- Student cards ---------- */
 /*
- * The row stacks by how much room the list actually has, not by window width:
- * with the sidebar open a 900px window leaves the list under 600px.
+ * Each student is a card, not a table row: the teacher scans a handful of them and acts on one at
+ * a time. The card stacks by how much room the list actually has, not by window width — with the
+ * sidebar open a 900px window leaves the list under 600px.
  */
 .list {
   list-style: none;
   margin: 0;
   padding: 0;
   container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .item {
-  border-top: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+  border: 1px solid var(--border-subtle);
+  /* No overflow clipping: the row's "…" menu opens past the card's edge. */
 }
 
-.item:first-child {
-  border-top: none;
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
 }
 
-.row {
+/* Who: avatar and name on the left, the actions for this student on the right. */
+.identityRow {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) 0;
 }
 
-.info {
+.identity {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-}
-
-.name {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .nameText {
   font: var(--text-h3);
   color: var(--content-primary);
-}
-
-.badgeLevel {
-  display: inline-flex;
-  align-items: center;
-  height: 20px;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--brand-primary-soft);
-  color: var(--brand-primary);
-  font: var(--text-caption);
-  white-space: nowrap;
 }
 
 .meta {
@@ -165,29 +173,52 @@
   background: var(--success);
 }
 
+/* State: one row of same-shaped chips, with today's homework at its right edge. */
 .statusRow {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: space-between;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
-/* Access reads as a status chip: state first, colour only as reinforcement. */
+.chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/*
+ * Every chip in the row shares these metrics, including StreakBadge and StarsBadge, so the row
+ * reads as one set rather than three separate widgets.
+ */
+.badgeLevel,
 .access {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  min-height: 22px;
   padding: 2px var(--space-2);
   border-radius: var(--radius-full);
   font: var(--text-caption);
+  white-space: nowrap;
 }
 
+.badgeLevel {
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+}
+
+/* Access reads as a status chip: state first, colour only as reinforcement. */
 .access::before {
   content: '';
   width: 6px;
   height: 6px;
   border-radius: var(--radius-full);
   background: currentColor;
+  flex-shrink: 0;
 }
 
 .accessOpen {
@@ -200,6 +231,7 @@
   color: var(--danger-content);
 }
 
+/* A low-key inline action that must not read as a button. */
 .linkButton {
   border: none;
   background: none;
@@ -207,6 +239,7 @@
   font: var(--text-caption);
   color: var(--content-tertiary);
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .linkButton:hover:not(:disabled) {
@@ -219,7 +252,7 @@
   gap: var(--space-1);
   flex-shrink: 0;
   padding: var(--space-1);
-  background: var(--surface-soft);
+  background: var(--surface-sunken);
   border-radius: var(--radius-md);
 }
 
@@ -228,12 +261,13 @@
   align-items: center;
   gap: var(--space-1);
   min-height: 32px;
-  padding: 0 var(--space-2);
+  padding: 0 var(--space-3);
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
   font: var(--text-caption);
   color: var(--content-tertiary);
+  cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
     color var(--motion-fast) var(--ease-standard);
@@ -319,7 +353,7 @@
 /* ---------- Payment / edit sub-forms ---------- */
 .paymentForm,
 .editForm {
-  margin: 0 0 var(--space-3);
+  margin: 0 var(--space-4) var(--space-4);
   padding: var(--space-4);
   background: var(--surface-soft);
   border: 1px solid var(--border-subtle);
@@ -456,19 +490,34 @@
 }
 
 @container (max-width: 700px) {
-  /* The row stacks: identity on top, then homework, then actions — each full width. */
-  .row {
+  /*
+   * Too narrow for a side-by-side card: the actions drop under the name and the homework set takes
+   * the full width, so every control keeps a thumb-sized target.
+   */
+  .identityRow {
     flex-wrap: wrap;
-    padding: var(--space-4) 0;
   }
 
-  .info {
+  .identity {
     flex: 1 1 60%;
   }
 
-  .homework {
+  .rowActions {
     order: 3;
     flex: 1 1 100%;
+  }
+
+  .rowActions > button:not(:last-child) {
+    flex: 1;
+  }
+
+  .statusRow {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .homework {
     justify-content: space-between;
   }
 
@@ -481,18 +530,5 @@
   .hwLabel {
     display: inline;
   }
-
-  .rowActions {
-    order: 4;
-    flex: 1 1 100%;
-  }
-
-  .rowActions > button:not(:last-child) {
-    flex: 1;
-  }
 }
 
-.requiredMark {
-  margin-left: var(--space-2);
-  color: var(--danger);
-}

@@ -8,7 +8,7 @@ import type { Student, StudentAccount } from '@/domain/users';
 import type { Database, Json } from './database.types';
 
 type Tables = Database['public']['Tables'];
-type ProfileRow = Pick<Tables['profiles']['Row'], 'id' | 'first_name' | 'last_name' | 'age'> &
+type ProfileRow = Pick<Tables['profiles']['Row'], 'id' | 'first_name' | 'last_name'> &
   Partial<Pick<Tables['profiles']['Row'], 'birth_year' | 'level_group' | 'avatar_url' | 'last_active_at'>>;
 type StudentAccountRow = ProfileRow & { username: string };
 
@@ -17,7 +17,6 @@ export function toStudent(row: ProfileRow): Student {
     id: row.id,
     firstName: row.first_name,
     lastName: row.last_name,
-    age: row.age,
   };
   if (row.birth_year !== undefined && row.birth_year !== null) student.birthYear = row.birth_year;
   if (row.level_group !== undefined && row.level_group !== null) student.levelGroup = row.level_group;

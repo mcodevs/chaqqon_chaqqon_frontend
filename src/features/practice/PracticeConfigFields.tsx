@@ -7,12 +7,19 @@ import {
 } from '@/domain/practice/config';
 import { TOPIC_GROUPS, type TopicGroupId, getTopic, topicsForDigitCount } from '@/domain/practice/topics';
 import { formatSeconds } from '@/shared/format';
+import { ChoiceField } from '@/shared/ui/ChoiceField';
+import { numberChoices } from '@/shared/ui/choiceOptions';
 import { SliderField } from '@/shared/ui/SliderField';
 import styles from './Practice.module.css';
 import { SECTION_META } from './sections';
 
 /** Marks the "whole section, mixed" entries apart from topic ids in the one select. */
 const SECTION_PREFIX = 'section:';
+
+/* Small, fixed sets read better as chips: every option is visible and one tap wide. */
+const DIGIT_CHOICES = numberChoices(PRACTICE_LIMITS.digitCount, (n) => `${n} xonali`);
+const ROW_CHOICES = numberChoices(PRACTICE_LIMITS.rowCount);
+const PROBLEM_CHOICES = numberChoices(PRACTICE_LIMITS.problemCount);
 
 interface PracticeConfigFieldsProps {
   value: PracticeConfig;
@@ -77,30 +84,32 @@ export function PracticeConfigFields({ value, onChange }: PracticeConfigFieldsPr
         </p>
       </div>
 
-      <SliderField
+      <ChoiceField
         label="Xonalar soni"
-        {...PRACTICE_LIMITS.digitCount}
+        options={DIGIT_CHOICES}
         value={value.digitCount}
         onChange={(n) => leaveTopic('digitCount', n)}
       />
-      <SliderField
+      <ChoiceField
         label="Qator soni (necha son)"
-        {...PRACTICE_LIMITS.rowCount}
+        options={ROW_CHOICES}
         value={value.rowCount}
         onChange={(n) => set('rowCount', n)}
       />
+      <ChoiceField
+        label="Misollar soni"
+        options={PROBLEM_CHOICES}
+        value={value.problemCount}
+        onChange={(n) => set('problemCount', n)}
+      />
+      {/* 0,3–7 s in tenths is a real range, so it keeps a slider — with buttons for the fine steps. */}
       <SliderField
         label="Har bir son uchun vaqt (soniya)"
         {...PRACTICE_LIMITS.secondsPerNumber}
         formatValue={formatSeconds}
+        stepper
         value={value.secondsPerNumber}
         onChange={(n) => set('secondsPerNumber', n)}
-      />
-      <SliderField
-        label="Misollar soni"
-        {...PRACTICE_LIMITS.problemCount}
-        value={value.problemCount}
-        onChange={(n) => set('problemCount', n)}
       />
     </>
   );

@@ -10,6 +10,7 @@ import {
   useResults,
   useSchoolToday,
   useStudentStars,
+  useStudentStreak,
   useWrittenHomework,
 } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
@@ -25,6 +26,7 @@ export function StudentProfilePage() {
   const { signOut } = useSession();
   const { students: studentService } = useServices();
   const stars = useStudentStars(student.id);
+  const streak = useStudentStreak(student.id);
   const payments = usePayments();
   const results = useResults();
   const today = useSchoolToday();
@@ -64,13 +66,24 @@ export function StudentProfilePage() {
     <div className={styles.container}>
       {/* 1. Profil asosiy kartochkasi */}
       <section className={styles.profileCard}>
+        {/* Tapping the photo shows it full screen; the camera button is what changes it. */}
         <div
           className={styles.avatarWrapper}
           onClick={() => setIsAvatarModalOpen(true)}
           title="Rasmni o'zgartirish"
         >
-          <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={68} />
-          <span className={styles.avatarEditBtn}>📷</span>
+          <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={68} zoomable />
+          <button
+            type="button"
+            className={styles.avatarEditBtn}
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsAvatarModalOpen(true);
+            }}
+            aria-label="Rasmni o'zgartirish"
+          >
+            📷
+          </button>
         </div>
         <div className={styles.profileInfo}>
           <h2 className={styles.fullName}>{fullName}</h2>
@@ -133,6 +146,26 @@ export function StudentProfilePage() {
         <Link to="/student/market" className={styles.starsActionBtn}>
           🎁 Sovgʻa tanlash
         </Link>
+      </section>
+
+      {/* 2.5. Ketma-ket mashq kunlari */}
+      <section className={styles.streakCard}>
+        <div className={styles.streakContent}>
+          <span className={styles.streakIcon}>🔥</span>
+          <div className={styles.streakDetails}>
+            <span className={styles.streakLabel}>Ketma-ket mashq kunlari</span>
+            <span className={styles.streakCount}>{streak?.current ?? 0} kun</span>
+          </div>
+        </div>
+        <p className={styles.streakHint}>
+          {streak === undefined
+            ? ' '
+            : streak.current === 0
+              ? 'Bugun bitta mashq qilsang, yangi hisob boshlanadi!'
+              : streak.activeToday
+                ? `Bugun bajarildi ✓ Eng uzun natijang — ${streak.longest} kun.`
+                : 'Bugun hali mashq qilmading — davom ettirish uchun bitta mashq yetadi.'}
+        </p>
       </section>
 
       {/* 3. Tezkor yutuqlar / statistika qisqacha */}

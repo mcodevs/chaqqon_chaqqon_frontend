@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { DEFAULT_RODS, MAX_RODS, MIN_RODS, toDigits } from '@/domain/practice/abacus';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
-import { SliderField } from '@/shared/ui/SliderField';
+import { ChoiceField } from '@/shared/ui/ChoiceField';
+import { numberChoices } from '@/shared/ui/choiceOptions';
 import { Soroban } from '@/shared/ui/Soroban';
 import styles from './Abacus.module.css';
+
+const ROD_CHOICES = numberChoices({ min: MIN_RODS, max: MAX_RODS });
 
 /** "407" → "400 + 7", so the rods and the number are read as the same thing. */
 function placeValues(value: number, rods: number): string {
@@ -40,10 +43,9 @@ export function FreePlay() {
       </Card>
 
       <Card title="Sozlash">
-        <SliderField
+        <ChoiceField
           label="Xonalar (ustunlar) soni"
-          min={MIN_RODS}
-          max={MAX_RODS}
+          options={ROD_CHOICES}
           value={rods}
           onChange={(next) => {
             setRods(next);

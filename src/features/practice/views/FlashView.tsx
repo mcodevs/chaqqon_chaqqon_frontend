@@ -8,7 +8,6 @@ interface FlashViewProps {
   phase: FlashPhase;
   numbers: readonly number[];
   numberIndex: number;
-  secondsPerNumber?: number;
 }
 
 export function FlashView({ problemNumber, problemCount, phase, numbers, numberIndex }: FlashViewProps) {

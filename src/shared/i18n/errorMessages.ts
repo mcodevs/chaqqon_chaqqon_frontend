@@ -13,7 +13,7 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   INVALID_CREDENTIALS: "Login yoki parol noto'g'ri",
   FORBIDDEN: "Bu amal uchun ruxsat yo'q",
   STUDENT_FIELDS_REQUIRED: 'Ism, login va parolni kiriting',
-  INVALID_AGE: "Yoshni to'g'ri kiriting",
+  INVALID_BIRTH_YEAR: "Tug'ilgan yilni to'g'ri kiriting",
   USERNAME_TAKEN: 'Bu login band, boshqasini tanlang',
   STUDENT_NOT_FOUND: "O'quvchi topilmadi",
   ROOM_ACTIVE: 'Faol musobaqa xonasi bor — avval uni yoping',

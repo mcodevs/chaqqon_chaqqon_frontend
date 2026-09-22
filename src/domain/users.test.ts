@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fullName, isValidAge, isValidUsername, normalizeUsername } from './users';
+import { ageFromBirthYear, fullName, isValidBirthYear, isValidUsername, normalizeUsername } from './users';
 
 describe('users', () => {
   it('normalizes usernames to trimmed lower case', () => {
@@ -21,12 +21,24 @@ describe('users', () => {
 
   it.each([
     [null, true],
-    [8, true],
-    [2, false],
-    [100, false],
-    [7.5, false],
-  ])('validates age %s → %s', (age, valid) => {
-    expect(isValidAge(age)).toBe(valid);
+    [undefined, true],
+    [2017, true],
+    [1899, false],
+    [2101, false],
+    [2017.5, false],
+  ])('validates birth year %s → %s', (birthYear, valid) => {
+    expect(isValidBirthYear(birthYear)).toBe(valid);
+  });
+
+  it.each([
+    [2017, 2026, 9],
+    [2026, 2026, 0],
+    [null, 2026, null],
+    [undefined, 2026, null],
+    // A year in the future is a typo, not a negative age.
+    [2030, 2026, null],
+  ])('turns birth year %s into an age in %s', (birthYear, currentYear, expected) => {
+    expect(ageFromBirthYear(birthYear, currentYear)).toBe(expected);
   });
 
   it('joins first and last name, skipping blanks', () => {

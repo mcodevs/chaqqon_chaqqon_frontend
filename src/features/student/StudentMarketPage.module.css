@@ -247,14 +247,6 @@
   color: var(--content-primary);
 }
 
-.itemDescription {
-  font-size: var(--size-body);
-  color: var(--content-tertiary);
-  margin: 0;
-  line-height: 1.4;
-  flex: 1;
-}
-
 .stockInfo {
   font-size: var(--size-body);
   margin-top: var(--space-1);
@@ -327,12 +319,6 @@
   color: var(--content-tertiary);
   font-size: var(--size-body);
   margin: var(--space-2) 0 0 0;
-}
-
-.emptySub {
-  color: var(--content-tertiary);
-  font-style: italic;
-  font-size: var(--size-body);
 }
 
 .ordersList {

@@ -41,7 +41,6 @@ describe('authService', () => {
     const { student } = await studentService.add({
       firstName: 'Ali',
       lastName: '',
-      age: 8,
       username: 'ali10',
       password: '1234',
     });

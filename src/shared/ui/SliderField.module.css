@@ -20,3 +20,38 @@
   accent-color: var(--brand-primary);
   cursor: pointer;
 }
+
+/* A fine range (0,1 s steps) is hard to hit by dragging, so the buttons flank the track. */
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stepBtn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font-family: var(--font-display);
+  font-size: var(--size-body-lg);
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard);
+}
+
+.stepBtn:hover:not(:disabled) {
+  border-color: var(--brand-primary);
+  background: var(--surface-hover);
+}
+
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

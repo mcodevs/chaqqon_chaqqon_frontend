@@ -1,0 +1,127 @@
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.monthLabel {
+  font-family: var(--font-display);
+  font-size: var(--size-body-lg);
+  font-weight: 700;
+  color: var(--content-primary);
+  text-transform: capitalize;
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-secondary);
+  font-size: var(--size-body);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.navButton:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
+
+.weekday {
+  text-align: center;
+  font-size: var(--size-caption);
+  font-weight: 600;
+  color: var(--content-tertiary);
+  padding-bottom: var(--space-1);
+}
+
+.day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--size-caption);
+  font-weight: 600;
+  background: var(--surface-sunken);
+  color: var(--content-tertiary);
+}
+
+.outside {
+  visibility: hidden;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  font-size: var(--size-caption);
+  color: var(--content-tertiary);
+}
+
+.legendCells {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.legendCell {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--surface-sunken);
+}
+
+/* Three steps of intensity, sharing the bar chart's success semantics. */
+.level1 {
+  background: var(--success-soft);
+  color: var(--success-content);
+}
+
+.level2 {
+  background: color-mix(in srgb, var(--success) 55%, var(--success-soft));
+  color: var(--surface-card);
+}
+
+.level3 {
+  background: var(--success);
+  color: var(--surface-card);
+}
+
+.today {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+@media (max-width: 400px) {
+  .grid {
+    gap: 3px;
+  }
+
+  .day {
+    font-size: 11px;
+  }
+}

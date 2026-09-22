@@ -60,7 +60,6 @@ function toStudent(record: StudentRecord): Student {
     id: record.id,
     firstName: record.firstName,
     lastName: record.lastName,
-    age: record.age,
     birthYear: record.birthYear ?? null,
     levelGroup: record.levelGroup ?? 'A',
     avatarUrl: record.avatarUrl ?? null,

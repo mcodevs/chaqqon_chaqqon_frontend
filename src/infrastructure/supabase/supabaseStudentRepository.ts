@@ -15,7 +15,7 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
     async list() {
       const { data, error } = await client
         .from('profiles')
-        .select('id, first_name, last_name, age, birth_year, level_group, avatar_url, last_active_at')
+        .select('id, first_name, last_name, birth_year, level_group, avatar_url, last_active_at')
         .eq('role', 'student')
         .order('created_at');
       if (error) throw error;
@@ -26,7 +26,6 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
       const rowUpdates: Database['public']['Tables']['profiles']['Update'] = {};
       if (updates.firstName !== undefined) rowUpdates.first_name = updates.firstName.trim();
       if (updates.lastName !== undefined) rowUpdates.last_name = updates.lastName.trim();
-      if (updates.age !== undefined) rowUpdates.age = updates.age;
       if (updates.birthYear !== undefined) rowUpdates.birth_year = updates.birthYear;
       if (updates.levelGroup !== undefined) rowUpdates.level_group = updates.levelGroup;
       if (updates.avatarUrl !== undefined) rowUpdates.avatar_url = updates.avatarUrl;
@@ -39,7 +38,6 @@ export function createSupabaseStudentRepository(client: AppSupabaseClient): Stud
           student_id: id,
           first_name: updates.firstName !== undefined ? updates.firstName.trim() : null,
           last_name: updates.lastName !== undefined ? updates.lastName.trim() : null,
-          age: updates.age ?? null,
           birth_year: updates.birthYear ?? null,
           level_group: updates.levelGroup ?? null,
         });

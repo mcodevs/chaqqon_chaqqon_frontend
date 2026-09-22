@@ -2,15 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 import type { StudentCredentials } from '@/application/studentService';
 import { type CalendarDate, type Payment, type StudentAccess, accessOf } from '@/domain/billing';
 import type { HomeworkStatus } from '@/domain/homework';
-import { type StudentAccount, fullName } from '@/domain/users';
+import type { StreakInfo } from '@/domain/streak';
+import { type StudentAccount, ageFromBirthYear, fullName } from '@/domain/users';
 import { formatCalendarDate, formatLastActive } from '@/shared/format';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
-import { useWrittenHomework } from '@/shared/services/queries';
+import { useStarsByStudent, useStreaksByStudent, useWrittenHomework } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { MenuButton } from '@/shared/ui/MenuButton';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
+import { StarsBadge } from '@/shared/ui/StarsBadge';
+import { StreakBadge } from '@/shared/ui/StreakBadge';
 import { EmptyState, ErrorMessage } from '@/shared/ui/Notice';
 import { EditStudentForm } from './EditStudentForm';
 import { PaymentForm } from './PaymentForm';
@@ -30,20 +33,14 @@ function accessLabel({ open, paidUntil }: StudentAccess): string {
     : `Yopiq · ${formatCalendarDate(paidUntil)} kuni tugagan`;
 }
 
+/** A student with no results at all is simply missing from the streak map. */
+const EMPTY_STREAK: StreakInfo = { current: 0, longest: 0, activeToday: false, lastActiveDate: null };
+
 const HOMEWORK_OPTIONS = [
   { status: 'bajardi' as HomeworkStatus, label: 'Bajardi', icon: '✓', activeClass: 'hwDone' },
   { status: 'chala' as HomeworkStatus, label: 'Chala', icon: '~', activeClass: 'hwPartial' },
   { status: 'bajarmadi' as HomeworkStatus, label: 'Bajarmadi', icon: '✕', activeClass: 'hwMissed' },
 ];
-
-function getStudentAge(birthYear?: number | null, age?: number | null): number | null {
-  if (birthYear && birthYear > 1900) {
-    const currentYear = new Date().getFullYear();
-    const calculated = currentYear - birthYear;
-    return calculated >= 0 ? calculated : null;
-  }
-  return age ?? null;
-}
 
 export function StudentList({ students, payments, today, onCredentialsIssued }: StudentListProps) {
   const { students: studentService, billing, homework } = useServices();
@@ -52,9 +49,13 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
   const resetPassword = useAsyncAction(studentService.resetPassword);
   const removeStudent = useAsyncAction(studentService.remove);
   const homeworkList = useWrittenHomework();
+  const currentYear = Number(today.slice(0, 4));
+  const streaks = useStreaksByStudent();
+  const stars = useStarsByStudent();
 
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [onlyIdle, setOnlyIdle] = useState(false);
 
   // Re-evaluate relative last-active times every 30 seconds
   const [, setTick] = useState(0);
@@ -82,9 +83,10 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
     return students.filter((s) => {
       if (selectedYear !== 'all' && String(s.birthYear) !== selectedYear) return false;
       if (selectedLevel !== 'all' && (s.levelGroup ?? 'A') !== selectedLevel) return false;
+      if (onlyIdle && (streaks?.get(s.id)?.current ?? 0) > 0) return false;
       return true;
     });
-  }, [students, selectedYear, selectedLevel]);
+  }, [students, selectedYear, selectedLevel, onlyIdle, streaks]);
 
   const handlePayment = async (student: StudentAccount, paidUntil: CalendarDate) => {
     if (await recordPayment.run(student.id, paidUntil)) setPayingId(null);
@@ -144,6 +146,11 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
             <option value="D">D toifa (Miks)</option>
           </select>
         </div>
+
+        <label className={styles.filterToggle}>
+          <input type="checkbox" checked={onlyIdle} onChange={(e) => setOnlyIdle(e.target.checked)} />
+          Faqat mashq qilmayotganlar
+        </label>
       </div>
 
       <ErrorMessage>
@@ -163,111 +170,114 @@ export function StudentList({ students, payments, today, onCredentialsIssued }: 
           const editing = editingId === student.id;
           const lastActive = formatLastActive(student.lastActiveAt);
           const studentHw = homeworkList?.find((h) => h.studentId === student.id && h.date === today);
-          const studentAge = getStudentAge(student.birthYear, student.age);
+          const studentAge = ageFromBirthYear(student.birthYear, currentYear);
 
           return (
             <li key={student.id} className={styles.item}>
-              <div className={styles.row}>
-                <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={44} />
+              <div className={styles.card}>
+                {/* Kim — avatar, ism va login; o'ngda esa amallar. */}
+                <div className={styles.identityRow}>
+                  <NameAvatar name={student.firstName} avatarUrl={student.avatarUrl} size={48} zoomable />
 
-                <div className={styles.info}>
-                  <div className={styles.name}>
-                    <span className={styles.nameText}>
-                      {fullName(student)}
-                      {studentAge !== null && `, ${studentAge} yosh`}
-                    </span>
+                  <div className={styles.identity}>
+                    <span className={styles.nameText}>{fullName(student)}</span>
+                    <div className={styles.meta}>
+                      {studentAge !== null && <span>{studentAge} yosh</span>}
+                      <span>
+                        login: <b>{student.username}</b>
+                      </span>
+                      <span className={lastActive.isOnline ? styles.metaOnline : undefined}>
+                        {lastActive.isOnline && <span className={styles.onlineIndicator} />}
+                        {lastActive.text}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.rowActions}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      tone="success"
+                      aria-expanded={paying}
+                      onClick={() => {
+                        setPayingId(paying ? null : student.id);
+                        setEditingId(null);
+                      }}
+                    >
+                      To'ladi
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      aria-expanded={editing}
+                      onClick={() => {
+                        setEditingId(editing ? null : student.id);
+                        setPayingId(null);
+                      }}
+                    >
+                      {editing ? 'Yopish' : 'Tahrirlash'}
+                    </Button>
+                    <MenuButton
+                      label={`${student.firstName} uchun boshqa amallar`}
+                      actions={[
+                        ...(access.latest
+                          ? [
+                              {
+                                label: "To'lovni bekor qilish",
+                                icon: '↩',
+                                onSelect: () => handleCancelPayment(student),
+                              },
+                            ]
+                          : []),
+                        {
+                          label: 'Yangi parol',
+                          icon: '🔑',
+                          onSelect: () => void handleReset(student),
+                        },
+                        {
+                          label: "O'chirish",
+                          icon: '🗑',
+                          danger: true,
+                          onSelect: () => handleRemove(student),
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                {/* Holat — bir xil ko'rinishdagi belgilar qatori, yonida bugungi uy vazifasi. */}
+                <div className={styles.statusRow}>
+                  <div className={styles.chips}>
                     <span className={styles.badgeLevel}>{student.levelGroup ?? 'A'} toifa</span>
-                  </div>
-
-                  <div className={styles.meta}>
-                    <span>
-                      login: <b>{student.username}</b>
-                    </span>
-                    <span className={lastActive.isOnline ? styles.metaOnline : undefined}>
-                      {lastActive.isOnline && <span className={styles.onlineIndicator} />}
-                      {lastActive.text}
-                    </span>
-                  </div>
-
-                  <div className={styles.statusRow}>
+                    {streaks && (
+                      <StreakBadge streak={streaks.get(student.id) ?? EMPTY_STREAK} today={today} />
+                    )}
+                    {stars && <StarsBadge balance={stars.get(student.id)} />}
                     <span
                       className={`${styles.access} ${access.open ? styles.accessOpen : styles.accessClosed}`}
                     >
                       {accessLabel(access)}
                     </span>
-                    {access.latest && (
-                      <button
-                        type="button"
-                        className={styles.linkButton}
-                        disabled={cancelPayment.pending}
-                        onClick={() => handleCancelPayment(student)}
-                      >
-                        bekor qilish
-                      </button>
-                    )}
                   </div>
-                </div>
 
-                {/* Bugungi yozma uy vazifasi — bir marta bosiladigan uchta holat */}
-                <div className={styles.homework} role="group" aria-label="Yozma uy vazifasi">
-                  {HOMEWORK_OPTIONS.map((option) => {
-                    const active = studentHw?.status === option.status;
-                    return (
-                      <button
-                        key={option.status}
-                        type="button"
-                        aria-pressed={active}
-                        title={`Yozma uy vazifasi: ${option.label}`}
-                        className={`${styles.hwBtn} ${active ? styles[option.activeClass] : ''}`}
-                        onClick={() => handleHomeworkStatus(student.id, option.status)}
-                      >
-                        <span aria-hidden="true">{option.icon}</span>
-                        <span className={styles.hwLabel}>{option.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className={styles.rowActions}>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    tone="success"
-                    aria-expanded={paying}
-                    onClick={() => {
-                      setPayingId(paying ? null : student.id);
-                      setEditingId(null);
-                    }}
-                  >
-                    To'ladi
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    aria-expanded={editing}
-                    onClick={() => {
-                      setEditingId(editing ? null : student.id);
-                      setPayingId(null);
-                    }}
-                  >
-                    {editing ? 'Yopish' : 'Tahrirlash'}
-                  </Button>
-                  <MenuButton
-                    label={`${student.firstName} uchun boshqa amallar`}
-                    actions={[
-                      {
-                        label: 'Yangi parol',
-                        icon: '🔑',
-                        onSelect: () => void handleReset(student),
-                      },
-                      {
-                        label: "O'chirish",
-                        icon: '🗑',
-                        danger: true,
-                        onSelect: () => handleRemove(student),
-                      },
-                    ]}
-                  />
+                  <div className={styles.homework} role="group" aria-label="Yozma uy vazifasi">
+                    {HOMEWORK_OPTIONS.map((option) => {
+                      const active = studentHw?.status === option.status;
+                      return (
+                        <button
+                          key={option.status}
+                          type="button"
+                          aria-pressed={active}
+                          title={`Yozma uy vazifasi: ${option.label}`}
+                          className={`${styles.hwBtn} ${active ? styles[option.activeClass] : ''}`}
+                          onClick={() => handleHomeworkStatus(student.id, option.status)}
+                        >
+                          <span aria-hidden="true">{option.icon}</span>
+                          <span className={styles.hwLabel}>{option.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               {paying && (

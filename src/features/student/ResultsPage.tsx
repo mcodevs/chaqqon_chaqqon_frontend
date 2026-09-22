@@ -5,6 +5,7 @@ import { SECTION_META } from '@/features/practice/sections';
 import { formatDate } from '@/shared/format';
 import { useResults, useSchoolToday } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
+import { StreakCalendar } from '@/shared/ui/StreakCalendar';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
 import { useCurrentStudent } from './CurrentStudentContext';
@@ -34,6 +35,9 @@ export function ResultsPage() {
   );
 
   const stats = useMemo(() => computeStudentStats(filteredResults), [filteredResults]);
+
+  // The calendar shows whole months, so it ignores the range tabs above.
+  const allTimeActivity = useMemo(() => computeStudentStats(studentResults).dailyActivity, [studentResults]);
 
   if (!results)
     return (
@@ -163,7 +167,12 @@ export function ResultsPage() {
         </Card>
       )}
 
-      {/* 5. Natijalar tarixi */}
+      {/* 5. Mashq kunlari kalendari */}
+      <Card title="Mashq kunlari">
+        <StreakCalendar dailyActivity={allTimeActivity} today={today} />
+      </Card>
+
+      {/* 6. Natijalar tarixi */}
       <Card title="Mashqlar tarixi">
         {filteredResults.length === 0 && (
           <EmptyState icon="📊" title="Bu davrda natija yo'q">

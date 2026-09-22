@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useCurrentStudent } from './CurrentStudentContext';
 import { useServices } from '@/shared/services/ServicesContext';
 import { useMarketItems, useMarketOrders, useStudentStars } from '@/shared/services/queries';
-import { canAfford, type MarketItem, type MarketOrder } from '@/domain/market';
+import { canAfford, isItemPhoto, type MarketItem, type MarketOrder } from '@/domain/market';
 import { toErrorMessage } from '@/shared/i18n/errorMessages';
 import { Skeleton } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
@@ -131,7 +131,7 @@ export function StudentMarketPage() {
               return (
                 <div key={item.id} className={`${styles.itemCard} ${isOutOfStock ? styles.outOfStock : ''}`}>
                   <div className={styles.itemImageWrapper}>
-                    {item.imageUrl && item.imageUrl.startsWith('http') ? (
+                    {isItemPhoto(item.imageUrl) ? (
                       <img src={item.imageUrl} alt={item.title} className={styles.itemImg} />
                     ) : (
                       <div className={styles.itemEmoji}>{item.imageUrl || '🎁'}</div>

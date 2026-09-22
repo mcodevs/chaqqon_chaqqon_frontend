@@ -7,7 +7,7 @@ import {
 } from '../_shared/clients.ts';
 import { type Body, fail, handle, json, readJson } from '../_shared/http.ts';
 import { authEmailFor, authPasswordFor } from '../_shared/identity.ts';
-import { readAge, readId, readName, readPassword, readUsername } from '../_shared/validation.ts';
+import { readId, readName, readPassword, readUsername } from '../_shared/validation.ts';
 
 /**
  * Teacher-only student account management. Auth admin APIs need the service role,
@@ -48,8 +48,6 @@ async function createStudent(admin: SupabaseClient, body: Body): Promise<Respons
   const firstName = readName(body.firstName);
   const lastName = readName(body.lastName ?? '');
   if (!firstName || lastName === null) return fail('BAD_REQUEST', 400);
-  const age = readAge(body.age);
-  if (!age.valid) return fail('INVALID_AGE', 400);
 
   const { data, error } = await admin.auth.admin.createUser({
     email: authEmailFor(username),
@@ -61,14 +59,13 @@ async function createStudent(admin: SupabaseClient, body: Body): Promise<Respons
     throw error;
   }
 
-  const student = { id: data.user.id, username, firstName, lastName, age: age.age };
+  const student = { id: data.user.id, username, firstName, lastName };
   const { error: profileError } = await admin.from('profiles').insert({
     id: student.id,
     role: 'student',
     username,
     first_name: firstName,
     last_name: lastName,
-    age: student.age,
   });
   if (profileError) {
     await admin.auth.admin.deleteUser(student.id);

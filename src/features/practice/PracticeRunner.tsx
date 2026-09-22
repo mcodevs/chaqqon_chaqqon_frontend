@@ -64,7 +64,6 @@ export function PracticeRunner({
           phase={state.phase}
           numbers={currentProblem(state).numbers}
           numberIndex={state.numberIndex}
-          secondsPerNumber={secondsPerNumber}
         />
       );
     case 'answering':

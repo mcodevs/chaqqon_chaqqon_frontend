@@ -41,7 +41,6 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
     const created = await addStudent.run({
       firstName: form.firstName,
       lastName: form.lastName,
-      age: null,
       birthYear: form.birthYear.trim() === '' ? null : Number(form.birthYear),
       levelGroup: form.levelGroup,
       avatarUrl: form.avatarUrl,

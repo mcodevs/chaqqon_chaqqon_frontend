@@ -114,7 +114,6 @@ export function ClassroomMatch({ setup, onRematch, onClose }: ClassroomMatchProp
         <FlashRound
           state={state}
           participants={participants}
-          secondsPerNumber={config.secondsPerNumber}
           isLastRound={isLastRound}
           onNext={handleNext}
         />

@@ -1,4 +1,4 @@
-import type { CalendarDate } from './billing';
+import { type CalendarDate, schoolDate } from './billing';
 import { SECTION_IDS, type SectionId } from './practice/config';
 import { type PracticeResult, accuracyPercent } from './results';
 import type { Student } from './users';
@@ -45,12 +45,11 @@ export interface ClassroomStats {
   students: StudentSummaryRow[];
 }
 
-/** Extracts 'YYYY-MM-DD' from an ISO date string in Tashkent timezone (UTC+5). */
+/** Extracts 'YYYY-MM-DD' from an ISO date string as the day it falls on in Tashkent. */
 export function extractLocalDate(isoString: string): CalendarDate {
   const time = Date.parse(isoString);
   if (Number.isNaN(time)) return isoString.slice(0, 10);
-  const SCHOOL_UTC_OFFSET_MS = 5 * 60 * 60 * 1000;
-  return new Date(time + SCHOOL_UTC_OFFSET_MS).toISOString().slice(0, 10);
+  return schoolDate(new Date(time));
 }
 
 /** Filters results by date range relative to today (Tashkent date 'YYYY-MM-DD'). */

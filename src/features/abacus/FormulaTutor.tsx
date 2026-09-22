@@ -5,11 +5,13 @@ import { generateProblem } from '@/domain/practice/problem';
 import { SECTION_META } from '@/features/practice/sections';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
-import { SliderField } from '@/shared/ui/SliderField';
+import { ChoiceField } from '@/shared/ui/ChoiceField';
+import { numberChoices } from '@/shared/ui/choiceOptions';
 import { Soroban } from '@/shared/ui/Soroban';
 import styles from './Abacus.module.css';
 
 const ROW_LIMITS = { min: 2, max: 6, step: 1 } as const;
+const ROW_CHOICES = numberChoices(ROW_LIMITS);
 
 interface Frame {
   /** The board after this step. */
@@ -168,9 +170,9 @@ export function FormulaTutor() {
           </select>
         </div>
 
-        <SliderField
+        <ChoiceField
           label="Qator soni (necha son)"
-          {...ROW_LIMITS}
+          options={ROW_CHOICES}
           value={rowCount}
           onChange={(next) => restart(section, next)}
         />

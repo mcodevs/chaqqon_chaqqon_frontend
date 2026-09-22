@@ -1,15 +1,15 @@
-import { useState, useMemo } from 'react';
+import { type ChangeEvent, useMemo, useState } from 'react';
 import { useServices } from '@/shared/services/ServicesContext';
 import { useMarketItems, useMarketOrders, useStudents } from '@/shared/services/queries';
 import { toErrorMessage } from '@/shared/i18n/errorMessages';
-import type { MarketItem, MarketOrder } from '@/domain/market';
+import { type MarketItem, type MarketOrder, isItemPhoto } from '@/domain/market';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import styles from './TeacherMarketPage.module.css';
 
 const PRESET_ICONS = ['🎁', '📚', '✏️', '🎨', '🍫', '🧸', '🏅', '🎒', '🧩', '🚀', '🎯', '⚽'];
 
 export function TeacherMarketPage() {
-  const { market } = useServices();
+  const { market, storage } = useServices();
 
   const items = useMarketItems();
   const orders = useMarketOrders();
@@ -22,10 +22,30 @@ export function TeacherMarketPage() {
   const [imageUrl, setImageUrl] = useState('🎁');
   const [stock, setStock] = useState<string>(''); // empty string means unlimited
 
+  const [uploading, setUploading] = useState(false);
+  const isPhoto = isItemPhoto(imageUrl);
+
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'delivered' | 'cancelled'>('pending');
   const [submitting, setSubmitting] = useState(false);
   const [orderActionId, setOrderActionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Clear the input so picking the same file twice still fires a change.
+    event.target.value = '';
+    if (!file) return;
+
+    setUploading(true);
+    setFeedback(null);
+    try {
+      setImageUrl(await storage.uploadMarketImage(file));
+    } catch (err: unknown) {
+      setFeedback({ type: 'error', message: toErrorMessage(err) });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const resetForm = () => {
     setIsEditing(null);
@@ -188,7 +208,48 @@ export function TeacherMarketPage() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>Belgi (Emoji) yoki Rasm URL</label>
+              <label className={styles.label}>Sovg'a rasmi</label>
+
+              {/* A photo of the real gift beats an emoji, so it comes first. */}
+              <div className={styles.uploadRow}>
+                <label className={`${styles.uploadBtn} ${uploading ? styles.uploadBtnBusy : ''}`}>
+                  <span aria-hidden="true">📷</span>
+                  <span>Suratga olish</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className={styles.hiddenInput}
+                    disabled={uploading}
+                    onChange={handleImageUpload}
+                  />
+                </label>
+                <label className={`${styles.uploadBtn} ${uploading ? styles.uploadBtnBusy : ''}`}>
+                  <span aria-hidden="true">🖼</span>
+                  <span>Galereyadan</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={styles.hiddenInput}
+                    disabled={uploading}
+                    onChange={handleImageUpload}
+                  />
+                </label>
+              </div>
+
+              {uploading && <p className={styles.uploadHint}>Rasm yuklanmoqda…</p>}
+
+              {isPhoto && (
+                <div className={styles.photoPreview}>
+                  <img src={imageUrl} alt="Tanlangan sovg'a rasmi" className={styles.photoThumb} />
+                  <button type="button" className={styles.photoRemove} onClick={() => setImageUrl('🎁')}>
+                    Rasmni olib tashlash
+                  </button>
+                </div>
+              )}
+
+              <div className={styles.divider}>yoki belgi tanlang</div>
+
               <div className={styles.presetIcons}>
                 {PRESET_ICONS.map((ico) => (
                   <button
@@ -201,13 +262,6 @@ export function TeacherMarketPage() {
                   </button>
                 ))}
               </div>
-              <input
-                type="text"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Emoji yoki https://rasm-linki.png"
-                className={styles.input}
-              />
             </div>
 
             <div className={styles.formActions}>
@@ -236,7 +290,7 @@ export function TeacherMarketPage() {
               {items.map((item: MarketItem) => (
                 <div key={item.id} className={styles.itemRow}>
                   <div className={styles.itemEmoji}>
-                    {item.imageUrl && item.imageUrl.startsWith('http') ? (
+                    {isItemPhoto(item.imageUrl) ? (
                       <img src={item.imageUrl} alt={item.title} className={styles.itemThumb} />
                     ) : (
                       item.imageUrl || '🎁'

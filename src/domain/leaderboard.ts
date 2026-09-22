@@ -9,7 +9,11 @@ export interface LeaderboardRow {
   accuracy: number;
 }
 
-/** Ranks by accuracy, then by number of sessions; students without sessions go last. */
+/**
+ * Ranks by points, where every correct answer is one point: a wrong answer earns nothing, so
+ * accuracy still counts, but a single perfect problem can no longer outrank weeks of practice.
+ * Accuracy and session count only break ties. Students without sessions go last.
+ */
 export function computeLeaderboard(
   students: readonly Student[],
   results: readonly PracticeResult[],
@@ -30,6 +34,6 @@ export function computeLeaderboard(
     .map((row) => ({ ...row, accuracy: accuracyPercent(row.correct, row.total) }))
     .sort((a, b) => {
       if ((a.sessions === 0) !== (b.sessions === 0)) return a.sessions === 0 ? 1 : -1;
-      return b.accuracy - a.accuracy || b.sessions - a.sessions;
+      return b.correct - a.correct || b.accuracy - a.accuracy || b.sessions - a.sessions;
     });
 }

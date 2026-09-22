@@ -79,8 +79,8 @@ describe('statistics', () => {
 
   it('computes classroom stats', () => {
     const students: Student[] = [
-      { id: 's1', firstName: 'Ali', lastName: 'Valiyev', age: null },
-      { id: 's2', firstName: 'Vali', lastName: 'Aliyev', age: null },
+      { id: 's1', firstName: 'Ali', lastName: 'Valiyev' },
+      { id: 's2', firstName: 'Vali', lastName: 'Aliyev' },
     ];
     const results = [
       createResult('1', 's1', '2026-09-16', 5, 5),

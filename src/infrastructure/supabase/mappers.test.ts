@@ -74,8 +74,8 @@ describe('supabase mappers', () => {
 
   it('maps student accounts from snake_case rows', () => {
     expect(
-      toStudentAccount({ id: 's1', username: 'ali10', first_name: 'Ali', last_name: 'Valiyev', age: 8 }),
-    ).toEqual({ id: 's1', username: 'ali10', firstName: 'Ali', lastName: 'Valiyev', age: 8 });
+      toStudentAccount({ id: 's1', username: 'ali10', first_name: 'Ali', last_name: 'Valiyev' }),
+    ).toEqual({ id: 's1', username: 'ali10', firstName: 'Ali', lastName: 'Valiyev' });
 
     expect(
       toStudentAccount({
@@ -83,7 +83,6 @@ describe('supabase mappers', () => {
         username: 'vali12',
         first_name: 'Vali',
         last_name: 'Aliyev',
-        age: 9,
         birth_year: 2017,
         level_group: 'B',
         avatar_url: 'preset:boy_1',
@@ -94,7 +93,6 @@ describe('supabase mappers', () => {
       username: 'vali12',
       firstName: 'Vali',
       lastName: 'Aliyev',
-      age: 9,
       birthYear: 2017,
       levelGroup: 'B',
       avatarUrl: 'preset:boy_1',

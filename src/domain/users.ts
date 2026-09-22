@@ -55,7 +55,6 @@ export interface Student {
   id: string;
   firstName: string;
   lastName: string;
-  age: number | null;
   birthYear?: number | null;
   levelGroup?: LevelGroup;
   avatarUrl?: string | null;
@@ -68,7 +67,7 @@ export interface StudentAccount extends Student {
 }
 
 export const MIN_PASSWORD_LENGTH = 4;
-export const AGE_RANGE = { min: 3, max: 99 } as const;
+export const BIRTH_YEAR_RANGE = { min: 1900, max: 2100 } as const;
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
 
@@ -81,8 +80,24 @@ export function isValidUsername(username: string): boolean {
   return USERNAME_PATTERN.test(normalizeUsername(username));
 }
 
-export function isValidAge(age: number | null): boolean {
-  return age === null || (Number.isInteger(age) && age >= AGE_RANGE.min && age <= AGE_RANGE.max);
+export function isValidBirthYear(birthYear: number | null | undefined): boolean {
+  return (
+    birthYear === null ||
+    birthYear === undefined ||
+    (Number.isInteger(birthYear) &&
+      birthYear >= BIRTH_YEAR_RANGE.min &&
+      birthYear <= BIRTH_YEAR_RANGE.max)
+  );
+}
+
+/** Age in whole years, counting only the year: the exact birthday is not recorded. */
+export function ageFromBirthYear(
+  birthYear: number | null | undefined,
+  currentYear: number,
+): number | null {
+  if (!birthYear || birthYear < BIRTH_YEAR_RANGE.min) return null;
+  const age = currentYear - birthYear;
+  return age >= 0 ? age : null;
 }
 
 export function fullName(student: Pick<Student, 'firstName' | 'lastName'>): string {
