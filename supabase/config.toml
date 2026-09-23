@@ -21,3 +21,7 @@ verify_jwt = false
 [functions.telegram-notify]
 # Called by Postgres triggers (pg_net), not a signed-in user; guarded by a shared secret header.
 verify_jwt = false
+
+[functions.telegram-webhook]
+# Called by Telegram's servers on each bot update; guarded by an optional secret-token header.
+verify_jwt = false

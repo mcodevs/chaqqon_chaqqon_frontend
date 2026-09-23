@@ -77,17 +77,26 @@ export async function verifyTelegramInitData(
   }
 }
 
+/** A Telegram reply_markup object (e.g. an inline keyboard). Kept loose on purpose. */
+export type ReplyMarkup = Record<string, unknown>;
+
 /** Sends a plain-text message to a chat. Resolves false on any Telegram API error. */
 export async function sendTelegramMessage(
   botToken: string,
   chatId: number,
   text: string,
+  replyMarkup?: ReplyMarkup,
 ): Promise<boolean> {
   try {
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true,
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+      }),
     });
     return response.ok;
   } catch {
