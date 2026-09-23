@@ -31,6 +31,7 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
     }),
     homework: createHomeworkService({ homework: ports.homework }),
     storage: ports.storage,
+    telegram: ports.telegram,
   };
 }
 

@@ -1,4 +1,4 @@
-import type { Clock, Ports, StorageGateway } from '@/application/ports';
+import type { Clock, Ports, StorageGateway, TelegramGateway } from '@/application/ports';
 import { createPbkdf2PasswordHasher } from '../security/pbkdf2PasswordHasher';
 import { createWebStorageStore } from '../storage/webStorageStore';
 import { createLocalAuthGateway } from './localAuthGateway';
@@ -31,6 +31,15 @@ function createLocalStorageGateway(): StorageGateway {
   };
 }
 
+/** No Telegram bridge in the local backend; the app runs as a plain browser session. */
+function createNoopTelegramGateway(): TelegramGateway {
+  return {
+    isAvailable: () => false,
+    link: () => Promise.resolve(),
+    unlink: () => Promise.resolve(),
+  };
+}
+
 /** Backend that lives entirely in this browser (localStorage), for offline use and development. */
 export function createLocalPorts(browser: Window, clock: Clock): Ports {
   const store = createWebStorageStore({
@@ -56,5 +65,6 @@ export function createLocalPorts(browser: Window, clock: Clock): Ports {
     market: createLocalMarketRepository(store),
     homework: createLocalHomeworkRepository(store),
     storage: createLocalStorageGateway(),
+    telegram: createNoopTelegramGateway(),
   };
 }

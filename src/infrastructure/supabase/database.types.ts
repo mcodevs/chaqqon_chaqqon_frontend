@@ -88,6 +88,13 @@ type MarketOrderRow = {
   created_at: string;
 };
 
+type TelegramLinkRow = {
+  id: string;
+  profile_id: string;
+  chat_id: number;
+  created_at: string;
+};
+
 export type Database = {
   __InternalSupabase: { PostgrestVersion: '13' };
   public: {
@@ -140,6 +147,12 @@ export type Database = {
         Row: WrittenHomeworkRow;
         Insert: Pick<WrittenHomeworkRow, 'student_id' | 'status'> & Partial<WrittenHomeworkRow>;
         Update: Partial<WrittenHomeworkRow>;
+        Relationships: [];
+      };
+      telegram_links: {
+        Row: TelegramLinkRow;
+        Insert: Pick<TelegramLinkRow, 'profile_id' | 'chat_id'> & Partial<TelegramLinkRow>;
+        Update: Partial<TelegramLinkRow>;
         Relationships: [];
       };
     };

@@ -9,3 +9,15 @@ verify_jwt = false
 # The function checks that the caller is the teacher. Skipping the gateway JWT check
 # also keeps it compatible with the new publishable API keys.
 verify_jwt = false
+
+[functions.telegram-link]
+# Verifies the caller's bearer token itself (getCallerId) and the Telegram initData signature.
+verify_jwt = false
+
+[functions.telegram-unlink]
+# Same as telegram-link: checks the caller and the initData signature itself.
+verify_jwt = false
+
+[functions.telegram-notify]
+# Called by Postgres triggers (pg_net), not a signed-in user; guarded by a shared secret header.
+verify_jwt = false

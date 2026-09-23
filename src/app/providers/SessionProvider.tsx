@@ -7,7 +7,7 @@ import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 type SessionState = { status: 'restoring' } | { status: 'ready'; session: Session | null };
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const { auth } = useServices();
+  const { auth, telegram } = useServices();
   const [state, setState] = useState<SessionState>({ status: 'restoring' });
 
   useEffect(() => {
@@ -26,14 +26,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, [auth]);
 
+  const session = state.status === 'ready' ? state.session : null;
+
+  // Inside Telegram, link this device's chat to the signed-in account so it can
+  // receive push notifications. A no-op in a normal browser.
+  useEffect(() => {
+    if (!session || !telegram.isAvailable()) return;
+    telegram.link().catch((error: unknown) => console.error(error));
+  }, [session, telegram]);
+
   const signIn = useCallback((session: Session) => setState({ status: 'ready', session }), []);
 
   const signOut = useCallback(() => {
     setState({ status: 'ready', session: null });
-    auth.logout().catch((error: unknown) => console.error(error));
-  }, [auth]);
-
-  const session = state.status === 'ready' ? state.session : null;
+    // Unlink this device (best effort, while the token is still valid) before signing out.
+    Promise.resolve(telegram.isAvailable() ? telegram.unlink() : undefined)
+      .catch((error: unknown) => console.error(error))
+      .finally(() => {
+        auth.logout().catch((error: unknown) => console.error(error));
+      });
+  }, [auth, telegram]);
   const value = useMemo(() => ({ session, signIn, signOut }), [session, signIn, signOut]);
 
   if (state.status === 'restoring') return <LoadingScreen />;

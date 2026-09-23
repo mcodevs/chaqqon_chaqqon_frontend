@@ -99,6 +99,21 @@ export interface MarketRepository {
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 
+/**
+ * Optional Telegram Mini App bridge. Outside Telegram (a normal browser) it is
+ * simply unavailable and the app behaves exactly as before. When available, the
+ * signed-in account is linked to this device's Telegram chat so it can receive
+ * push notifications; logging out unlinks it.
+ */
+export interface TelegramGateway {
+  /** True only when the app runs inside the Telegram Mini App container. */
+  isAvailable(): boolean;
+  /** Links the current session's account to this Telegram chat. Safe to call repeatedly. */
+  link(): Promise<void>;
+  /** Unlinks this device's Telegram chat from the account. Call before signing out. */
+  unlink(): Promise<void>;
+}
+
 /** Everything a backend has to provide. */
 export interface Ports {
   auth: AuthGateway;
@@ -109,6 +124,7 @@ export interface Ports {
   market: MarketRepository;
   homework: HomeworkRepository;
   storage: StorageGateway;
+  telegram: TelegramGateway;
 }
 
 export interface Clock {

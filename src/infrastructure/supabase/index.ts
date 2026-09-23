@@ -10,6 +10,7 @@ import {
 } from './supabasePracticeRepositories';
 import { createSupabaseStorageGateway } from './supabaseStorageGateway';
 import { createSupabaseStudentRepository } from './supabaseStudentRepository';
+import { createSupabaseTelegramGateway } from './supabaseTelegramGateway';
 
 /** Backend on Supabase: Auth for accounts, Postgres + RLS for data, Realtime for live updates. */
 export function createSupabasePorts(config: SupabaseConfig): Ports {
@@ -24,5 +25,6 @@ export function createSupabasePorts(config: SupabaseConfig): Ports {
     market: createSupabaseMarketRepository(client),
     homework: createSupabaseHomeworkRepository(client),
     storage: createSupabaseStorageGateway(client),
+    telegram: createSupabaseTelegramGateway(client, window),
   };
 }
