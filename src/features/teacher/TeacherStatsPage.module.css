@@ -103,7 +103,8 @@
 
 .studentCardActive {
   border-color: var(--data-5);
-  background: color-mix(in srgb, var(--data-5) 4%, white);
+  /* Tint the themed surface, not hardcoded white, so it follows dark mode. */
+  background: color-mix(in srgb, var(--data-5) 6%, var(--surface-card));
 }
 
 .studentRow {

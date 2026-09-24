@@ -247,7 +247,8 @@
     top: 0;
     z-index: 40;
     min-height: 56px;
-    padding: var(--space-2) var(--space-4);
+    /* Clear Telegram's fullscreen header (0 in a normal browser). */
+    padding: calc(var(--space-2) + var(--tg-safe-top, 0px)) var(--space-4) var(--space-2);
     background: color-mix(in srgb, var(--surface-card) 88%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

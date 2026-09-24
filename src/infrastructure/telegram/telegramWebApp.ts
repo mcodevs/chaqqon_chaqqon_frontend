@@ -30,6 +30,19 @@ export function initTelegramViewport(win: Window): void {
     webApp.disableVerticalSwipes?.();
     // Immersive fullscreen where available; harmlessly absent on desktop/old clients.
     webApp.requestFullscreen?.();
+
+    // In fullscreen, Telegram's own header (close/menu) overlaps the top of the
+    // page. Publish the top inset as a CSS var so layouts can clear it, and keep
+    // it in sync when the client reports a change.
+    const applyTopInset = () => {
+      const inset = (webApp.safeAreaInset?.top ?? 0) + (webApp.contentSafeAreaInset?.top ?? 0);
+      win.document?.documentElement?.style?.setProperty('--tg-safe-top', `${inset}px`);
+    };
+    applyTopInset();
+    webApp.onEvent?.('safeAreaChanged', applyTopInset);
+    webApp.onEvent?.('contentSafeAreaChanged', applyTopInset);
+    webApp.onEvent?.('fullscreenChanged', applyTopInset);
+    webApp.onEvent?.('viewportChanged', applyTopInset);
   } catch {
     // The SDK is best-effort; never let it break app startup.
   }
