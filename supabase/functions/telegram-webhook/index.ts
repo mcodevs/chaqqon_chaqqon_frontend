@@ -11,11 +11,13 @@ import { sendTelegramMessage } from '../_shared/telegram.ts';
 const APP_URL = 'https://chaqqon-chaqqon.vercel.app';
 
 const WELCOME =
-  'Assalomu alaykum! 👋\n\n' +
-  'Chaqqon-chaqqon — mental arifmetika platformasiga xush kelibsiz.\n' +
-  'Quyidagi tugma orqali ilovani oching va hisobingizga kiring. ' +
-  'Kirganingizdan so‘ng uy vazifasi, do‘kon xaridlari va boshqa muhim ' +
-  'yangiliklar shu yerga xabar bo‘lib keladi.';
+  '👋 <b>Assalomu alaykum!</b>\n\n' +
+  '<b>Chaqqon-chaqqon</b> — mental arifmetika platformasiga xush kelibsiz.\n\n' +
+  'Quyidagi tugma orqali ilovani oching va hisobingizga kiring 👇\n\n' +
+  'Kirganingizdan so‘ng bu yerga xabar bo‘lib keladi:\n' +
+  '📝 uy vazifalari\n' +
+  '🧮 interaktiv topshiriqlar\n' +
+  '🎁 do‘kon xaridlari va sovg‘alar';
 
 Deno.serve(
   handle(async (request) => {
@@ -38,7 +40,10 @@ Deno.serve(
     const chatId = update?.message?.chat?.id;
     if (typeof chatId === 'number') {
       await sendTelegramMessage(botToken, chatId, WELCOME, {
-        inline_keyboard: [[{ text: '🚀 Ilovani ochish', web_app: { url: APP_URL } }]],
+        parseMode: 'HTML',
+        replyMarkup: {
+          inline_keyboard: [[{ text: '🚀 Ilovani ochish', web_app: { url: APP_URL } }]],
+        },
       });
     }
 

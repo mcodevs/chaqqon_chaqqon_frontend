@@ -29,7 +29,9 @@ Deno.serve(
     if (error) throw error;
 
     const results = await Promise.all(
-      (data ?? []).map((row) => sendTelegramMessage(botToken, Number(row.chat_id), text)),
+      (data ?? []).map((row) =>
+        sendTelegramMessage(botToken, Number(row.chat_id), text, { parseMode: 'HTML' }),
+      ),
     );
 
     return json({ ok: true, sent: results.filter(Boolean).length, total: results.length });

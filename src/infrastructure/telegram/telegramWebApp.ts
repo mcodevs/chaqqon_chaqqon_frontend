@@ -15,13 +15,21 @@ export function isTelegramMiniApp(win: Window): boolean {
   return getTelegramInitData(win) !== null;
 }
 
-/** Tells Telegram the app is ready and asks for the full viewport. No-op in a browser. */
+/**
+ * Tells Telegram the app is ready and claims as much screen as the client allows:
+ * true immersive fullscreen on phones that support it (Bot API 8.0+), falling back
+ * to the full-height expand elsewhere. No-op in a browser.
+ */
 export function initTelegramViewport(win: Window): void {
   const webApp = win.Telegram?.WebApp;
   if (!webApp) return;
   try {
     webApp.ready();
     webApp.expand();
+    // Keep a downward swipe from closing the app while a child is mid-exercise.
+    webApp.disableVerticalSwipes?.();
+    // Immersive fullscreen where available; harmlessly absent on desktop/old clients.
+    webApp.requestFullscreen?.();
   } catch {
     // The SDK is best-effort; never let it break app startup.
   }
