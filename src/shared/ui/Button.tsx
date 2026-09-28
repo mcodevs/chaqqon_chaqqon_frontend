@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, CSSProperties } from 'react';
+import type { ComponentPropsWithRef, CSSProperties } from 'react';
 import styles from './Button.module.css';
 import { type Tone, toneColor, toneContentColor, toneSoftColor } from './tone';
 
@@ -9,7 +9,7 @@ import { type Tone, toneColor, toneContentColor, toneSoftColor } from './tone';
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'solid' | 'soft';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ComponentPropsWithRef<'button'> {
   tone?: Tone;
   variant?: ButtonVariant;
   size?: 'sm' | 'md' | 'lg';

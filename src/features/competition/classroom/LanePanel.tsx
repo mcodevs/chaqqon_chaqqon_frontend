@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEventHandler, ReactNode } from 'react';
 import { NameAvatar } from '@/shared/ui/NameAvatar';
 import styles from './Classroom.module.css';
 
@@ -7,13 +7,18 @@ interface LanePanelProps {
   avatarUrl?: string | null;
   correct: number;
   verdict?: 'good' | 'bad';
+  onMouseDown?: MouseEventHandler<HTMLElement>;
   children: ReactNode;
 }
 
 /** One student's share of the split screen. */
-export function LanePanel({ name, avatarUrl, correct, verdict, children }: LanePanelProps) {
+export function LanePanel({ name, avatarUrl, correct, verdict, onMouseDown, children }: LanePanelProps) {
   return (
-    <section className={`${styles.lane} ${verdict ? styles[verdict] : ''}`} aria-label={name}>
+    <section
+      className={`${styles.lane} ${verdict ? styles[verdict] : ''}`}
+      aria-label={name}
+      onMouseDown={onMouseDown}
+    >
       <header className={styles.laneHeader}>
         <NameAvatar name={name} avatarUrl={avatarUrl} size={36} />
         <span className={styles.laneName}>{name}</span>

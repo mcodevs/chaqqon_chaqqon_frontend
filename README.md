@@ -169,6 +169,14 @@ supabase/
   Sozlama hammaga bir xil, lekin har bir panelda o'z sonlari chiqadi. O'quvchilar javobni aytadi, ustoz uni
   panelga kiritadi (Enter keyingi panelga o'tkazadi). Keyingi misolni ham ustoz boshlaydi. Natijalar bitta
   so'rovda saqlanadi. O'rinlar to'g'ri javoblar soni bo'yicha belgilanadi, teng natijaga bir xil o'rin beriladi.
+- **Fokus** javob maydonida ushlab turiladi (`shared/hooks/useKeepFocus.ts`). `autoFocus` faqat bir
+  marta, element paydo bo'lganda ishlaydi: shundan keyin fokus ololmaydigan biror joyga (panel,
+  sarlavha, fon) bitta bosilsa ham fokus `<body>` ga tushib qoladi va yozilgan hech narsa maydonga
+  yetib bormaydi. Proyektorda bu ayniqsa yomon — to'liq ekranda brauzer sichqoncha kursorini bir
+  necha soniyadan keyin yashiradi, ustoz qayerga bosishni ham ko'rmaydi. Hook fokusni maydon paydo
+  bo'lganda qo'yadi va hech narsaga tushmay yo'qolgan har safar qaytaradi; boshqa tugmaga o'tgan
+  fokusga va boshqa oynaga o'tgan fokusga tegmaydi. Sinf musobaqasida bundan tashqari panelning
+  istalgan yeriga bosish o'sha panelning maydoniga fokus beradi — panel katta, maydon kichik.
 - **Natija turi** — har bir natijada `mode` bor: `practice`, `online` yoki `classroom`. "Natijalarim"da onlayn
   musobaqa 🏆, sinf musobaqasi 🏫 belgisi bilan ko'rsatiladi.
 - **To'lov** (`domain/billing.ts`). Ustoz "To'ladi" tugmasini bosib, o'quvchi qaysi sanagacha ochiq bo'lishini

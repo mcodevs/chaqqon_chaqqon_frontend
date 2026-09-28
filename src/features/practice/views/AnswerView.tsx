@@ -1,5 +1,6 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useRef, useState } from 'react';
 import type { PracticeKind } from '@/domain/practice/config';
+import { useKeepFocus } from '@/shared/hooks/useKeepFocus';
 import { Button } from '@/shared/ui/Button';
 import styles from '../Practice.module.css';
 
@@ -12,7 +13,10 @@ interface AnswerViewProps {
 
 export function AnswerView({ kind, problemNumber, problemCount, onSubmit }: AnswerViewProps) {
   const isCard = kind === 'soroban';
+  const input = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState('');
+
+  useKeepFocus(() => input.current);
   const answer = value.trim() === '' ? null : Number(value);
   const isValid = answer !== null && Number.isFinite(answer);
 
@@ -29,10 +33,10 @@ export function AnswerView({ kind, problemNumber, problemCount, onSubmit }: Answ
       </label>
       <input
         id="practice-answer"
+        ref={input}
         className={styles.answerInput}
         type="number"
         inputMode="numeric"
-        autoFocus
         placeholder="?"
         value={value}
         onChange={(event) => setValue(event.target.value)}
