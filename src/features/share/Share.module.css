@@ -1,0 +1,69 @@
+.block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lead {
+  margin: 0;
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  text-align: center;
+}
+
+/* The picture is 4:5, so the box keeps its shape while it is still being drawn. */
+.preview {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface-sunken);
+  box-shadow: var(--elevation-2);
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--space-4);
+  font: var(--text-body);
+  color: var(--content-tertiary);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 320px;
+}
+
+.hint {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-align: center;
+}
+
+.note {
+  margin: 0;
+  font: var(--text-body);
+  font-weight: 700;
+  color: var(--success-content);
+  text-align: center;
+}

@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { Room } from '@/domain/competition';
+import { fullName, type Student } from '@/domain/users';
 import { DEFAULT_PRACTICE_CONFIG } from '@/domain/practice/config';
 import { generateDrillProblems } from '@/domain/practice/drills';
 import { DRILL_META, SECTION_META } from '@/features/practice/sections';
 import { type PracticeProgress, PracticeRunner } from '@/features/practice/PracticeRunner';
+import { drillDetail } from '@/features/share/resultCard';
+import { ShareResult } from '@/features/share/ShareResult';
 import { toErrorMessage } from '@/shared/i18n/errorMessages';
+import { useSchoolToday } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -13,16 +17,21 @@ import styles from './Competition.module.css';
 
 interface CompetitionRunProps {
   room: Room;
-  studentId: string;
+  /** Whose run it is; the name goes on the picture the child shares. */
+  student: Student;
   onFinished: () => void;
   onDismiss: () => void;
 }
 
-export function CompetitionRun({ room, studentId, onFinished, onDismiss }: CompetitionRunProps) {
+export function CompetitionRun({ room, student, onFinished, onDismiss }: CompetitionRunProps) {
+  const studentId = student.id;
+  const today = useSchoolToday();
   const { competition, results } = useServices();
   const config = room.configs[studentId] ?? DEFAULT_PRACTICE_CONFIG;
   const [problems] = useState(() => generateDrillProblems(config, Math.random));
   const [error, setError] = useState<string | null>(null);
+  /** The finished score, kept for the shareable picture under the summary. */
+  const [score, setScore] = useState({ correct: 0, total: config.problemCount });
   const [stage, setStage] = useState<'idle' | 'countdown' | 'running'>('idle');
   const [count, setCount] = useState(3);
 
@@ -51,6 +60,7 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
   const handleProgress = async ({ answered, correct, total, finished }: PracticeProgress) => {
     try {
       if (finished) {
+        setScore({ correct, total });
         onFinished();
         await results.record({ studentId, config, correct, total, mode: 'online', roomId: room.id });
       }
@@ -110,6 +120,14 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
           <Button size="lg" block onClick={onDismiss}>
             Yopish
           </Button>
+          <ShareResult
+            title="Interaktiv uy vazifasi"
+            name={fullName(student)}
+            detail={drillDetail(config)}
+            correct={score.correct}
+            total={score.total}
+            today={today}
+          />
         </>
       }
     />

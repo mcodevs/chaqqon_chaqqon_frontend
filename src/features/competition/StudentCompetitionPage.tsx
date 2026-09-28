@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { DEFAULT_PRACTICE_CONFIG } from '@/domain/practice/config';
+import { fullName } from '@/domain/users';
+import { drillDetail } from '@/features/share/resultCard';
+import { ShareResult } from '@/features/share/ShareResult';
 import { useCurrentStudent } from '@/features/student/CurrentStudentContext';
-import { useStudentRoom } from '@/shared/services/queries';
+import { useSchoolToday, useStudentRoom } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
@@ -8,6 +12,7 @@ import { CompetitionRun } from './CompetitionRun';
 
 export function StudentCompetitionPage() {
   const student = useCurrentStudent();
+  const today = useSchoolToday();
   const snapshot = useStudentRoom(student.id);
   // Keeps the summary on screen after this student finishes, until they leave it.
   const [reviewingRoomId, setReviewingRoomId] = useState<string | null>(null);
@@ -37,11 +42,23 @@ export function StudentCompetitionPage() {
       'Ustoz boshlaganda vazifa avtomatik ishga tushadi — sahifadan chiqmang.',
     );
   }
-  if (progress[student.id]?.finished && reviewingRoomId !== room.id) {
-    return message(
-      '🎉',
-      'Vazifa yakunlandi!',
-      "Har 40 ta to'g'ri ishlangan misol uchun 1 ta yulduz beriladi.",
+  const done = progress[student.id];
+  if (done?.finished && reviewingRoomId !== room.id) {
+    // Coming back to a finished task: the picture is still here to send.
+    return (
+      <Card>
+        <EmptyState icon="🎉" title="Vazifa yakunlandi!">
+          Har 40 ta to'g'ri ishlangan misol uchun 1 ta yulduz beriladi.
+        </EmptyState>
+        <ShareResult
+          title="Interaktiv uy vazifasi"
+          name={fullName(student)}
+          detail={drillDetail(room.configs[student.id] ?? DEFAULT_PRACTICE_CONFIG)}
+          correct={done.correct}
+          total={done.total}
+          today={today}
+        />
+      </Card>
     );
   }
 
@@ -49,7 +66,7 @@ export function StudentCompetitionPage() {
     <CompetitionRun
       key={room.id}
       room={room}
-      studentId={student.id}
+      student={student}
       onFinished={() => setReviewingRoomId(room.id)}
       onDismiss={() => setReviewingRoomId(null)}
     />

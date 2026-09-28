@@ -177,6 +177,14 @@ supabase/
   bo'lganda qo'yadi va hech narsaga tushmay yo'qolgan har safar qaytaradi; boshqa tugmaga o'tgan
   fokusga va boshqa oynaga o'tgan fokusga tegmaydi. Sinf musobaqasida bundan tashqari panelning
   istalgan yeriga bosish o'sha panelning maydoniga fokus beradi — panel katta, maydon kichik.
+- **Natijani ulashish** (`features/share/`) — interaktiv uy vazifasi tugagach, natija tayyor rasm
+  bo'lib chiqadi: logotip, o'quvchi ismi, foiz, `to'g'ri/jami`, mashq tavsifi, brend va sana. Rasm
+  canvas'da 1080×1350 (4:5) qilib chiziladi — hech qanday kutubxona qo'shilmagan. "Ulashish" tugmasi
+  Web Share API (level 2) orqali tizim share oynasini ochadi (Telegram, Instagram, WhatsApp…),
+  u yo'q brauzerlarda esa faqat "Rasmni saqlash" ko'rsatiladi; ikkalasi ham ishlamaydigan ichki
+  brauzerlar uchun rasmni bosib turib saqlash eslatmasi bor. Rasm mavzu (light/dark) tokenlarini
+  **o'qimaydi**: u boshqa odamning telefonida ko'riladi, shuning uchun abakus illyustratsiyasi kabi
+  o'z doimiy palitrasiga ega (`drawResultCard.ts`). Logotip — `public/logo.webp`.
 - **Natija turi** — har bir natijada `mode` bor: `practice`, `online` yoki `classroom`. "Natijalarim"da onlayn
   musobaqa 🏆, sinf musobaqasi 🏫 belgisi bilan ko'rsatiladi.
 - **To'lov** (`domain/billing.ts`). Ustoz "To'ladi" tugmasini bosib, o'quvchi qaysi sanagacha ochiq bo'lishini
