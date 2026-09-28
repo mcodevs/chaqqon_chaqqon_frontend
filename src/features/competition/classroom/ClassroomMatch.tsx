@@ -65,12 +65,15 @@ export function ClassroomMatch({ setup, onRematch, onClose }: ClassroomMatchProp
     }
   };
 
+  // A soroban card is one number, so counting the rows inside it would always read "1/1".
+  const unit = config.kind === 'soroban' ? 'Karta' : 'Misol';
+  const position = `${unit} ${state.round + 1}/${rounds}`;
   const progress =
     state.phase === 'finished'
       ? 'Yakunlandi'
-      : state.phase === 'showing' || state.phase === 'gap'
-        ? `Misol ${state.round + 1}/${rounds} · ${state.numberIndex + 1}/${config.rowCount}`
-        : `Misol ${state.round + 1}/${rounds}`;
+      : config.kind !== 'soroban' && (state.phase === 'showing' || state.phase === 'gap')
+        ? `${position} · ${state.numberIndex + 1}/${config.rowCount}`
+        : position;
 
   return (
     <div className={styles.match} role="dialog" aria-modal="true" aria-label="Sinf musobaqasi">
@@ -113,6 +116,7 @@ export function ClassroomMatch({ setup, onRematch, onClose }: ClassroomMatchProp
       ) : (
         <FlashRound
           state={state}
+          config={config}
           participants={participants}
           isLastRound={isLastRound}
           onNext={handleNext}

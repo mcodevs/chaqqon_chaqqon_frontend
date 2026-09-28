@@ -3,19 +3,30 @@ import { getTopic, isTopicId } from './topics';
 export const SECTION_IDS = ['formulasiz', 'kichik', 'katta', 'miks'] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
+export const PRACTICE_KINDS = ['anzan', 'soroban'] as const;
+/**
+ * Which drill a config describes:
+ * `anzan` flashes signed numbers and asks for their sum;
+ * `soroban` flashes one abacus and asks which number is standing on it.
+ */
+export type PracticeKind = (typeof PRACTICE_KINDS)[number];
+
 export interface PracticeConfig {
+  kind: PracticeKind;
+  /** The formula section. A soroban card teaches no formula, so it keeps the default. */
   section: SectionId;
   /**
    * Optional drill inside the section — one named topic from the curriculum (see topics.ts),
    * e.g. `kichik+4` or `o100-6mf`. Without it the whole section is practised.
    */
   topicId?: string;
-  /** How many numbers are flashed in one problem. */
+  /** How many numbers are flashed in one problem. Unused by the soroban drill — a card is one number. */
   rowCount: number;
   /** Time from one number to the next, blank included (see `numberTiming`). */
   secondsPerNumber: number;
+  /** Problems in a session — cards in the soroban drill. */
   problemCount: number;
-  /** Number of digits in each number (1, 2, or 3). */
+  /** Number of digits in each number. */
   digitCount: number;
 }
 
@@ -33,13 +44,44 @@ export const PRACTICE_LIMITS = {
   digitCount: { min: 1, max: 3, step: 1 },
 } as const satisfies Record<string, Range>;
 
+/**
+ * A soroban card is read, not added up: it takes a second instead of a minute, so a session
+ * holds many more cards, and a wider number still fits on the rods.
+ */
+export const SOROBAN_LIMITS = {
+  ...PRACTICE_LIMITS,
+  problemCount: { min: 5, max: 30, step: 1 },
+  digitCount: { min: 1, max: 5, step: 1 },
+} as const satisfies Record<string, Range>;
+
+export type PracticeLimits = typeof PRACTICE_LIMITS | typeof SOROBAN_LIMITS;
+
+export function limitsFor(kind: PracticeKind): PracticeLimits {
+  return kind === 'soroban' ? SOROBAN_LIMITS : PRACTICE_LIMITS;
+}
+
 export const DEFAULT_PRACTICE_CONFIG: PracticeConfig = {
+  kind: 'anzan',
   section: 'formulasiz',
   rowCount: 4,
   secondsPerNumber: 6,
   problemCount: 5,
   digitCount: 1,
 };
+
+/** The reading drill starts faster and longer than the adding one — one card is one glance. */
+export const DEFAULT_SOROBAN_CONFIG: PracticeConfig = {
+  ...DEFAULT_PRACTICE_CONFIG,
+  kind: 'soroban',
+  secondsPerNumber: 1.5,
+  problemCount: 10,
+  digitCount: 2,
+};
+
+/** The config a kind starts from, used when the drill is switched. */
+export function defaultConfigFor(kind: PracticeKind): PracticeConfig {
+  return kind === 'soroban' ? DEFAULT_SOROBAN_CONFIG : DEFAULT_PRACTICE_CONFIG;
+}
 
 /** Clamps `value` into a topic's own limits: its section, digit counts and shortest problem. */
 function applyTopic(config: PracticeConfig): PracticeConfig {
@@ -61,26 +103,37 @@ export function isSectionId(value: unknown): value is SectionId {
   return typeof value === 'string' && (SECTION_IDS as readonly string[]).includes(value);
 }
 
+export function isPracticeKind(value: unknown): value is PracticeKind {
+  return typeof value === 'string' && (PRACTICE_KINDS as readonly string[]).includes(value);
+}
+
 /**
  * Brings a config from a form, storage or the network within the rules: unknown sections fall back,
  * numbers are snapped to their step and clamped.
  */
 export function normalizePracticeConfig(value: unknown): PracticeConfig {
   const input = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
-  const defaults = DEFAULT_PRACTICE_CONFIG;
+  // Configs stored before the soroban drill existed carry no kind; they are anzan sessions.
+  const kind = isPracticeKind(input.kind) ? input.kind : 'anzan';
+  const defaults = defaultConfigFor(kind);
+  const limits = limitsFor(kind);
 
-  return applyTopic({
+  const config: PracticeConfig = {
+    kind,
     section: isSectionId(input.section) ? input.section : defaults.section,
     topicId: isTopicId(input.topicId) ? input.topicId : undefined,
-    rowCount: clampToRange(input.rowCount, PRACTICE_LIMITS.rowCount, defaults.rowCount),
+    rowCount: clampToRange(input.rowCount, limits.rowCount, defaults.rowCount),
     secondsPerNumber: clampToRange(
       input.secondsPerNumber,
-      PRACTICE_LIMITS.secondsPerNumber,
+      limits.secondsPerNumber,
       defaults.secondsPerNumber,
     ),
-    problemCount: clampToRange(input.problemCount, PRACTICE_LIMITS.problemCount, defaults.problemCount),
-    digitCount: clampToRange(input.digitCount, PRACTICE_LIMITS.digitCount, defaults.digitCount),
-  });
+    problemCount: clampToRange(input.problemCount, limits.problemCount, defaults.problemCount),
+    digitCount: clampToRange(input.digitCount, limits.digitCount, defaults.digitCount),
+  };
+
+  // A soroban card has no formula and no topic to drill, so it never takes a topic's limits.
+  return kind === 'soroban' ? { ...config, topicId: undefined } : applyTopic(config);
 }
 
 function clampToRange(value: unknown, { min, max, step }: Range, fallback: number): number {

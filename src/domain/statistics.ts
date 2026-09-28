@@ -5,12 +5,15 @@ import type { Student } from './users';
 
 export type TimeRange = 'week' | 'month' | 'all';
 
-export interface SectionStats {
-  section: SectionId;
+export interface DrillStats {
   sessions: number;
   correct: number;
   total: number;
   accuracy: number;
+}
+
+export interface SectionStats extends DrillStats {
+  section: SectionId;
 }
 
 export interface DailyActivity {
@@ -27,7 +30,10 @@ export interface StudentStats {
   totalProblems: number;
   accuracy: number;
   averageSecondsPerNumber: number;
+  /** Anzan sessions only, split by formula section. */
   bySection: Record<SectionId, SectionStats>;
+  /** The soroban reading drill, which belongs to no formula section. */
+  soroban: DrillStats;
   dailyActivity: DailyActivity[];
 }
 
@@ -85,6 +91,8 @@ export function computeStudentStats(results: readonly PracticeResult[]): Student
     miks: { sessions: 0, correct: 0, total: 0 },
   };
 
+  const sorobanMap = { sessions: 0, correct: 0, total: 0 };
+
   const dayMap = new Map<CalendarDate, { sessions: number; correct: number; total: number }>();
 
   for (const r of results) {
@@ -92,7 +100,9 @@ export function computeStudentStats(results: readonly PracticeResult[]): Student
     totalProblems += r.total;
     totalSeconds += r.config.secondsPerNumber;
 
-    const sec = sectionMap[r.config.section] ?? sectionMap.formulasiz;
+    // Reading a card practises no formula, so it is counted on its own instead of skewing a section.
+    const sec =
+      r.config.kind === 'soroban' ? sorobanMap : (sectionMap[r.config.section] ?? sectionMap.formulasiz);
     sec.sessions += 1;
     sec.correct += r.correct;
     sec.total += r.total;
@@ -136,9 +146,9 @@ export function computeStudentStats(results: readonly PracticeResult[]): Student
     totalCorrect,
     totalProblems,
     accuracy: accuracyPercent(totalCorrect, totalProblems),
-    averageSecondsPerNumber:
-      results.length > 0 ? Math.round((totalSeconds / results.length) * 10) / 10 : 0,
+    averageSecondsPerNumber: results.length > 0 ? Math.round((totalSeconds / results.length) * 10) / 10 : 0,
     bySection,
+    soroban: { ...sorobanMap, accuracy: accuracyPercent(sorobanMap.correct, sorobanMap.total) },
     dailyActivity,
   };
 }

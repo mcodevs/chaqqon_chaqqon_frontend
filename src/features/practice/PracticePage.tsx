@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { DEFAULT_PRACTICE_CONFIG, type PracticeConfig } from '@/domain/practice/config';
-import { type Problem, generateProblems } from '@/domain/practice/problem';
+import { generateDrillProblems } from '@/domain/practice/drills';
+import type { Problem } from '@/domain/practice/problem';
 import { useCurrentStudent } from '@/features/student/CurrentStudentContext';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useStudentStreak } from '@/shared/services/queries';
@@ -30,7 +31,7 @@ export function PracticePage() {
 
   const start = () => {
     setSaved(false);
-    setRun({ id: ++nextRunId.current, config, problems: generateProblems(config, Math.random) });
+    setRun({ id: ++nextRunId.current, config, problems: generateDrillProblems(config, Math.random) });
   };
 
   const handleProgress = async (progress: PracticeProgress) => {
@@ -61,7 +62,7 @@ export function PracticePage() {
     <PracticeRunner
       key={run.id}
       problems={run.problems}
-      secondsPerNumber={run.config.secondsPerNumber}
+      config={run.config}
       onProgress={handleProgress}
       summaryActions={
         <>

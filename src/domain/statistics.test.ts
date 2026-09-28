@@ -10,6 +10,7 @@ import {
 import type { Student } from './users';
 
 const dummyConfig: PracticeConfig = {
+  kind: 'anzan',
   section: 'formulasiz',
   rowCount: 4,
   secondsPerNumber: 4,
@@ -36,6 +37,23 @@ const createResult = (
 });
 
 describe('statistics', () => {
+  it('counts soroban cards apart from the formula sections', () => {
+    const anzan = createResult('a', 's1', '2026-09-20', 8, 10);
+    const card = {
+      ...createResult('b', 's1', '2026-09-20', 9, 10),
+      config: { ...dummyConfig, kind: 'soroban' as const },
+    };
+
+    const stats = computeStudentStats([anzan, card]);
+
+    expect(stats.bySection.formulasiz).toMatchObject({ sessions: 1, correct: 8, total: 10 });
+    expect(stats.soroban).toEqual({ sessions: 1, correct: 9, total: 10, accuracy: 90 });
+    // Both still count towards the totals and the streak calendar.
+    expect(stats.totalSessions).toBe(2);
+    expect(stats.totalCorrect).toBe(17);
+    expect(stats.dailyActivity).toHaveLength(1);
+  });
+
   it('extracts local date in Tashkent timezone', () => {
     // 2026-09-15 20:00 UTC is 2026-09-16 01:00 UTC+5 in Tashkent
     expect(extractLocalDate('2026-09-15T20:00:00.000Z')).toBe('2026-09-16');

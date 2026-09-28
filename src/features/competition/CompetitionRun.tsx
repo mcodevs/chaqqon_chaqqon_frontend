@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Room } from '@/domain/competition';
 import { DEFAULT_PRACTICE_CONFIG } from '@/domain/practice/config';
-import { generateProblems } from '@/domain/practice/problem';
-import { SECTION_META } from '@/features/practice/sections';
+import { generateDrillProblems } from '@/domain/practice/drills';
+import { DRILL_META, SECTION_META } from '@/features/practice/sections';
 import { type PracticeProgress, PracticeRunner } from '@/features/practice/PracticeRunner';
 import { toErrorMessage } from '@/shared/i18n/errorMessages';
 import { useServices } from '@/shared/services/ServicesContext';
@@ -21,7 +21,7 @@ interface CompetitionRunProps {
 export function CompetitionRun({ room, studentId, onFinished, onDismiss }: CompetitionRunProps) {
   const { competition, results } = useServices();
   const config = room.configs[studentId] ?? DEFAULT_PRACTICE_CONFIG;
-  const [problems] = useState(() => generateProblems(config, Math.random));
+  const [problems] = useState(() => generateDrillProblems(config, Math.random));
   const [error, setError] = useState<string | null>(null);
   const [stage, setStage] = useState<'idle' | 'countdown' | 'running'>('idle');
   const [count, setCount] = useState(3);
@@ -61,16 +61,24 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
   };
 
   if (stage === 'idle') {
-    const sectionInfo = SECTION_META[config.section];
+    const isCard = config.kind === 'soroban';
+    // A card drill practises no formula, so it shows what it does drill: how wide and how many.
+    const badges = isCard
+      ? [`${config.digitCount} xonali`, `${config.secondsPerNumber} s`, `${config.problemCount} ta karta`]
+      : [`${config.rowCount} qator`, `${config.secondsPerNumber} s`, `${config.problemCount} ta misol`];
     return (
       <Card title="Musobaqa boshlandi!">
         <div className={styles.startCard}>
           <p className={styles.startPrompt}>Ustoz musobaqani boshladi. Tayyor bo'lsangiz, tugmani bosing!</p>
           <div className={styles.startMeta}>
-            <span className={styles.startBadge}>{sectionInfo.label}</span>
-            <span className={styles.startBadge}>{config.rowCount} qator</span>
-            <span className={styles.startBadge}>{config.secondsPerNumber} s</span>
-            <span className={styles.startBadge}>{config.problemCount} ta misol</span>
+            <span className={styles.startBadge}>
+              {isCard ? DRILL_META.soroban.short : SECTION_META[config.section].label}
+            </span>
+            {badges.map((badge) => (
+              <span key={badge} className={styles.startBadge}>
+                {badge}
+              </span>
+            ))}
           </div>
           <Button size="lg" block onClick={handleStart}>
             Boshlash!
@@ -94,7 +102,7 @@ export function CompetitionRun({ room, studentId, onFinished, onDismiss }: Compe
   return (
     <PracticeRunner
       problems={problems}
-      secondsPerNumber={config.secondsPerNumber}
+      config={config}
       onProgress={handleProgress}
       summaryActions={
         <>

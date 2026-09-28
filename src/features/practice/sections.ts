@@ -1,4 +1,4 @@
-import type { SectionId } from '@/domain/practice/config';
+import type { PracticeKind, SectionId } from '@/domain/practice/config';
 
 interface SectionMeta {
   label: string;
@@ -36,5 +36,27 @@ export const SECTION_META: Record<SectionId, SectionMeta> = {
     description: "Bir necha xonaga o'tish",
     color: 'var(--data-5)',
     soft: 'var(--danger-soft)',
+  },
+};
+
+interface DrillMeta {
+  /** Full name, for a setup form. */
+  label: string;
+  /** Short name, for a badge or a history row. */
+  short: string;
+  description: string;
+}
+
+/** The two drills, as the child and the teacher read them. */
+export const DRILL_META: Record<PracticeKind, DrillMeta> = {
+  anzan: {
+    label: 'Anzan — sonlarni qo‘shish',
+    short: 'Anzan',
+    description: "Sonlar ketma-ket chaqnaydi, o'quvchi yig'indisini aytadi",
+  },
+  soroban: {
+    label: 'Chaqnovchi — sorobanni o‘qish',
+    short: 'Chaqnovchi',
+    description: "Abakus bir lahza chaqnaydi, o'quvchi undagi sonni aytadi",
   },
 };

@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useLayoutEffect, useRef } from 'react';
+import type { PracticeConfig } from '@/domain/practice/config';
 import type { Problem } from '@/domain/practice/problem';
 import { countCorrect, currentProblem, lastAttempt } from '@/domain/practice/session';
 import { useFlashSession } from './useFlashSession';
@@ -16,22 +17,18 @@ export interface PracticeProgress {
 
 interface PracticeRunnerProps {
   problems: readonly Problem[];
-  secondsPerNumber: number;
+  /** The config the problems were built from; it also decides how they are shown. */
+  config: PracticeConfig;
   onProgress?: (progress: PracticeProgress) => void;
   /** Rendered under the score once the session is over. */
   summaryActions?: ReactNode;
 }
 
 /** A solo session: one lane, answered by the student, moving on by itself after a correct answer. */
-export function PracticeRunner({
-  problems,
-  secondsPerNumber,
-  onProgress,
-  summaryActions,
-}: PracticeRunnerProps) {
+export function PracticeRunner({ problems, config, onProgress, summaryActions }: PracticeRunnerProps) {
   const { state, submitAnswers, next } = useFlashSession({
     problemSets: [problems],
-    secondsPerNumber,
+    secondsPerNumber: config.secondsPerNumber,
     autoAdvance: true,
   });
   const onProgressRef = useRef(onProgress);
@@ -61,19 +58,34 @@ export function PracticeRunner({
       return (
         <FlashView
           {...position}
+          config={config}
           phase={state.phase}
           numbers={currentProblem(state).numbers}
           numberIndex={state.numberIndex}
         />
       );
     case 'answering':
-      return <AnswerView key={state.round} {...position} onSubmit={(answer) => submitAnswers([answer])} />;
+      return (
+        <AnswerView
+          key={state.round}
+          kind={config.kind}
+          {...position}
+          onSubmit={(answer) => submitAnswers([answer])}
+        />
+      );
     case 'feedback': {
       const attempt = lastAttempt(state);
       if (!attempt) return null;
-      return <FeedbackView attempt={attempt} isLast={position.problemNumber === total} onNext={next} />;
+      return (
+        <FeedbackView
+          config={config}
+          attempt={attempt}
+          isLast={position.problemNumber === total}
+          onNext={next}
+        />
+      );
     }
     case 'finished':
-      return <SummaryView attempts={lane.attempts} actions={summaryActions} />;
+      return <SummaryView kind={config.kind} attempts={lane.attempts} actions={summaryActions} />;
   }
 }

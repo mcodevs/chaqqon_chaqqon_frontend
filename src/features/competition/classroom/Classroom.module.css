@@ -128,6 +128,14 @@
   --flash-size: clamp(48px, 42cqmin, 320px);
 }
 
+/* `.lane` is a size container, so the card shrinks with the panel however many there are. */
+.laneSoroban {
+  --soroban-rod-w: clamp(10px, 13cqmin, 96px);
+
+  min-height: 0;
+  margin-bottom: 0;
+}
+
 .verdict {
   font-family: var(--font-display);
   font-weight: 800;

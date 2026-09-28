@@ -37,6 +37,7 @@ import { type LevelGroup, LEVEL_INDEX, SECTION_TO_LEVEL } from './users';
  * - Interactive homework ('online'): 1 star per 40 correctly answered problems (Math.floor(totalCorrect / 40)).
  * - Solo practice ('practice'): awards 0 stars.
  * - If studentLevel is specified, results on sections easier than the student's level are ignored.
+ *   Soroban cards teach no formula and so belong to no level: they always count.
  */
 export function calculateEarnedStars(
   results: readonly PracticeResult[],
@@ -50,7 +51,7 @@ export function calculateEarnedStars(
     if (r.mode !== 'online') continue;
 
     // Check if problem is easier than the student's assigned level group
-    if (studentLevel) {
+    if (studentLevel && r.config.kind !== 'soroban') {
       const problemLevel = SECTION_TO_LEVEL[r.config.section] ?? 'A';
       if (LEVEL_INDEX[problemLevel] < LEVEL_INDEX[studentLevel]) {
         continue; // Student worked on an easier topic, no stars

@@ -1,8 +1,10 @@
 # Chaqqon-chaqqon
 
 Bolalar uchun mental arifmetika (flash-anzan) mashq ilovasi. Ustoz o'quvchilarni boshqaradi,
-o'quvchilar abakus formulalari bo'yicha mashq qiladi. Ilovada sinf reytingi, jonli onlayn musobaqa xonasi
-va sinfda bitta ekranda o'tkaziladigan split-screen musobaqa bor.
+o'quvchilar abakus formulalari bo'yicha mashq qiladi. Ikki xil mashq bor: **anzan** (sonlar ketma-ket
+chaqnaydi, yig'indisi so'raladi) va **chaqnovchi** (abakus bir lahza chaqnaydi, undagi son so'raladi).
+Ilovada sinf reytingi, jonli onlayn musobaqa xonasi va sinfda bitta ekranda o'tkaziladigan
+split-screen musobaqa bor.
 
 **Ilova manzili:** https://chaqqon-chaqqon.vercel.app
 
@@ -99,7 +101,8 @@ Qatlamlar faqat ichkariga bog'lanadi: `presentation → application → domain`.
 src/
 ├── domain/            Toza biznes qoidalar — React, storage, brauzerdan mustaqil
 │   ├── practice/      soroban (harakat tasnifi), abacus (toshlar va formula qadamlari),
-│   │                  problem (generator), session (reducer + vaqt qoidalari)
+│   │                  problem (anzan generatori), drills (ikki mashq bitta chaqiruv ortida),
+│   │                  session (reducer + vaqt qoidalari)
 │   ├── classroom.ts competition.ts leaderboard.ts results.ts users.ts random.ts
 ├── application/       Use-case servislar, portlar (AuthGateway, repozitoriylar), AppError kodlari
 ├── infrastructure/
@@ -133,6 +136,15 @@ supabase/
   (`ChaqqonChaqqon.jsx`) bilan barcha holatlarda ekvivalentligi testda tekshiriladi.
   Tasodifiylik `Random` orqali uzatiladi, shuning uchun testlar deterministik.
 
+- **Chaqnovchi mashq** (`domain/practice/drills.ts`) — ikkinchi mashq turi: abakus rasmi bir lahza
+  chaqnaydi, o'quvchi undagi sonni aytadi. Karta = bitta son, javobi o'zi; 1–5 xonali, bir sessiyada
+  5–30 karta (`SOROBAN_LIMITS`). Ketma-ket ikkita bir xil karta chiqmaydi. Mashq turi `PracticeConfig.kind`
+  da (`anzan` | `soroban`) saqlanadi, shuning uchun uchala joyda ham ishlaydi: o'quvchining mustaqil
+  mashqida, sinf musobaqasida (har panelda o'z kartasi) va interaktiv uy vazifasi xonasida. Uy
+  vazifasida yulduz qoidasi o'zgarmaydi — har 40 ta to'g'ri javobga 1 yulduz — faqat karta hech qanday
+  formulaga tegishli emas, shuning uchun daraja filtri unga qo'llanmaydi va statistikada bo'limlar
+  qatorida emas, alohida "Chaqnovchi" qatorida ko'rsatiladi. `kind`siz saqlangan eski natijalar
+  `anzan` deb o'qiladi, migratsiya kerak emas.
 - **Vizual abakus** (`features/abacus/`, `shared/ui/Soroban.tsx`) — bolaga sorobanning o'zini o'rgatadi.
   Uch rejim bor: **Erkin** (toshlarni bosib son yasash, xonalar soni 3–7 tagacha), **Sonni ter**
   (berilgan sonni abakusda terish, ketma-ket to'g'ri javoblar sanaladi) va **Formula** (misol

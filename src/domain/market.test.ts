@@ -12,6 +12,7 @@ import type { PracticeConfig } from './practice/config';
 import type { PracticeResult } from './results';
 
 const config: PracticeConfig = {
+  kind: 'anzan',
   section: 'formulasiz',
   rowCount: 4,
   secondsPerNumber: 4,
@@ -31,6 +32,27 @@ const makeResult = (mode: PracticeResult['mode'], correct: number, total: number
 });
 
 describe('market domain', () => {
+  it('counts soroban homework towards stars whatever level the student is on', () => {
+    const sorobanCard = {
+      ...makeResult('online', 40, 40),
+      config: { ...config, kind: 'soroban' as const },
+    };
+
+    // A 'formulasiz' anzan result is below a level-C student and is skipped…
+    expect(calculateEarnedStars([makeResult('online', 40, 40)], 's1', 'C')).toBe(0);
+    // …but a card teaches no formula, so it belongs to no level and still earns its star.
+    expect(calculateEarnedStars([sorobanCard], 's1', 'C')).toBe(1);
+  });
+
+  it('pools soroban and anzan homework into the same 40-correct star', () => {
+    const results = [
+      { ...makeResult('online', 20, 20), config: { ...config, kind: 'soroban' as const } },
+      makeResult('online', 20, 20),
+    ];
+
+    expect(calculateEarnedStars(results, 's1')).toBe(1);
+  });
+
   it('calculates earned stars correctly (classroom = 0, online = 1 star per 40 correct)', () => {
     const results = [
       makeResult('practice', 10, 10), // solo -> 0 stars
@@ -138,7 +160,15 @@ describe('computeStarsByStudent', () => {
       { ...makeResult('practice', 200, 200), studentId: 's3' },
     ];
     const orders: MarketOrder[] = [
-      { id: 'o1', studentId: 's2', itemId: 'i1', itemTitle: 'Stiker', costStars: 1, status: 'pending', createdAt: '' },
+      {
+        id: 'o1',
+        studentId: 's2',
+        itemId: 'i1',
+        itemTitle: 'Stiker',
+        costStars: 1,
+        status: 'pending',
+        createdAt: '',
+      },
     ];
 
     const stars = computeStarsByStudent([{ id: 's1' }, { id: 's2' }, { id: 's3' }], results, orders);
@@ -148,7 +178,7 @@ describe('computeStarsByStudent', () => {
     expect(stars.get('s3')).toMatchObject({ earnedStars: 0, balance: 0 });
   });
 
-  it('honours each student\'s level group, so easier sections earn nothing', () => {
+  it("honours each student's level group, so easier sections earn nothing", () => {
     const results: PracticeResult[] = [{ ...makeResult('online', 40, 40), studentId: 's1' }];
 
     // 'formulasiz' maps to level A, so a level-C student gets no stars for it.

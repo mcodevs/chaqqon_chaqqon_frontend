@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { type TimeRange, computeClassroomStats } from '@/domain/statistics';
 import { fullName } from '@/domain/users';
-import { SECTION_META } from '@/features/practice/sections';
+import { DRILL_META, SECTION_META } from '@/features/practice/sections';
 import { useResults, useSchoolToday, useStudents } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
@@ -131,23 +131,26 @@ export function TeacherStatsPage() {
                   <div className={styles.detailDrawer}>
                     <div className={styles.detailTitle}>Formulalar bo'yicha ko'rsatkichlar:</div>
                     <div className={styles.sectionGrid}>
-                      {Object.entries(stats.bySection).map(([secId, secData]) => {
-                        const meta = SECTION_META[secData.section];
-
-                        return (
-                          <div key={secId} className={styles.sectionMiniCard}>
-                            <div className={styles.sectionMiniHeader}>
-                              <span>{meta.label}</span>
-                              <span>{secData.sessions > 0 ? `${secData.accuracy}%` : '—'}</span>
-                            </div>
-                            <div className={styles.sectionMiniMeta}>
-                              {secData.sessions > 0
-                                ? `${secData.correct}/${secData.total} to'g'ri (${secData.sessions} mashq)`
-                                : 'Ishlanmadi'}
-                            </div>
+                      {[
+                        ...Object.values(stats.bySection).map((secData) => ({
+                          key: secData.section as string,
+                          label: SECTION_META[secData.section].label,
+                          data: secData,
+                        })),
+                        { key: 'soroban', label: DRILL_META.soroban.short, data: stats.soroban },
+                      ].map(({ key, label, data }) => (
+                        <div key={key} className={styles.sectionMiniCard}>
+                          <div className={styles.sectionMiniHeader}>
+                            <span>{label}</span>
+                            <span>{data.sessions > 0 ? `${data.accuracy}%` : '—'}</span>
                           </div>
-                        );
-                      })}
+                          <div className={styles.sectionMiniMeta}>
+                            {data.sessions > 0
+                              ? `${data.correct}/${data.total} to'g'ri (${data.sessions} mashq)`
+                              : 'Ishlanmadi'}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

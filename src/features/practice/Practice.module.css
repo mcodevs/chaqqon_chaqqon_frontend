@@ -277,3 +277,39 @@
   color: var(--success);
   padding-top: 3px;
 }
+
+/*
+ * The flashed soroban. It keeps the height of a shown card even while blank, so the stage
+ * does not jump between the card and the gap after it.
+ */
+.flashCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: calc(var(--flash-size, 72px) * 1.8);
+  margin-bottom: var(--space-4);
+}
+
+.cardAnswer,
+.cardAnswerCompact {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.cardAnswerCompact {
+  padding-top: 3px;
+}
+
+.cardAnswerValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-title);
+}
+
+.cardAnswerGiven {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}

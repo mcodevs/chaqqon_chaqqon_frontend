@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { type PracticeMode, accuracyPercent } from '@/domain/results';
 import { type TimeRange, computeStudentStats, filterResultsByRange } from '@/domain/statistics';
-import { SECTION_META } from '@/features/practice/sections';
+import { DRILL_META, SECTION_META } from '@/features/practice/sections';
 import { formatDate } from '@/shared/format';
 import { useResults, useSchoolToday } from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
@@ -105,16 +105,30 @@ export function ResultsPage() {
       {stats.totalSessions > 0 && (
         <Card title="Mavzular bo'yicha aniqlik">
           <div className={styles.sectionList}>
-            {Object.entries(stats.bySection).map(([sectionId, sec]) => {
-              const meta = SECTION_META[sec.section];
-              const percent = sec.total > 0 ? sec.accuracy : 0;
-              const color = meta.color;
+            {[
+              ...Object.values(stats.bySection).map((sec) => ({
+                key: sec.section,
+                label: SECTION_META[sec.section].label,
+                color: SECTION_META[sec.section].color,
+                data: sec,
+              })),
+              // The reading drill practises no formula, so it gets its own row rather than a section's.
+              {
+                key: 'soroban',
+                label: DRILL_META.soroban.short,
+                color: 'var(--data-4)',
+                data: stats.soroban,
+              },
+            ].map(({ key, label, color, data }) => {
+              const percent = data.total > 0 ? data.accuracy : 0;
               return (
-                <div key={sectionId} className={styles.sectionItem}>
+                <div key={key} className={styles.sectionItem}>
                   <div className={styles.sectionItemHeader}>
-                    <span className={styles.sectionName}>{meta.label}</span>
+                    <span className={styles.sectionName}>{label}</span>
                     <span className={styles.sectionStats}>
-                      {sec.sessions > 0 ? `${percent}% (${sec.correct}/${sec.total} to'g'ri)` : 'Ishlanmagan'}
+                      {data.sessions > 0
+                        ? `${percent}% (${data.correct}/${data.total} to'g'ri)`
+                        : 'Ishlanmagan'}
                     </span>
                   </div>
                   <div className={styles.sectionTrack}>
@@ -181,11 +195,22 @@ export function ResultsPage() {
         )}
         <ul className={styles.list}>
           {filteredResults.map((result) => {
+            const isCard = result.config.kind === 'soroban';
             const section = SECTION_META[result.config.section];
             const badge = MODE_BADGES[result.mode];
+            const summary = isCard
+              ? `${DRILL_META.soroban.short} · ${result.config.digitCount} xonali · ${result.config.secondsPerNumber}s`
+              : `${section.label} · ${result.config.rowCount} qator · ${result.config.secondsPerNumber}s`;
             return (
               <li key={result.id} className={styles.row}>
-                <span className={styles.badge} style={{ background: section.soft, color: section.color }}>
+                <span
+                  className={styles.badge}
+                  style={
+                    isCard
+                      ? { background: 'var(--brand-primary-soft)', color: 'var(--data-4)' }
+                      : { background: section.soft, color: section.color }
+                  }
+                >
                   {accuracyPercent(result.correct, result.total)}%
                 </span>
                 <div>
@@ -195,7 +220,7 @@ export function ResultsPage() {
                         {badge.icon}{' '}
                       </span>
                     )}
-                    {section.label} · {result.config.rowCount} qator · {result.config.secondsPerNumber}s
+                    {summary}
                   </div>
                   <div className={styles.meta}>
                     {result.correct}/{result.total} to'g'ri · {formatDate(result.completedAt)}

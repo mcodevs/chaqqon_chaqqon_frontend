@@ -34,8 +34,9 @@ export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSe
   return (
     <Card>
       <p className={styles.intro}>
-        Ekran tanlangan o'quvchilar soniga qarab bo'linadi. Har bir panelda o'z misoli bir vaqtda
-        ko'rsatiladi: o'quvchilar javobni aytadi, siz uni panelga kiritasiz.
+        Ekran tanlangan o'quvchilar soniga qarab bo'linadi. Har bir panelda o'z{' '}
+        {config.kind === 'soroban' ? 'kartasi' : 'misoli'} bir vaqtda ko'rsatiladi: o'quvchilar javobni
+        aytadi, siz uni panelga kiritasiz.
       </p>
       <StudentPicker
         students={students}
