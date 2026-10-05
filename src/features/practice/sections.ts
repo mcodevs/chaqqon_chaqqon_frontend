@@ -39,6 +39,12 @@ export const SECTION_META: Record<SectionId, SectionMeta> = {
   },
 };
 
+/*
+ * The drills a recorded session may use. The column drill is still being tried out: its results
+ * are not saved, so it would have nothing to report back from a homework room or a classroom match.
+ */
+export const RECORDED_KINDS: readonly PracticeKind[] = ['anzan', 'soroban'];
+
 interface DrillMeta {
   /** Full name, for a setup form. */
   label: string;
@@ -47,7 +53,7 @@ interface DrillMeta {
   description: string;
 }
 
-/** The two drills, as the child and the teacher read them. */
+/** The drills, as the child and the teacher read them. */
 export const DRILL_META: Record<PracticeKind, DrillMeta> = {
   anzan: {
     label: 'Anzan — sonlarni qo‘shish',
@@ -58,5 +64,10 @@ export const DRILL_META: Record<PracticeKind, DrillMeta> = {
     label: 'Chaqnovchi — sorobanni o‘qish',
     short: 'Chaqnovchi',
     description: "Abakus bir lahza chaqnaydi, o'quvchi undagi sonni aytadi",
+  },
+  ustun: {
+    label: 'Ustunlar — ustun bo‘lib qo‘shish',
+    short: 'Ustunlar',
+    description: "Sonlar ustun bo'lib ekranda turadi, o'quvchi yig'indisini yozadi",
   },
 };

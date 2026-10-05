@@ -36,6 +36,11 @@ export interface Lane {
 
 export interface SessionState {
   phase: SessionPhase;
+  /**
+   * Whether the numbers are flashed one by one. The column drill shows a whole problem at once,
+   * so it has nothing to flash and goes from "ready" straight to answering.
+   */
+  flashed: boolean;
   lanes: readonly Lane[];
   /** Index of the current problem, shared by every lane. */
   round: number;
@@ -69,8 +74,16 @@ export interface NumberTiming {
   gapMs: number;
 }
 
+export interface SessionOptions {
+  /** False for a drill whose problem stays on screen while it is answered. Defaults to true. */
+  flashed?: boolean;
+}
+
 /** Every lane must have the same number of problems, with the same number of rows per round. */
-export function createSession(problemSets: readonly (readonly Problem[])[]): SessionState {
+export function createSession(
+  problemSets: readonly (readonly Problem[])[],
+  { flashed = true }: SessionOptions = {},
+): SessionState {
   const [first] = problemSets;
   if (!first || first.length === 0) {
     throw new Error('A session needs at least one lane with problems');
@@ -85,6 +98,7 @@ export function createSession(problemSets: readonly (readonly Problem[])[]): Ses
   }
   return {
     phase: 'ready',
+    flashed,
     lanes: problemSets.map((problems) => ({ problems, attempts: [] })),
     round: 0,
     numberIndex: 0,
@@ -110,7 +124,8 @@ export function countCorrect(state: SessionState, lane = 0): number {
 export function sessionReducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
     case 'readyElapsed':
-      return state.phase === 'ready' ? { ...state, phase: 'showing' } : state;
+      if (state.phase !== 'ready') return state;
+      return { ...state, phase: state.flashed ? 'showing' : 'answering' };
 
     case 'numberElapsed': {
       if (state.phase !== 'showing') return state;

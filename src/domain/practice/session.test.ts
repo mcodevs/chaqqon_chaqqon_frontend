@@ -149,3 +149,34 @@ describe('timedTransition', () => {
     expect(timedTransition(sessionReducer(answering, answers(4, 4)), CLASSROOM)).toBeNull();
   });
 });
+
+describe('a session that is not flashed', () => {
+  it('goes from ready straight to answering, with nothing to show', () => {
+    const state = createSession([problems], { flashed: false });
+    expect(state.flashed).toBe(false);
+
+    const answering = sessionReducer(state, READY);
+    expect(answering.phase).toBe('answering');
+  });
+
+  it('still answers, reviews and moves on like any other session', () => {
+    let state = sessionReducer(createSession([problems], { flashed: false }), READY);
+    state = sessionReducer(state, answers(4));
+    expect(state.phase).toBe('feedback');
+    expect(lastAttempt(state)?.isCorrect).toBe(true);
+
+    state = sessionReducer(state, NEXT);
+    expect(state.phase).toBe('ready');
+    expect(state.round).toBe(1);
+    // The flag survives the round, so the next problem is not flashed either.
+    expect(sessionReducer(state, READY).phase).toBe('answering');
+  });
+
+  it('keeps the ready pause, so the problem does not appear mid-blink', () => {
+    const state = createSession([problems], { flashed: false });
+    expect(timedTransition(state, { secondsPerNumber: 1, autoAdvance: false })).toEqual({
+      delayMs: SESSION_TIMING.readyMs,
+      action: READY,
+    });
+  });
+});

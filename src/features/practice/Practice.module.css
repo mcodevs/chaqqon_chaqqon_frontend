@@ -313,3 +313,43 @@
   font: var(--text-caption);
   color: var(--content-tertiary);
 }
+
+/* ---------- Column drill ---------- */
+/*
+ * The whole problem is on screen at once, so its size is bound by the tallest it may grow:
+ * `--column-rows` divides the room the stage can give, and the clamp keeps ten rows readable
+ * on a phone while three rows still fill the card.
+ */
+.problemColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: var(--space-4);
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.05;
+  font-size: clamp(28px, min(46vh / var(--column-rows, 5), 15vw), 84px);
+}
+
+.problemRow {
+  display: flex;
+  justify-content: center;
+  gap: 0.1em;
+  color: var(--content-primary);
+}
+
+/* Only subtraction is tinted, exactly as in the flash drill — the sign is what gets missed. */
+.problemRowNegative {
+  color: var(--danger);
+}
+
+.problemSign {
+  min-width: 0.65em;
+  text-align: right;
+}
+
+.problemValue {
+  min-width: 1.2ch;
+  text-align: left;
+}

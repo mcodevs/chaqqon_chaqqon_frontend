@@ -3,11 +3,12 @@ import { getTopic, isTopicId } from './topics';
 export const SECTION_IDS = ['formulasiz', 'kichik', 'katta', 'miks'] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
-export const PRACTICE_KINDS = ['anzan', 'soroban'] as const;
+export const PRACTICE_KINDS = ['anzan', 'soroban', 'ustun'] as const;
 /**
  * Which drill a config describes:
  * `anzan` flashes signed numbers and asks for their sum;
- * `soroban` flashes one abacus and asks which number is standing on it.
+ * `soroban` flashes one abacus and asks which number is standing on it;
+ * `ustun` writes the same numbers as a column that stays on screen while the child adds them.
  */
 export type PracticeKind = (typeof PRACTICE_KINDS)[number];
 
@@ -22,7 +23,7 @@ export interface PracticeConfig {
   topicId?: string;
   /** How many numbers are flashed in one problem. Unused by the soroban drill — a card is one number. */
   rowCount: number;
-  /** Time from one number to the next, blank included (see `numberTiming`). */
+  /** Time from one number to the next, blank included (see `numberTiming`). The column drill never flashes, so it ignores this. */
   secondsPerNumber: number;
   /** Problems in a session — cards in the soroban drill. */
   problemCount: number;
@@ -60,6 +61,11 @@ export function limitsFor(kind: PracticeKind): PracticeLimits {
   return kind === 'soroban' ? SOROBAN_LIMITS : PRACTICE_LIMITS;
 }
 
+/** True when a drill flashes its numbers; the column drill shows them all at once instead. */
+export function isFlashed(kind: PracticeKind): boolean {
+  return kind !== 'ustun';
+}
+
 export const DEFAULT_PRACTICE_CONFIG: PracticeConfig = {
   kind: 'anzan',
   section: 'formulasiz',
@@ -78,9 +84,20 @@ export const DEFAULT_SOROBAN_CONFIG: PracticeConfig = {
   digitCount: 2,
 };
 
+/**
+ * The column drill is read, not remembered, so it can afford more rows than a flash of the same
+ * length: the child's limit is adding speed, not how many numbers fit in their head.
+ */
+export const DEFAULT_USTUN_CONFIG: PracticeConfig = {
+  ...DEFAULT_PRACTICE_CONFIG,
+  kind: 'ustun',
+  rowCount: 5,
+};
+
 /** The config a kind starts from, used when the drill is switched. */
 export function defaultConfigFor(kind: PracticeKind): PracticeConfig {
-  return kind === 'soroban' ? DEFAULT_SOROBAN_CONFIG : DEFAULT_PRACTICE_CONFIG;
+  if (kind === 'soroban') return DEFAULT_SOROBAN_CONFIG;
+  return kind === 'ustun' ? DEFAULT_USTUN_CONFIG : DEFAULT_PRACTICE_CONFIG;
 }
 
 /** Clamps `value` into a topic's own limits: its section, digit counts and shortest problem. */

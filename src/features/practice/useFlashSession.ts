@@ -7,11 +7,15 @@ interface Options {
   problemSets: readonly (readonly Problem[])[];
   secondsPerNumber: number;
   autoAdvance: boolean;
+  /** False for the column drill, whose problem is read rather than flashed. */
+  flashed?: boolean;
 }
 
 /** Runs a flash session's timed phases; answers and "next" come from the caller. */
-export function useFlashSession({ problemSets, secondsPerNumber, autoAdvance }: Options) {
-  const [state, dispatch] = useReducer(sessionReducer, problemSets, createSession);
+export function useFlashSession({ problemSets, secondsPerNumber, autoAdvance, flashed = true }: Options) {
+  const [state, dispatch] = useReducer(sessionReducer, problemSets, (sets) =>
+    createSession(sets, { flashed }),
+  );
 
   // The reducer returns the same state for ignored actions, so this reschedules only on real transitions.
   useEffect(() => {

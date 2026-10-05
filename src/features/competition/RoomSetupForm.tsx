@@ -4,6 +4,7 @@ import { MAX_ROOM_PARTICIPANTS } from '@/domain/competition';
 import { DEFAULT_PRACTICE_CONFIG, type PracticeConfig } from '@/domain/practice/config';
 import type { Student } from '@/domain/users';
 import { PracticeConfigFields } from '@/features/practice/PracticeConfigFields';
+import { RECORDED_KINDS } from '@/features/practice/sections';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { ErrorMessage } from '@/shared/ui/Notice';
@@ -61,7 +62,7 @@ export function RoomSetupForm({
       </label>
 
       {sameForAll ? (
-        <PracticeConfigFields value={sharedConfig} onChange={setSharedConfig} />
+        <PracticeConfigFields value={sharedConfig} onChange={setSharedConfig} kinds={RECORDED_KINDS} />
       ) : (
         selectedIds.map((id) => (
           <fieldset key={id} className={styles.individual}>
@@ -69,6 +70,7 @@ export function RoomSetupForm({
             <PracticeConfigFields
               value={configFor(id)}
               onChange={(config) => setIndividualConfigs((current) => ({ ...current, [id]: config }))}
+              kinds={RECORDED_KINDS}
             />
           </fieldset>
         ))

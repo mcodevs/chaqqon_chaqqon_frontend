@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PRACTICE_CONFIG, DEFAULT_SOROBAN_CONFIG, normalizePracticeConfig } from './config';
+import {
+  DEFAULT_PRACTICE_CONFIG,
+  DEFAULT_SOROBAN_CONFIG,
+  DEFAULT_USTUN_CONFIG,
+  defaultConfigFor,
+  isFlashed,
+  limitsFor,
+  normalizePracticeConfig,
+} from './config';
 
 describe('normalizePracticeConfig', () => {
   it('keeps a valid config as it is', () => {
@@ -77,5 +85,29 @@ describe('normalizePracticeConfig', () => {
     expect(normalizePracticeConfig({ section: 'nope', rowCount: '5', digitCount: 'invalid' })).toEqual(
       DEFAULT_PRACTICE_CONFIG,
     );
+  });
+});
+
+describe('the column drill config', () => {
+  it('is not flashed, unlike the drills that show one number at a time', () => {
+    expect(isFlashed('ustun')).toBe(false);
+    expect(isFlashed('anzan')).toBe(true);
+    expect(isFlashed('soroban')).toBe(true);
+  });
+
+  it('starts from its own defaults, with more rows than a flash of the same length', () => {
+    const config = defaultConfigFor('ustun');
+    expect(config.kind).toBe('ustun');
+    expect(config.rowCount).toBeGreaterThan(DEFAULT_PRACTICE_CONFIG.rowCount);
+  });
+
+  it('takes the anzan limits, since it adds the same numbers', () => {
+    expect(limitsFor('ustun')).toBe(limitsFor('anzan'));
+  });
+
+  it('keeps its topic, which a soroban card would lose', () => {
+    const config = normalizePracticeConfig({ ...DEFAULT_USTUN_CONFIG, topicId: 'kichik+4', digitCount: 1 });
+    expect(config.kind).toBe('ustun');
+    expect(config.topicId).toBe('kichik+4');
   });
 });

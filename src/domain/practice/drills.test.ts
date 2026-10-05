@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createSeededRandom } from '../random';
-import { DEFAULT_PRACTICE_CONFIG, DEFAULT_SOROBAN_CONFIG, type PracticeConfig } from './config';
+import {
+  DEFAULT_PRACTICE_CONFIG,
+  DEFAULT_SOROBAN_CONFIG,
+  DEFAULT_USTUN_CONFIG,
+  type PracticeConfig,
+} from './config';
 import { generateDrillProblems, generateSorobanProblems, sorobanRods } from './drills';
 
 const soroban = (overrides: Partial<PracticeConfig> = {}): PracticeConfig => ({
@@ -84,5 +89,26 @@ describe('generateDrillProblems', () => {
 
     expect(problems).toHaveLength(5);
     expect(problems.every((problem) => problem.numbers.length === 4)).toBe(true);
+  });
+});
+
+describe('the column drill', () => {
+  it('adds the same numbers as an anzan — only the screen differs', () => {
+    const config: PracticeConfig = { ...DEFAULT_USTUN_CONFIG, rowCount: 6, problemCount: 4 };
+    const problems = generateDrillProblems(config, createSeededRandom(3));
+
+    expect(problems).toHaveLength(4);
+    for (const problem of problems) {
+      expect(problem.numbers).toHaveLength(6);
+      expect(problem.answer).toBe(problem.numbers.reduce((sum, value) => sum + value, 0));
+    }
+  });
+
+  it('builds the very problems the anzan generator would', () => {
+    const shape = { rowCount: 5, problemCount: 3, digitCount: 1, section: 'formulasiz' } as const;
+    const asColumn = generateDrillProblems({ ...DEFAULT_USTUN_CONFIG, ...shape }, createSeededRandom(9));
+    const asFlash = generateDrillProblems({ ...DEFAULT_PRACTICE_CONFIG, ...shape }, createSeededRandom(9));
+
+    expect(asColumn).toEqual(asFlash);
   });
 });

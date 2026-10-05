@@ -25,14 +25,17 @@ const SECTION_PREFIX = 'section:';
 const ROW_CHOICES = numberChoices(PRACTICE_LIMITS.rowCount);
 const PROBLEM_CHOICES = numberChoices(PRACTICE_LIMITS.problemCount);
 
-const KIND_OPTIONS = PRACTICE_KINDS.map((kind) => ({ value: kind, label: DRILL_META[kind].short }));
+const kindOptions = (kinds: readonly PracticeKind[]) =>
+  kinds.map((kind) => ({ value: kind, label: DRILL_META[kind].short }));
 
 interface PracticeConfigFieldsProps {
   value: PracticeConfig;
   onChange: (value: PracticeConfig) => void;
+  /** The drills this form may offer; all of them unless a screen narrows the list. */
+  kinds?: readonly PracticeKind[];
 }
 
-export function PracticeConfigFields({ value, onChange }: PracticeConfigFieldsProps) {
+export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }: PracticeConfigFieldsProps) {
   const set = <K extends keyof PracticeConfig>(key: K, next: PracticeConfig[K]) =>
     onChange(normalizePracticeConfig({ ...value, [key]: next }));
 
@@ -48,17 +51,25 @@ export function PracticeConfigFields({ value, onChange }: PracticeConfigFieldsPr
 
   const topicSelectId = useId();
   const limits = limitsFor(value.kind);
+  // The column drill adds the same numbers as an anzan, so it takes the same settings — minus the
+  // timing, which belongs to a flash.
+  const isAdding = value.kind !== 'soroban';
   const digitChoices = numberChoices(limits.digitCount, (n) => `${n} xonali`);
 
   return (
     <>
       <div className={styles.fieldBlock}>
         <span className={styles.fieldLabel}>Mashq turi</span>
-        <SegmentedControl label="Mashq turi" options={KIND_OPTIONS} value={value.kind} onChange={setKind} />
+        <SegmentedControl
+          label="Mashq turi"
+          options={kindOptions(kinds)}
+          value={value.kind}
+          onChange={setKind}
+        />
         <p className={styles.topicHint}>{DRILL_META[value.kind].description}</p>
       </div>
 
-      {value.kind === 'anzan' && (
+      {isAdding && (
         <TopicField
           value={value}
           selectId={topicSelectId}
@@ -74,7 +85,7 @@ export function PracticeConfigFields({ value, onChange }: PracticeConfigFieldsPr
         onChange={(n) => leaveTopic('digitCount', n)}
       />
 
-      {value.kind === 'anzan' ? (
+      {isAdding ? (
         <>
           <ChoiceField
             label="Qator soni (necha son)"
@@ -100,17 +111,20 @@ export function PracticeConfigFields({ value, onChange }: PracticeConfigFieldsPr
         />
       )}
 
-      {/* 0,3–7 s in tenths is a real range, so it keeps a slider — with buttons for the fine steps. */}
-      <SliderField
-        label={
-          value.kind === 'soroban' ? 'Karta ko‘rinish vaqti (soniya)' : 'Har bir son uchun vaqt (soniya)'
-        }
-        {...limits.secondsPerNumber}
-        formatValue={formatSeconds}
-        stepper
-        value={value.secondsPerNumber}
-        onChange={(n) => set('secondsPerNumber', n)}
-      />
+      {/* The column drill is not timed at all: the child reads the problem and answers when ready. */}
+      {value.kind !== 'ustun' && (
+        /* 0,3–7 s in tenths is a real range, so it keeps a slider — with buttons for the fine steps. */
+        <SliderField
+          label={
+            value.kind === 'soroban' ? 'Karta ko‘rinish vaqti (soniya)' : 'Har bir son uchun vaqt (soniya)'
+          }
+          {...limits.secondsPerNumber}
+          formatValue={formatSeconds}
+          stepper
+          value={value.secondsPerNumber}
+          onChange={(n) => set('secondsPerNumber', n)}
+        />
+      )}
     </>
   );
 }

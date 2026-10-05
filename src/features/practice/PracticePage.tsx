@@ -12,6 +12,7 @@ import { ErrorMessage } from '@/shared/ui/Notice';
 import styles from './Practice.module.css';
 import { PracticeConfigFields } from './PracticeConfigFields';
 import { type PracticeProgress, PracticeRunner } from './PracticeRunner';
+import { RECORDED_KINDS } from './sections';
 
 interface PracticeRun {
   id: number;
@@ -34,8 +35,14 @@ export function PracticePage() {
     setRun({ id: ++nextRunId.current, config, problems: generateDrillProblems(config, Math.random) });
   };
 
+  /*
+   * The column drill is still being tried out, so its sessions are not written down: they earn no
+   * stars, move no streak and change no statistics until the shape of the drill is settled.
+   */
+  const isRecorded = (config: PracticeConfig) => RECORDED_KINDS.includes(config.kind);
+
   const handleProgress = async (progress: PracticeProgress) => {
-    if (!run || !progress.finished) return;
+    if (!run || !progress.finished || !isRecorded(run.config)) return;
     const recorded = await recordResult.run({
       studentId: student.id,
       config: run.config,
@@ -66,6 +73,9 @@ export function PracticePage() {
       onProgress={handleProgress}
       summaryActions={
         <>
+          {!isRecorded(run.config) && (
+            <div className={styles.summaryNote}>Sinov rejimi — natija saqlanmaydi</div>
+          )}
           {saved && <div className={styles.summaryNote}>Natija saqlandi ✓</div>}
           {saved && streak !== undefined && streak.current > 0 && (
             <div className={styles.summaryStreak}>

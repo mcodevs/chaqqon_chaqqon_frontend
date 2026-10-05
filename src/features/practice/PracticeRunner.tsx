@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useLayoutEffect, useRef } from 'react';
-import type { PracticeConfig } from '@/domain/practice/config';
+import { isFlashed, type PracticeConfig } from '@/domain/practice/config';
 import type { Problem } from '@/domain/practice/problem';
 import { countCorrect, currentProblem, lastAttempt } from '@/domain/practice/session';
 import { useFlashSession } from './useFlashSession';
@@ -30,6 +30,7 @@ export function PracticeRunner({ problems, config, onProgress, summaryActions }:
     problemSets: [problems],
     secondsPerNumber: config.secondsPerNumber,
     autoAdvance: true,
+    flashed: isFlashed(config.kind),
   });
   const onProgressRef = useRef(onProgress);
 
@@ -70,6 +71,7 @@ export function PracticeRunner({ problems, config, onProgress, summaryActions }:
           key={state.round}
           kind={config.kind}
           {...position}
+          problem={currentProblem(state)}
           onSubmit={(answer) => submitAnswers([answer])}
         />
       );

@@ -42,7 +42,10 @@ export function generateSorobanProblems(config: PracticeConfig, random: Random):
   return problems;
 }
 
-/** The problems a config asks for, whichever drill it describes. */
+/**
+ * The problems a config asks for, whichever drill it describes. The column drill adds the same
+ * numbers as an anzan — only the screen differs — so it shares the anzan generator.
+ */
 export function generateDrillProblems(config: PracticeConfig, random: Random): Problem[] {
   return config.kind === 'soroban'
     ? generateSorobanProblems(config, random)

@@ -3,6 +3,7 @@ import { CLASSROOM_PARTICIPANTS } from '@/domain/classroom';
 import { DEFAULT_PRACTICE_CONFIG, type PracticeConfig } from '@/domain/practice/config';
 import type { Student } from '@/domain/users';
 import { PracticeConfigFields } from '@/features/practice/PracticeConfigFields';
+import { RECORDED_KINDS } from '@/features/practice/sections';
 import { useFullscreen } from '@/shared/hooks/useFullscreen';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -45,7 +46,7 @@ export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSe
         max={CLASSROOM_PARTICIPANTS.max}
         onChange={setSelectedIds}
       />
-      <PracticeConfigFields value={config} onChange={setConfig} />
+      <PracticeConfigFields value={config} onChange={setConfig} kinds={RECORDED_KINDS} />
       <Button size="lg" block disabled={missing > 0} onClick={start}>
         {missing > 0 ? `Yana kamida ${missing} ta o'quvchi tanlang` : 'Boshlash'}
       </Button>
