@@ -1,24 +1,110 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--surface-page);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: calc(var(--space-3) + var(--tg-safe-top, 0px)) var(--space-4) var(--space-3);
+}
+
+.brandLogo {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  font-size: 1rem;
+}
+
+.brandText {
+  font: var(--text-body);
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-4)
+    calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+}
+
 .card {
+  width: 100%;
+  max-width: 380px;
+  padding: var(--space-6) var(--space-5);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-3);
   text-align: center;
 }
 
-.icon {
-  font-size: var(--size-display);
+/* The lock is the one picture on the screen, so it gets a ring rather than floating loose. */
+.lock {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--warning-soft);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--warning) 8%, transparent);
+  font-size: 2rem;
   line-height: 1;
-  margin-bottom: var(--space-2);
 }
 
 .title {
-  margin: 0 0 var(--space-2);
-  font-size: var(--size-h2);
+  margin: 0 0 var(--space-1);
+  font: var(--text-h2);
+  color: var(--content-primary);
 }
 
-.text {
-  margin: 0 0 var(--space-2);
+.greeting {
+  margin: 0 0 var(--space-5);
+  font: var(--text-body);
   color: var(--content-secondary);
-  font-weight: 600;
 }
 
-.text:last-child {
-  margin-bottom: 0;
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+
+.factLabel {
+  font: var(--text-caption);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--content-tertiary);
+}
+
+.factValue {
+  font: var(--text-body-lg);
+  color: var(--content-primary);
+}
+
+.help {
+  margin: 0 0 var(--space-5);
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
