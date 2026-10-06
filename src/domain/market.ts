@@ -30,6 +30,16 @@ export interface StudentStarsBalance {
 }
 
 /**
+ * The day the count started over: 6 October 2026, midnight in Tashkent. Stars are not stored but
+ * recomputed from the whole history, so the teacher's "start from zero" is this line — homework
+ * finished before it is left in the history for the statistics and simply earns nothing. Moving
+ * this date forward wipes the class's stars again, so it is changed deliberately, never in passing.
+ */
+export const STARS_COUNTED_FROM = '2026-10-05T19:00:00.000Z';
+
+const STARS_COUNTED_FROM_MS = Date.parse(STARS_COUNTED_FROM);
+
+/**
  * Calculates earned stars. One interactive homework ('online') done without a single mistake is
  * worth one star; one mistake and it is worth nothing, however long the homework was. Solo
  * practice and the classroom match award no stars — the first is unsupervised, and in the second
@@ -46,6 +56,9 @@ export function calculateEarnedStars(results: readonly PracticeResult[], student
     if (r.mode !== 'online') continue;
     // A homework with no problems in it is not a perfect one, it is an empty one.
     if (r.total <= 0) continue;
+    // An unreadable timestamp compares false and so still counts: a child's real work is never
+    // dropped over a bad date.
+    if (Date.parse(r.completedAt) < STARS_COUNTED_FROM_MS) continue;
 
     if (r.correct === r.total) stars += 1;
   }

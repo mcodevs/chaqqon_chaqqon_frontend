@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   type MarketItem,
   type MarketOrder,
+  STARS_COUNTED_FROM,
   calculateEarnedStars,
   calculateSpentStars,
   canAfford,
@@ -67,6 +68,26 @@ describe('market domain', () => {
 
   it('ignores an empty homework, which is not a perfect one', () => {
     expect(calculateEarnedStars([makeResult('online', 0, 0)], 's1')).toBe(0);
+  });
+
+  it('leaves homework finished before the count started over out of the total', () => {
+    const before = {
+      ...makeResult('online', 5, 5),
+      completedAt: new Date(Date.parse(STARS_COUNTED_FROM) - 1000).toISOString(),
+    };
+    const after = {
+      ...makeResult('online', 5, 5),
+      completedAt: new Date(Date.parse(STARS_COUNTED_FROM) + 1000).toISOString(),
+    };
+
+    expect(calculateEarnedStars([before], 's1')).toBe(0);
+    expect(calculateEarnedStars([before, after], 's1')).toBe(1);
+  });
+
+  it('counts a homework whose timestamp cannot be read, rather than losing the star', () => {
+    const broken = { ...makeResult('online', 5, 5), completedAt: 'not a date' };
+
+    expect(calculateEarnedStars([broken], 's1')).toBe(1);
   });
 
   it('pays no attention to the topic, which the teacher chose, not the child', () => {
