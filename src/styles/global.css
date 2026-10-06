@@ -118,3 +118,28 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Printing. Only the worksheet screen prints anything of its own: it mounts its sheets on <body>
+ * marked `data-print-root`, and when one is there the whole app shell steps aside so the paper is
+ * all that is left. Every other screen prints the way the browser would print it anyway.
+ */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body::before {
+    content: none !important;
+  }
+
+  body:has([data-print-root]) > #root {
+    display: none !important;
+  }
+}

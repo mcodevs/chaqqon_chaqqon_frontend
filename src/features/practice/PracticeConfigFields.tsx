@@ -1,25 +1,20 @@
-import { useId } from 'react';
 import {
   PRACTICE_KINDS,
   PRACTICE_LIMITS,
   type PracticeConfig,
   type PracticeKind,
-  SECTION_IDS,
   defaultConfigFor,
   limitsFor,
   normalizePracticeConfig,
 } from '@/domain/practice/config';
-import { TOPIC_GROUPS, type TopicGroupId, getTopic, topicsForDigitCount } from '@/domain/practice/topics';
 import { formatSeconds } from '@/shared/format';
 import { ChoiceField } from '@/shared/ui/ChoiceField';
 import { numberChoices } from '@/shared/ui/choiceOptions';
 import { SegmentedControl } from '@/shared/ui/SegmentedControl';
 import { SliderField } from '@/shared/ui/SliderField';
 import styles from './Practice.module.css';
-import { DRILL_META, SECTION_META } from './sections';
-
-/** Marks the "whole section, mixed" entries apart from topic ids in the one select. */
-const SECTION_PREFIX = 'section:';
+import { DRILL_META } from './sections';
+import { TopicField } from './TopicField';
 
 /* Small, fixed sets read better as chips: every option is visible and one tap wide. */
 const ROW_CHOICES = numberChoices(PRACTICE_LIMITS.rowCount);
@@ -49,7 +44,6 @@ export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }
     if (kind !== value.kind) onChange(defaultConfigFor(kind));
   };
 
-  const topicSelectId = useId();
   const limits = limitsFor(value.kind);
   // The column drill adds the same numbers as an anzan, so it takes the same settings — minus the
   // timing, which belongs to a flash.
@@ -71,8 +65,9 @@ export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }
 
       {isAdding && (
         <TopicField
-          value={value}
-          selectId={topicSelectId}
+          section={value.section}
+          topicId={value.topicId}
+          digitCount={value.digitCount}
           onPickSection={(section) => leaveTopic('section', section)}
           onPickTopic={(topicId) => set('topicId', topicId)}
         />
@@ -126,63 +121,5 @@ export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }
         />
       )}
     </>
-  );
-}
-
-interface TopicFieldProps {
-  value: PracticeConfig;
-  selectId: string;
-  onPickSection: (section: PracticeConfig['section']) => void;
-  onPickTopic: (topicId: string) => void;
-}
-
-function TopicField({ value, selectId, onPickSection, onPickTopic }: TopicFieldProps) {
-  const topics = topicsForDigitCount(value.digitCount);
-  const selectedTopic = getTopic(value.topicId);
-  const groups = Object.keys(TOPIC_GROUPS) as TopicGroupId[];
-
-  return (
-    <div className={styles.fieldBlock}>
-      <label className={styles.fieldLabel} htmlFor={selectId}>
-        Mavzu
-      </label>
-      <select
-        id={selectId}
-        className={styles.topicSelect}
-        value={value.topicId ?? `${SECTION_PREFIX}${value.section}`}
-        onChange={(event) => {
-          const picked = event.target.value;
-          if (picked.startsWith(SECTION_PREFIX)) {
-            onPickSection(picked.slice(SECTION_PREFIX.length) as PracticeConfig['section']);
-          } else {
-            onPickTopic(picked);
-          }
-        }}
-      >
-        <optgroup label="Aralash (butun bo‘lim)">
-          {SECTION_IDS.map((id) => (
-            <option key={id} value={`${SECTION_PREFIX}${id}`}>
-              {SECTION_META[id].label} — aralash
-            </option>
-          ))}
-        </optgroup>
-        {groups.map((group) => {
-          const groupTopics = topics.filter((topic) => topic.group === group);
-          if (groupTopics.length === 0) return null;
-          return (
-            <optgroup key={group} label={TOPIC_GROUPS[group].label}>
-              {groupTopics.map((topic) => (
-                <option key={topic.id} value={topic.id}>
-                  {topic.label}
-                </option>
-              ))}
-            </optgroup>
-          );
-        })}
-      </select>
-      <p className={styles.topicHint}>
-        {selectedTopic ? TOPIC_GROUPS[selectedTopic.group].hint : SECTION_META[value.section].description}
-      </p>
-    </div>
   );
 }

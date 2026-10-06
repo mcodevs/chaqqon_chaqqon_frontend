@@ -6,6 +6,7 @@ const DESKTOP_TABS = [
   { to: '/teacher', label: "👥 O'quvchilar", end: true },
   { to: '/teacher/competition', label: '📝 Interaktiv vazifalar' },
   { to: '/teacher/stats', label: '📊 Statistika' },
+  { to: '/teacher/worksheet', label: '🖨️ Yozma vazifa' },
   { to: '/teacher/classroom', label: '🏫 Sinf musobaqasi' },
   { to: '/teacher/abacus', label: '🧮 Abakus' },
   { to: '/teacher/market', label: "🎁 Do'kon" },

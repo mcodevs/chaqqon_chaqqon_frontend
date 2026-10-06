@@ -36,6 +36,21 @@ export function TeacherProfilePage() {
             </div>
           </Link>
 
+          <Link to="/teacher/worksheet" className={styles.menuItem}>
+            <div className={styles.menuItemLeft}>
+              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🖨️</div>
+              <div className={styles.menuItemText}>
+                <span className={styles.menuItemTitle}>Yozma uy vazifasi (chop etish)</span>
+                <span className={styles.menuItemDesc}>
+                  Mavzu boʻyicha misollar varagʻini tayyorlab, printerga chiqarish
+                </span>
+              </div>
+            </div>
+            <div className={styles.menuItemRight}>
+              <span className={styles.arrowIcon}>›</span>
+            </div>
+          </Link>
+
           <Link to="/teacher/market" className={styles.menuItem}>
             <div className={styles.menuItemLeft}>
               <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🎁</div>

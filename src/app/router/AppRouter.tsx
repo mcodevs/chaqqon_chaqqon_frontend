@@ -15,6 +15,7 @@ import { TeacherLayout } from '@/features/teacher/TeacherLayout';
 import { TeacherMarketPage } from '@/features/teacher/TeacherMarketPage';
 import { TeacherProfilePage } from '@/features/teacher/TeacherProfilePage';
 import { TeacherStatsPage } from '@/features/teacher/TeacherStatsPage';
+import { WorksheetPage } from '@/features/teacher/worksheet/WorksheetPage';
 import { GuestOnly, HomeRedirect, RequireRole } from './routeGuards';
 
 export function AppRouter() {
@@ -42,6 +43,7 @@ export function AppRouter() {
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="competition" element={<TeacherCompetitionPage />} />
         <Route path="classroom" element={<ClassroomPage />} />
+        <Route path="worksheet" element={<WorksheetPage />} />
         <Route path="abacus" element={<AbacusPage />} />
         <Route path="market" element={<TeacherMarketPage />} />
         <Route path="profile" element={<TeacherProfilePage />} />

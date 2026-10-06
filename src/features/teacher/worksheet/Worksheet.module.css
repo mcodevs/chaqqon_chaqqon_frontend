@@ -1,0 +1,170 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Settings on the left, the paper on the right — the way a print dialog reads. */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formCard {
+  position: sticky;
+  top: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .formCard {
+    position: static;
+  }
+}
+
+/* ---------- Form ---------- */
+
+.fieldBlock {
+  margin-bottom: var(--space-4);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: var(--size-body);
+  font-weight: 700;
+  color: var(--content-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.hint {
+  margin: var(--space-1) 2px var(--space-3);
+  font-size: var(--size-caption);
+  font-weight: 600;
+  color: var(--content-secondary);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: var(--size-body);
+  font-weight: 600;
+  color: var(--content-primary);
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand-primary);
+  flex: none;
+}
+
+.brandBlock {
+  margin: var(--space-5) 0 var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.warning {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  font-size: var(--size-caption);
+  font-weight: 700;
+}
+
+/* ---------- Preview ---------- */
+
+.previewColumn {
+  min-width: 0;
+}
+
+.previewBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.previewTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--text-h3);
+  color: var(--content-primary);
+}
+
+.staleTag {
+  font: var(--text-caption);
+  font-style: normal;
+  color: var(--warning);
+  background: var(--warning-soft);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.previewActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.printTip {
+  margin-bottom: var(--space-3);
+  font-size: var(--size-caption);
+  font-weight: 600;
+  color: var(--content-secondary);
+}
+
+.previewScroll {
+  overflow-x: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken, var(--surface-page));
+  border: 1px solid var(--border-subtle);
+}
+
+.previewStack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* A sheet is 210 mm wide whatever the screen is; `useFitScale` zooms it down to the column. */
+.previewStack > * {
+  box-shadow: 0 2px 16px rgb(0 0 0 / 18%);
+}
+
+/* ---------- Print copy ---------- */
+
+/*
+ * The same sheets, mounted on <body>. Hidden on screen; on paper it is the only thing left,
+ * because the app shell is hidden by the `[data-print-root]` rule in global.css.
+ */
+.printRoot {
+  display: none;
+}
+
+@media print {
+  .printRoot {
+    display: block;
+  }
+}

@@ -1,0 +1,168 @@
+/*
+ * The printed sheet. Everything here is measured in millimetres, not in the app's tokens: this is
+ * paper, so it keeps a white page and black ink in both themes and at any screen size, and the
+ * preview on screen is the same markup at the same size.
+ */
+
+.sheet {
+  --row-h: 7mm;
+  --rule: 0.22mm solid #000;
+
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 297mm;
+  padding: 12mm 10mm 10mm;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: #000;
+  font-family: 'Times New Roman', 'Liberation Serif', Georgia, serif;
+}
+
+.sheetHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6mm;
+  margin-bottom: 3mm;
+}
+
+.brandName {
+  font-size: 4.2mm;
+  font-weight: 700;
+  letter-spacing: 0.3mm;
+  color: #0a6b35;
+  /* Browsers drop background and text colour in print by default; this sheet means them. */
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.brandContact {
+  font-size: 3.1mm;
+  font-style: italic;
+  color: #0a6b35;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+/* The tables take whatever is left between the header and the footer. */
+.sheetBody {
+  flex: 1;
+}
+
+.sheetFoot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6mm;
+  margin-top: 3mm;
+  font-size: 3mm;
+  font-weight: 700;
+  color: #1c3f94;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.footName {
+  text-transform: uppercase;
+}
+
+/* ---------- One exercise ---------- */
+
+.block {
+  /* A table is never worth splitting across two pages. */
+  break-inside: avoid;
+  margin-bottom: calc(var(--row-h) * 0.6);
+}
+
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: 'Arial', 'Liberation Sans', system-ui, sans-serif;
+}
+
+.grid td,
+.grid th {
+  height: var(--row-h);
+  padding: 0;
+  border: var(--rule);
+  text-align: center;
+  vertical-align: middle;
+  font-size: calc(var(--row-h) * 0.5);
+  font-weight: 400;
+  /* Digits of the same width keep a column of numbers in line. */
+  font-variant-numeric: tabular-nums;
+}
+
+.heading {
+  font-weight: 700;
+}
+
+/* The roman numeral naming a table, and the "Javoblar" caption under it. */
+.rowLabel {
+  width: 14mm;
+  font-weight: 700;
+  font-size: calc(var(--row-h) * 0.45);
+}
+
+.cell {
+  white-space: nowrap;
+}
+
+/* Where the child writes the sum. */
+.answerRow .blank {
+  height: calc(var(--row-h) * 1.15);
+}
+
+.timeLine {
+  margin: calc(var(--row-h) * 0.15) 0 0;
+  text-align: center;
+  font-size: calc(var(--row-h) * 0.48);
+  font-weight: 700;
+  letter-spacing: 0.2mm;
+}
+
+/* ---------- Answer key ---------- */
+
+.answerTitle {
+  margin: 0 0 4mm;
+  font-size: 5mm;
+  text-align: center;
+}
+
+.answerSheetBlock {
+  break-inside: avoid;
+  margin-bottom: 5mm;
+}
+
+.answerSheetTitle {
+  margin: 0 0 1.5mm;
+  font-size: 3.6mm;
+}
+
+.answerGrid {
+  margin-bottom: 2mm;
+}
+
+.answerCell {
+  font-weight: 700;
+}
+
+@media print {
+  /*
+   * On paper the page margin is set by `@page`, so the sheet drops its own padding and takes the
+   * printable area exactly — 297 mm less the two 10 mm margins — which keeps the footer at the
+   * bottom of the page instead of right under the last table.
+   */
+  .sheet {
+    width: auto;
+    min-height: 277mm;
+    padding: 0;
+    break-after: page;
+  }
+
+  .sheet:last-child {
+    break-after: auto;
+  }
+}
