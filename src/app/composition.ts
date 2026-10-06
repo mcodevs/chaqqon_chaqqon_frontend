@@ -25,7 +25,6 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
     market: createMarketService({
       market: ports.market,
       results: ports.results,
-      students: ports.students,
       generateId,
       clock,
     }),

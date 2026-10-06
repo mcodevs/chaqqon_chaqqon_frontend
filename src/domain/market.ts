@@ -29,41 +29,28 @@ export interface StudentStarsBalance {
   balance: number;
 }
 
-import { type LevelGroup, LEVEL_INDEX, SECTION_TO_LEVEL } from './users';
-
 /**
- * Calculates earned stars:
- * - Classroom competition ('classroom'): awards 0 stars.
- * - Interactive homework ('online'): 1 star per 40 correctly answered problems (Math.floor(totalCorrect / 40)).
- * - Solo practice ('practice'): awards 0 stars.
- * - If studentLevel is specified, results on sections easier than the student's level are ignored.
- *   Soroban cards teach no formula and so belong to no level: they always count.
+ * Calculates earned stars. One interactive homework ('online') done without a single mistake is
+ * worth one star; one mistake and it is worth nothing, however long the homework was. Solo
+ * practice and the classroom match award no stars — the first is unsupervised, and in the second
+ * the teacher types the answers.
+ *
+ * The homework's topic does not matter. The teacher chooses it, so a child must not lose a star
+ * because the homework they were set happened to be below their level group.
  */
-export function calculateEarnedStars(
-  results: readonly PracticeResult[],
-  studentId: string,
-  studentLevel?: LevelGroup,
-): number {
-  let onlineCorrectCount = 0;
+export function calculateEarnedStars(results: readonly PracticeResult[], studentId: string): number {
+  let stars = 0;
 
   for (const r of results) {
     if (r.studentId !== studentId) continue;
     if (r.mode !== 'online') continue;
+    // A homework with no problems in it is not a perfect one, it is an empty one.
+    if (r.total <= 0) continue;
 
-    // Check if problem is easier than the student's assigned level group
-    if (studentLevel && r.config.kind !== 'soroban') {
-      const problemLevel = SECTION_TO_LEVEL[r.config.section] ?? 'A';
-      if (LEVEL_INDEX[problemLevel] < LEVEL_INDEX[studentLevel]) {
-        continue; // Student worked on an easier topic, no stars
-      }
-    }
-
-    if (r.correct > 0) {
-      onlineCorrectCount += r.correct;
-    }
+    if (r.correct === r.total) stars += 1;
   }
 
-  return Math.floor(onlineCorrectCount / 40);
+  return stars;
 }
 
 /**
@@ -88,9 +75,8 @@ export function computeStudentStars(
   studentId: string,
   results: readonly PracticeResult[],
   orders: readonly MarketOrder[],
-  studentLevel?: LevelGroup,
 ): StudentStarsBalance {
-  const earnedStars = calculateEarnedStars(results, studentId, studentLevel);
+  const earnedStars = calculateEarnedStars(results, studentId);
   const spentStars = calculateSpentStars(orders, studentId);
   return {
     studentId,
@@ -105,15 +91,12 @@ export function computeStudentStars(
  * and each balance is derived from the same result and order lists.
  */
 export function computeStarsByStudent(
-  students: readonly { id: string; levelGroup?: LevelGroup | null }[],
+  students: readonly { id: string }[],
   results: readonly PracticeResult[],
   orders: readonly MarketOrder[],
 ): Map<string, StudentStarsBalance> {
   return new Map(
-    students.map((student) => [
-      student.id,
-      computeStudentStars(student.id, results, orders, student.levelGroup ?? undefined),
-    ]),
+    students.map((student) => [student.id, computeStudentStars(student.id, results, orders)]),
   );
 }
 

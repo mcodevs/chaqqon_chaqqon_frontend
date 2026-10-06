@@ -32,52 +32,48 @@ const makeResult = (mode: PracticeResult['mode'], correct: number, total: number
 });
 
 describe('market domain', () => {
-  it('counts soroban homework towards stars whatever level the student is on', () => {
-    const sorobanCard = {
-      ...makeResult('online', 40, 40),
-      config: { ...config, kind: 'soroban' as const },
-    };
-
-    // A 'formulasiz' anzan result is below a level-C student and is skipped…
-    expect(calculateEarnedStars([makeResult('online', 40, 40)], 's1', 'C')).toBe(0);
-    // …but a card teaches no formula, so it belongs to no level and still earns its star.
-    expect(calculateEarnedStars([sorobanCard], 's1', 'C')).toBe(1);
+  it('gives one star for a homework done without a mistake', () => {
+    expect(calculateEarnedStars([makeResult('online', 5, 5)], 's1')).toBe(1);
+    expect(calculateEarnedStars([makeResult('online', 20, 20)], 's1')).toBe(1);
   });
 
-  it('pools soroban and anzan homework into the same 40-correct star', () => {
-    const results = [
-      { ...makeResult('online', 20, 20), config: { ...config, kind: 'soroban' as const } },
-      makeResult('online', 20, 20),
-    ];
-
-    expect(calculateEarnedStars(results, 's1')).toBe(1);
+  it('gives nothing for a homework with a single mistake, however long it was', () => {
+    // 39 right out of 40 is a good homework, but the star is for a clean one.
+    expect(calculateEarnedStars([makeResult('online', 39, 40)], 's1')).toBe(0);
+    expect(calculateEarnedStars([makeResult('online', 0, 5)], 's1')).toBe(0);
   });
 
-  it('calculates earned stars correctly (classroom = 0, online = 1 star per 40 correct)', () => {
+  it('counts one star per homework, so they add up over the term', () => {
     const results = [
-      makeResult('practice', 10, 10), // solo -> 0 stars
-      makeResult('classroom', 10, 10), // classroom -> 0 stars
-      makeResult('online', 25, 30), // online: 25 correct
-      makeResult('online', 15, 20), // online: 15 correct (total 40 correct -> 1 star)
-      makeResult('online', 39, 40), // online: 39 correct (total 79 correct -> still 1 star)
+      makeResult('online', 5, 5),
+      makeResult('online', 4, 5), // one slip: no star
+      makeResult('online', 10, 10),
     ];
 
-    expect(calculateEarnedStars(results, 's1')).toBe(1); // floor(79 / 40) = 1 star
+    expect(calculateEarnedStars(results, 's1')).toBe(2);
+  });
+
+  it('awards nothing for solo practice or the classroom match', () => {
+    const results = [makeResult('practice', 200, 200), makeResult('classroom', 50, 50)];
+
+    expect(calculateEarnedStars(results, 's1')).toBe(0);
+  });
+
+  it('counts only the asked-for student', () => {
+    const results = [makeResult('online', 5, 5)];
+
     expect(calculateEarnedStars(results, 's2')).toBe(0);
-
-    const moreResults = [...results, makeResult('online', 1, 1)]; // total 80 correct -> 2 stars
-    expect(calculateEarnedStars(moreResults, 's1')).toBe(2);
   });
 
-  it('prevents earning stars on levels easier than student assigned level', () => {
-    const results = [
-      makeResult('online', 40, 40), // config is 'formulasiz' (Level A)
-    ];
+  it('ignores an empty homework, which is not a perfect one', () => {
+    expect(calculateEarnedStars([makeResult('online', 0, 0)], 's1')).toBe(0);
+  });
 
-    // If student is level 'C' (katta do'st), formulasiz (A) yields 0 stars
-    expect(calculateEarnedStars(results, 's1', 'C')).toBe(0);
-    // If student is level 'A', 40 correct in Level A yields 1 star
-    expect(calculateEarnedStars(results, 's1', 'A')).toBe(1);
+  it('pays no attention to the topic, which the teacher chose, not the child', () => {
+    const easyForAnAdvancedChild = makeResult('online', 5, 5); // 'formulasiz', level A
+    const card = { ...makeResult('online', 5, 5), config: { ...config, kind: 'soroban' as const } };
+
+    expect(calculateEarnedStars([easyForAnAdvancedChild, card], 's1')).toBe(2);
   });
 
   it('calculates spent stars, excluding cancelled orders', () => {
@@ -115,8 +111,8 @@ describe('market domain', () => {
   });
 
   it('computes total balance and affordability', () => {
-    // 280 correct in online mode -> 280 / 40 = 7 stars
-    const results = [makeResult('online', 280, 300)];
+    // Seven clean homeworks -> seven stars.
+    const results = Array.from({ length: 7 }, () => makeResult('online', 5, 5));
     const orders: MarketOrder[] = [
       {
         id: 'o1',
@@ -154,8 +150,9 @@ describe('market domain', () => {
 describe('computeStarsByStudent', () => {
   it('gives every student their own balance from one shared history', () => {
     const results: PracticeResult[] = [
-      { ...makeResult('online', 40, 40), studentId: 's1' },
-      { ...makeResult('online', 80, 80), studentId: 's2' },
+      { ...makeResult('online', 5, 5), studentId: 's1' },
+      { ...makeResult('online', 5, 5), studentId: 's2' },
+      { ...makeResult('online', 10, 10), studentId: 's2' },
       // Solo practice earns nothing, so it must not lift s3 off zero.
       { ...makeResult('practice', 200, 200), studentId: 's3' },
     ];
@@ -178,14 +175,9 @@ describe('computeStarsByStudent', () => {
     expect(stars.get('s3')).toMatchObject({ earnedStars: 0, balance: 0 });
   });
 
-  it("honours each student's level group, so easier sections earn nothing", () => {
-    const results: PracticeResult[] = [{ ...makeResult('online', 40, 40), studentId: 's1' }];
+  it('counts a clean homework for every student alike, whatever they are working on', () => {
+    const results: PracticeResult[] = [{ ...makeResult('online', 5, 5), studentId: 's1' }];
 
-    // 'formulasiz' maps to level A, so a level-C student gets no stars for it.
-    const stars = computeStarsByStudent([{ id: 's1', levelGroup: 'C' }], results, []);
-    expect(stars.get('s1')?.balance).toBe(0);
-
-    const beginner = computeStarsByStudent([{ id: 's1', levelGroup: 'A' }], results, []);
-    expect(beginner.get('s1')?.balance).toBe(1);
+    expect(computeStarsByStudent([{ id: 's1' }], results, []).get('s1')?.balance).toBe(1);
   });
 });
