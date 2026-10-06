@@ -1,5 +1,3 @@
-import type { PracticeResult } from './results';
-
 export type OrderStatus = 'pending' | 'delivered' | 'cancelled';
 
 export interface MarketItem {
@@ -29,56 +27,48 @@ export interface StudentStarsBalance {
   balance: number;
 }
 
-/**
- * The day the count started over: 6 October 2026, midnight in Tashkent. Stars are not stored but
- * recomputed from the whole history, so the teacher's "start from zero" is this line — homework
- * finished before it is left in the history for the statistics and simply earns nothing. Moving
- * this date forward wipes the class's stars again, so it is changed deliberately, never in passing.
- */
-export const STARS_COUNTED_FROM = '2026-10-05T19:00:00.000Z';
-
-const STARS_COUNTED_FROM_MS = Date.parse(STARS_COUNTED_FROM);
+export type StarReason = 'homework' | 'purchase' | 'refund' | 'teacher_grant';
 
 /**
- * Calculates earned stars. One interactive homework ('online') done without a single mistake is
- * worth one star; one mistake and it is worth nothing, however long the homework was. Solo
- * practice and the classroom match award no stars — the first is unsupervised, and in the second
- * the teacher types the answers.
- *
- * The homework's topic does not matter. The teacher chooses it, so a child must not lose a star
- * because the homework they were set happened to be below their level group.
+ * One line of a student's star ledger. Stars used to be recomputed from the result history, which
+ * meant every change to the rule rewrote what the children had already earned; now each star is a
+ * row written by the database, saying what it came from.
  */
-export function calculateEarnedStars(results: readonly PracticeResult[], studentId: string): number {
-  let stars = 0;
-
-  for (const r of results) {
-    if (r.studentId !== studentId) continue;
-    if (r.mode !== 'online') continue;
-    // A homework with no problems in it is not a perfect one, it is an empty one.
-    if (r.total <= 0) continue;
-    // An unreadable timestamp compares false and so still counts: a child's real work is never
-    // dropped over a bad date.
-    if (Date.parse(r.completedAt) < STARS_COUNTED_FROM_MS) continue;
-
-    if (r.correct === r.total) stars += 1;
-  }
-
-  return stars;
+export interface StarAward {
+  id: string;
+  studentId: string;
+  /** Positive for a star earned, negative for one spent. */
+  delta: number;
+  reason: StarReason;
+  /** The homework that paid for it, when there is one. */
+  sourceResultId: string | null;
+  /** The order it was spent on or refunded from, when there is one. */
+  sourceOrderId: string | null;
+  note: string | null;
+  createdAt: string;
 }
 
-/**
- * Calculates spent stars from orders.
- * Orders with status 'cancelled' do not count towards spent stars (refunded).
- */
-export function calculateSpentStars(orders: readonly MarketOrder[], studentId: string): number {
-  let spent = 0;
-  for (const o of orders) {
-    if (o.studentId !== studentId) continue;
-    if (o.status !== 'cancelled') {
-      spent += o.costStars;
-    }
+/** Stars a student has been given, the spending left out. */
+export function calculateEarnedStars(awards: readonly StarAward[], studentId: string): number {
+  return sumDeltas(awards, studentId, (delta) => delta > 0);
+}
+
+/** Stars a student has spent, as a positive number — `Math.abs` so an empty ledger reads 0, not -0. */
+export function calculateSpentStars(awards: readonly StarAward[], studentId: string): number {
+  return Math.abs(sumDeltas(awards, studentId, (delta) => delta < 0));
+}
+
+function sumDeltas(
+  awards: readonly StarAward[],
+  studentId: string,
+  keep: (delta: number) => boolean,
+): number {
+  let sum = 0;
+  for (const award of awards) {
+    if (award.studentId !== studentId) continue;
+    if (keep(award.delta)) sum += award.delta;
   }
-  return spent;
+  return sum;
 }
 
 /**
@@ -86,11 +76,10 @@ export function calculateSpentStars(orders: readonly MarketOrder[], studentId: s
  */
 export function computeStudentStars(
   studentId: string,
-  results: readonly PracticeResult[],
-  orders: readonly MarketOrder[],
+  awards: readonly StarAward[],
 ): StudentStarsBalance {
-  const earnedStars = calculateEarnedStars(results, studentId);
-  const spentStars = calculateSpentStars(orders, studentId);
+  const earnedStars = calculateEarnedStars(awards, studentId);
+  const spentStars = calculateSpentStars(awards, studentId);
   return {
     studentId,
     earnedStars,
@@ -105,12 +94,9 @@ export function computeStudentStars(
  */
 export function computeStarsByStudent(
   students: readonly { id: string }[],
-  results: readonly PracticeResult[],
-  orders: readonly MarketOrder[],
+  awards: readonly StarAward[],
 ): Map<string, StudentStarsBalance> {
-  return new Map(
-    students.map((student) => [student.id, computeStudentStars(student.id, results, orders)]),
-  );
+  return new Map(students.map((student) => [student.id, computeStudentStars(student.id, awards)]));
 }
 
 /**

@@ -22,12 +22,7 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
     results: createResultService({ results: ports.results, generateId, clock }),
     competition: createCompetitionService({ rooms: ports.rooms, generateId, clock }),
     billing: createBillingService({ payments: ports.payments, clock }),
-    market: createMarketService({
-      market: ports.market,
-      results: ports.results,
-      generateId,
-      clock,
-    }),
+    market: createMarketService({ market: ports.market, generateId, clock }),
     homework: createHomeworkService({ homework: ports.homework }),
     storage: ports.storage,
     telegram: ports.telegram,

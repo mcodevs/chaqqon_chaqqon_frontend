@@ -6,6 +6,7 @@ import {
   toMarketItem,
   toMarketItemRow,
   toMarketOrder,
+  toStarAward,
   toMarketOrderRow,
   toPracticeResult,
   toPracticeResultRow,
@@ -87,7 +88,7 @@ export function createSupabaseRoomRepository(client: AppSupabaseClient): RoomRep
 }
 
 export function createSupabaseMarketRepository(client: AppSupabaseClient): MarketRepository {
-  const live = liveSubscription(client, ['market_items', 'market_orders']);
+  const live = liveSubscription(client, ['market_items', 'market_orders', 'star_awards']);
 
   return {
     async listItems() {
@@ -124,6 +125,15 @@ export function createSupabaseMarketRepository(client: AppSupabaseClient): Marke
       const { error } = await client.from('market_orders').insert(toMarketOrderRow(order));
       if (error) throw error;
       live.notify();
+    },
+
+    async listAwards() {
+      const { data, error } = await client
+        .from('star_awards')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data.map(toStarAward);
     },
 
     async updateOrderStatus(orderId, status) {

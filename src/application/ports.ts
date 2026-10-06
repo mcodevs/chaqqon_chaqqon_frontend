@@ -1,6 +1,6 @@
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
-import type { MarketItem, MarketOrder, OrderStatus } from '@/domain/market';
+import type { MarketItem, MarketOrder, OrderStatus, StarAward } from '@/domain/market';
 import type { PracticeResult } from '@/domain/results';
 import type { Student, StudentAccount } from '@/domain/users';
 import type { Role, Session } from './session';
@@ -96,6 +96,8 @@ export interface MarketRepository {
   listOrders(): Promise<MarketOrder[]>;
   createOrder(order: MarketOrder): Promise<void>;
   updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
+  /** The star ledger. The app only ever reads it; the backend is what writes a star. */
+  listAwards(): Promise<StarAward[]>;
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 

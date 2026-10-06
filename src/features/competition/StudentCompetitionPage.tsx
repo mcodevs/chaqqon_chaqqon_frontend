@@ -48,7 +48,7 @@ export function StudentCompetitionPage() {
     return (
       <Card>
         <EmptyState icon="🎉" title="Vazifa yakunlandi!">
-          Har 40 ta to'g'ri ishlangan misol uchun 1 ta yulduz beriladi.
+          Xatosiz bajarilgan har bir uy vazifasi uchun 1 ta yulduz beriladi.
         </EmptyState>
         <ShareResult
           title="Interaktiv uy vazifasi"

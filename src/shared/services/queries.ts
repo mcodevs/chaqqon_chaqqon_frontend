@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { RoomSnapshot } from '@/application/competitionService';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
-import { type MarketItem, type MarketOrder, type StudentStarsBalance, computeStarsByStudent } from '@/domain/market';
+import {
+  type MarketItem,
+  type MarketOrder,
+  type StarAward,
+  type StudentStarsBalance,
+  computeStarsByStudent,
+} from '@/domain/market';
 import type { PracticeResult } from '@/domain/results';
 import { computeStudentStats } from '@/domain/statistics';
 import { type StreakInfo, computeStreak } from '@/domain/streak';
@@ -127,16 +133,21 @@ export function useStreaksByStudent(): Map<string, StreakInfo> | undefined {
   }, [results, today]);
 }
 
+/** The star ledger: every star given or spent, as the backend wrote it down. */
+export function useStarAwards(): StarAward[] | undefined {
+  const { market } = useServices();
+  return useLiveQuery({ load: market.listAwards, subscribe: market.subscribe });
+}
+
 /**
- * Every student's star balance, for the teacher's roster. Stars are derived from results and
- * orders, both of which the teacher already has loaded, so this costs no extra request.
+ * Every student's star balance, for the teacher's roster. One ledger covers the whole class, so
+ * the roster adds up the balances itself instead of asking per student.
  */
 export function useStarsByStudent(): Map<string, StudentStarsBalance> | undefined {
   const students = useStudents();
-  const results = useResults();
-  const orders = useMarketOrders();
+  const awards = useStarAwards();
   return useMemo(
-    () => (students && results && orders ? computeStarsByStudent(students, results, orders) : undefined),
-    [students, results, orders],
+    () => (students && awards ? computeStarsByStudent(students, awards) : undefined),
+    [students, awards],
   );
 }

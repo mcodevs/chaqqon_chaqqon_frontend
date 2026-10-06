@@ -11,13 +11,11 @@ import type {
   Clock,
   IdGenerator,
   MarketRepository,
-  ResultRepository,
   Unsubscribe,
 } from './ports';
 
 interface MarketDependencies {
   market: MarketRepository;
-  results: ResultRepository;
   generateId: IdGenerator;
   clock: Clock;
 }
@@ -29,15 +27,16 @@ export interface NewMarketItemInput {
   stock: number | null;
 }
 
-export function createMarketService({ market, results, generateId, clock }: MarketDependencies) {
+export function createMarketService({ market, generateId, clock }: MarketDependencies) {
   return {
     listItems: () => market.listItems(),
     listOrders: () => market.listOrders(),
     subscribe: (listener: ChangeListener): Unsubscribe => market.subscribe(listener),
 
+    listAwards: () => market.listAwards(),
+
     async getStudentStars(studentId: string) {
-      const [allResults, allOrders] = await Promise.all([results.list(), market.listOrders()]);
-      return computeStudentStars(studentId, allResults, allOrders);
+      return computeStudentStars(studentId, await market.listAwards());
     },
 
     async saveItem(input: NewMarketItemInput & { id?: string }): Promise<MarketItem> {
@@ -58,16 +57,12 @@ export function createMarketService({ market, results, generateId, clock }: Mark
     },
 
     async buyItem(studentId: string, itemId: string): Promise<MarketOrder> {
-      const [items, allResults, allOrders] = await Promise.all([
-        market.listItems(),
-        results.list(),
-        market.listOrders(),
-      ]);
+      const [items, awards] = await Promise.all([market.listItems(), market.listAwards()]);
 
       const item = items.find((i) => i.id === itemId);
       if (!item) throw new AppError('ITEM_NOT_FOUND');
 
-      const stars = computeStudentStars(studentId, allResults, allOrders);
+      const stars = computeStudentStars(studentId, awards);
       if (!canAfford(stars.balance, item)) {
         throw new AppError('INSUFFICIENT_STARS');
       }

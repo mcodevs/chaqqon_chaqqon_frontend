@@ -1,6 +1,6 @@
 import type { MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
 import type { Room, RoomProgress } from '@/domain/competition';
-import type { MarketItem, MarketOrder, OrderStatus } from '@/domain/market';
+import type { MarketItem, MarketOrder, OrderStatus, StarAward } from '@/domain/market';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
 import { type KeyValueStore, keyMatches } from '../storage/keyValueStore';
 
@@ -77,8 +77,54 @@ export function createLocalMarketRepository(store: KeyValueStore): MarketReposit
     return (await store.get<MarketOrder[]>(KEYS.marketOrders)) ?? [];
   };
 
+  /*
+   * On Supabase a star is a row written by a trigger. This browser-only backend has no triggers,
+   * so it works the ledger out from what it does store, following the same two rules: a homework
+   * answered without a mistake pays one star, and an order spends its price back until cancelled.
+   */
+  const listAwards = async (): Promise<StarAward[]> => {
+    const [results, orders] = await Promise.all([
+      store.get<PracticeResult[]>(KEYS.results),
+      listOrders(),
+    ]);
+
+    const awards: StarAward[] = [];
+
+    for (const result of results ?? []) {
+      const mode = resolvePracticeMode(result.mode, result.roomId ?? null);
+      if (mode !== 'online' || result.total <= 0 || result.correct !== result.total) continue;
+      awards.push({
+        id: `homework:${result.id}`,
+        studentId: result.studentId,
+        delta: 1,
+        reason: 'homework',
+        sourceResultId: result.id,
+        sourceOrderId: null,
+        note: null,
+        createdAt: result.completedAt,
+      });
+    }
+
+    for (const order of orders) {
+      if (order.status === 'cancelled') continue;
+      awards.push({
+        id: `purchase:${order.id}`,
+        studentId: order.studentId,
+        delta: -order.costStars,
+        reason: 'purchase',
+        sourceResultId: null,
+        sourceOrderId: order.id,
+        note: null,
+        createdAt: order.createdAt,
+      });
+    }
+
+    return awards;
+  };
+
   return {
     listItems,
+    listAwards,
     async saveItem(item: MarketItem) {
       const all = await listItems();
       const next = all.some((i) => i.id === item.id)

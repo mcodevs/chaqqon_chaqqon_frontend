@@ -100,6 +100,109 @@ const recordResult =
 const recordPayment =
   'insert into public.student_payments (student_id, paid_until) values ($1, $2) returning paid_until::text, kind';
 
+describe('the star ledger', () => {
+  /*
+   * These tests write homework and orders of their own, and the suite shares one database, so
+   * they clear up after themselves before the row-level security tests count what is there.
+   */
+  afterAll(async () => {
+    await db.exec(`
+      delete from public.market_orders;
+      delete from public.market_items;
+      delete from public.practice_results;
+      delete from public.rooms;
+    `);
+  });
+
+  /** An 'online' result must name its room, so each homework gets one. */
+  const homework = async (studentId: string, correct: number, total: number) => {
+    const room = await db.query<{ id: string }>(openRoom([`"${studentId}"`], 'finished'));
+    return db.query(
+      `insert into public.practice_results (student_id, config, correct, total, mode, room_id)
+       values ($1, $2, $3, $4, 'online', $5) returning id`,
+      [studentId, CONFIG, correct, total, room.rows[0].id],
+    );
+  };
+
+  const balance = async (studentId: string) =>
+    (
+      await db.query<{ balance: number }>(
+        'select coalesce(sum(delta), 0)::int as balance from public.star_awards where student_id = $1',
+        [studentId],
+      )
+    ).rows[0].balance;
+
+  it('pays a star for a homework answered without a mistake', async () => {
+    await homework(ALI, 5, 5);
+    expect(await balance(ALI)).toBe(1);
+  });
+
+  it('pays nothing for a homework with a slip in it, or for solo practice', async () => {
+    await homework(VALI, 4, 5);
+    await db.query(
+      `insert into public.practice_results (student_id, config, correct, total, mode)
+       values ($1, $2, 50, 50, 'practice')`,
+      [VALI, CONFIG],
+    );
+    expect(await balance(VALI)).toBe(0);
+  });
+
+  it('charges a purchase and gives it back when the order is cancelled', async () => {
+    await homework(ALI, 5, 5);
+    await homework(ALI, 5, 5);
+    const before = await balance(ALI);
+
+    const item = await db.query<{ id: string }>(
+      `insert into public.market_items (title, cost_stars, image_url) values ('Stiker', 2, '🎁')
+       returning id`,
+    );
+    const order = await db.query<{ id: string }>(
+      `insert into public.market_orders (student_id, item_id, item_title, cost_stars)
+       values ($1, $2, 'Stiker', 2) returning id`,
+      [ALI, item.rows[0].id],
+    );
+    expect(await balance(ALI)).toBe(before - 2);
+
+    await db.query("update public.market_orders set status = 'cancelled' where id = $1", [
+      order.rows[0].id,
+    ]);
+    expect(await balance(ALI)).toBe(before);
+
+    // Reviving the order charges for it again, rather than leaving the gift free.
+    await db.query("update public.market_orders set status = 'pending' where id = $1", [
+      order.rows[0].id,
+    ]);
+    expect(await balance(ALI)).toBe(before - 2);
+  });
+
+  it("lets a student read their own stars and nobody else's", async () => {
+    const seenByVali = await as<{ student_id: string }>(
+      'authenticated',
+      VALI,
+      'select student_id from public.star_awards',
+    );
+    expect(seenByVali.some((row) => row.student_id === ALI)).toBe(false);
+
+    const seenByTeacher = await as<{ student_id: string }>(
+      'authenticated',
+      TEACHER,
+      'select student_id from public.star_awards',
+    );
+    expect(seenByTeacher.some((row) => row.student_id === ALI)).toBe(true);
+  });
+
+  it('refuses to let a student write themselves a star', async () => {
+    await expect(
+      as(
+        'authenticated',
+        VALI,
+        "insert into public.star_awards (student_id, delta, reason) values ($1, 99, 'teacher_grant')",
+        [VALI],
+      ),
+    ).rejects.toThrow(/permission denied|row-level security/);
+  });
+});
+
 describe('database schema and row-level security', () => {
   it('tells guests whether the teacher exists, but shows them nothing else', async () => {
     expect(await as('anon', null, 'select public.teacher_exists() as exists')).toEqual([{ exists: true }]);

@@ -88,6 +88,17 @@ type MarketOrderRow = {
   created_at: string;
 };
 
+type StarAwardRow = {
+  id: string;
+  student_id: string;
+  delta: number;
+  reason: 'homework' | 'purchase' | 'refund' | 'teacher_grant';
+  source_result_id: string | null;
+  source_order_id: string | null;
+  note: string | null;
+  created_at: string;
+};
+
 type TelegramLinkRow = {
   id: string;
   profile_id: string;
@@ -147,6 +158,13 @@ export type Database = {
         Row: WrittenHomeworkRow;
         Insert: Pick<WrittenHomeworkRow, 'student_id' | 'status'> & Partial<WrittenHomeworkRow>;
         Update: Partial<WrittenHomeworkRow>;
+        Relationships: [];
+      };
+      star_awards: {
+        Row: StarAwardRow;
+        // The app never writes a star: both inserts come from database triggers.
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       telegram_links: {

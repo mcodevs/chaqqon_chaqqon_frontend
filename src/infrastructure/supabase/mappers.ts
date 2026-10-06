@@ -1,6 +1,6 @@
 import type { Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
-import type { MarketItem, MarketOrder } from '@/domain/market';
+import type { MarketItem, MarketOrder, StarAward } from '@/domain/market';
 import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/config';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
 import type { WrittenHomework } from '@/domain/homework';
@@ -63,6 +63,19 @@ export function toPracticeResultRow(result: PracticeResult): Tables['practice_re
     total: result.total,
     mode: result.mode,
     room_id: result.roomId,
+  };
+}
+
+export function toStarAward(row: Tables['star_awards']['Row']): StarAward {
+  return {
+    id: row.id,
+    studentId: row.student_id,
+    delta: row.delta,
+    reason: row.reason,
+    sourceResultId: row.source_result_id,
+    sourceOrderId: row.source_order_id,
+    note: row.note,
+    createdAt: row.created_at,
   };
 }
 

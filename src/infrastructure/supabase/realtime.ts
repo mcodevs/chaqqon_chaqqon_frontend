@@ -10,6 +10,7 @@ export type RealtimeTable =
   | 'student_payments'
   | 'market_items'
   | 'market_orders'
+  | 'star_awards'
   | 'written_homework';
 
 /** Calls `listener` whenever rows this user may see (per RLS) change in the given tables. */
