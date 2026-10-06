@@ -32,13 +32,21 @@ create unique index if not exists star_awards_order_reason_idx
   on public.star_awards (source_order_id, reason)
   where source_order_id is not null;
 
-alter publication supabase_realtime add table public.star_awards;
+-- Applying this file twice must not fail, so the publication membership is added only once.
+do $$
+begin
+  alter publication supabase_realtime add table public.star_awards;
+exception
+  when duplicate_object then null;
+end
+$$;
 
 -- Reading only: the writes come from the triggers, which run as the definer.
 grant select on public.star_awards to authenticated;
 
 alter table public.star_awards enable row level security;
 
+drop policy if exists "Users read their own stars" on public.star_awards;
 create policy "Users read their own stars"
   on public.star_awards for select to authenticated
   using (student_id = (select auth.uid()) or (select private.is_teacher()));
@@ -63,6 +71,7 @@ begin
 end;
 $$;
 
+drop trigger if exists practice_results_award_star on public.practice_results;
 create trigger practice_results_award_star
   after insert on public.practice_results
   for each row execute function private.award_homework_star();
@@ -85,6 +94,7 @@ begin
 end;
 $$;
 
+drop trigger if exists market_orders_charge_stars on public.market_orders;
 create trigger market_orders_charge_stars
   after insert on public.market_orders
   for each row execute function private.charge_order_stars();
@@ -108,6 +118,7 @@ begin
 end;
 $$;
 
+drop trigger if exists market_orders_refund_stars on public.market_orders;
 create trigger market_orders_refund_stars
   after update of status on public.market_orders
   for each row execute function private.refund_order_stars();
