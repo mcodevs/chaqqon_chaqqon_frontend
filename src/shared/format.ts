@@ -35,13 +35,19 @@ function toTashkentCalendarDate(d: Date): string {
   return new Date(d.getTime() + TASHKENT_OFFSET_MS).toISOString().slice(0, 10);
 }
 
-export function formatLastActive(isoDate?: string | null): { text: string; isOnline: boolean } {
+/**
+ * How long ago a student was last seen, read on the Tashkent calendar. `now` defaults to the real
+ * clock and is passed in by tests, so the wording does not depend on the time of day they run at.
+ */
+export function formatLastActive(
+  isoDate?: string | null,
+  now: Date = new Date(),
+): { text: string; isOnline: boolean } {
   if (!isoDate) return { text: 'Hali kirmagan', isOnline: false };
 
   const date = new Date(isoDate);
   if (Number.isNaN(date.getTime())) return { text: 'Hali kirmagan', isOnline: false };
 
-  const now = new Date();
   const diffMs = now.getTime() - date.getTime();
 
   // Active within the last 5 minutes (and allow up to 1 minute of future clock skew)

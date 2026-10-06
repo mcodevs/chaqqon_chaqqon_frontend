@@ -18,44 +18,60 @@ describe('formatCalendarDate', () => {
 });
 
 describe('formatLastActive', () => {
+  // Midday in Tashkent, so "today" and "yesterday" are unambiguous however late the suite runs.
+  const NOW = new Date('2026-10-06T07:00:00.000Z');
+  const ago = (ms: number) => new Date(NOW.getTime() - ms).toISOString();
+  const MINUTE = 60 * 1000;
+  const HOUR = 60 * MINUTE;
+  const DAY = 24 * HOUR;
+
   it('returns Hali kirmagan when null or undefined', () => {
-    expect(formatLastActive(null)).toEqual({ text: 'Hali kirmagan', isOnline: false });
-    expect(formatLastActive(undefined)).toEqual({ text: 'Hali kirmagan', isOnline: false });
-    expect(formatLastActive('')).toEqual({ text: 'Hali kirmagan', isOnline: false });
-    expect(formatLastActive('invalid-date')).toEqual({ text: 'Hali kirmagan', isOnline: false });
+    expect(formatLastActive(null, NOW)).toEqual({ text: 'Hali kirmagan', isOnline: false });
+    expect(formatLastActive(undefined, NOW)).toEqual({ text: 'Hali kirmagan', isOnline: false });
+    expect(formatLastActive('', NOW)).toEqual({ text: 'Hali kirmagan', isOnline: false });
+    expect(formatLastActive('invalid-date', NOW)).toEqual({
+      text: 'Hali kirmagan',
+      isOnline: false,
+    });
   });
 
   it('marks as Hozir onlayn when under 5 minutes', () => {
-    const now = new Date().toISOString();
-    expect(formatLastActive(now)).toEqual({ text: 'Hozir onlayn', isOnline: true });
-
-    const twoMinsAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-    expect(formatLastActive(twoMinsAgo)).toEqual({ text: 'Hozir onlayn', isOnline: true });
+    expect(formatLastActive(ago(0), NOW)).toEqual({ text: 'Hozir onlayn', isOnline: true });
+    expect(formatLastActive(ago(2 * MINUTE), NOW)).toEqual({
+      text: 'Hozir onlayn',
+      isOnline: true,
+    });
   });
 
   it('handles minor clock skew into the future gracefully', () => {
-    const thirtySecsFuture = new Date(Date.now() + 30 * 1000).toISOString();
-    expect(formatLastActive(thirtySecsFuture)).toEqual({ text: 'Hozir onlayn', isOnline: true });
+    expect(formatLastActive(ago(-30 * 1000), NOW)).toEqual({
+      text: 'Hozir onlayn',
+      isOnline: true,
+    });
   });
 
   it('formats as Bugun, HH:MM when earlier today but more than 5 minutes ago', () => {
-    // 20 minutes ago
-    const twentyMinsAgo = new Date(Date.now() - 20 * 60 * 1000);
-    const result = formatLastActive(twentyMinsAgo.toISOString());
-    expect(result.isOnline).toBe(false);
-    expect(result.text).toMatch(/^Bugun, \d{2}:\d{2}$/);
+    expect(formatLastActive(ago(20 * MINUTE), NOW)).toEqual({
+      text: 'Bugun, 11:40',
+      isOnline: false,
+    });
   });
 
   it('formats as Kecha, HH:MM when yesterday', () => {
-    const yesterday = new Date(Date.now() - 25 * 60 * 60 * 1000);
-    const result = formatLastActive(yesterday.toISOString());
-    expect(result.isOnline).toBe(false);
-    // May be Kecha, HH:MM or X kun oldin depending on exact boundary
-    expect(result.text).toContain(':');
+    expect(formatLastActive(ago(25 * HOUR), NOW)).toEqual({
+      text: 'Kecha, 11:00',
+      isOnline: false,
+    });
   });
 
   it('formats as X kun oldin when several days ago', () => {
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    expect(formatLastActive(threeDaysAgo)).toEqual({ text: '3 kun oldin', isOnline: false });
+    expect(formatLastActive(ago(3 * DAY), NOW)).toEqual({ text: '3 kun oldin', isOnline: false });
+  });
+
+  it('reads the real clock when no reference time is given', () => {
+    expect(formatLastActive(new Date().toISOString())).toEqual({
+      text: 'Hozir onlayn',
+      isOnline: true,
+    });
   });
 });
