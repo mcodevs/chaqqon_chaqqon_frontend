@@ -26,7 +26,6 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
   const { students } = useServices();
   const [form, setForm] = useState(EMPTY_FORM);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const [tempStudentId] = useState(() => crypto.randomUUID());
   const addStudent = useAsyncAction(students.add);
 
   const update = (field: keyof typeof EMPTY_FORM) => (event: ChangeEvent<HTMLInputElement>) =>
@@ -120,7 +119,6 @@ export function AddStudentForm({ onCreated }: { onCreated: (credentials: Student
       </form>
       {showAvatarPicker && (
         <AvatarPickerModal
-          studentId={tempStudentId}
           currentAvatarUrl={form.avatarUrl}
           onSelect={(newUrl) => setForm((curr) => ({ ...curr, avatarUrl: newUrl }))}
           onClose={() => setShowAvatarPicker(false)}

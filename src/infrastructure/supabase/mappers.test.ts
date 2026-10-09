@@ -61,6 +61,7 @@ describe('supabase mappers', () => {
       status: 'waiting',
       participant_ids: ['a', 'b'],
       configs: { a: { section: 'miks', rowCount: 99, secondsPerNumber: 12, digitCount: 2 } },
+      teacher_id: 't',
     });
     expect(parsed.configs.a).toEqual({
       ...DEFAULT_PRACTICE_CONFIG,

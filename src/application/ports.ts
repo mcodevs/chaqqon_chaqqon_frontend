@@ -55,7 +55,8 @@ export interface HomeworkRepository {
 }
 
 export interface StorageGateway {
-  uploadAvatar(file: Blob, studentId: string): Promise<string>;
+  /** Stored under the uploader's own id: a student's own picture, or one the teacher picks for a student. */
+  uploadAvatar(file: Blob): Promise<string>;
   /** A photo of the real gift the teacher is putting in the shop. */
   uploadMarketImage(file: Blob): Promise<string>;
 }

@@ -2,10 +2,17 @@ import type { StorageGateway } from '@/application/ports';
 import type { AppSupabaseClient } from './client';
 
 export function createSupabaseStorageGateway(client: AppSupabaseClient): StorageGateway {
-  /** Uploads under a unique name and hands back the public URL that is stored on the record. */
-  const upload = async (bucket: string, prefix: string, file: Blob): Promise<string> => {
+  /**
+   * Uploads under the signed-in user's own id, which storage policies require, and hands back the
+   * public URL that is stored on the record.
+   */
+  const upload = async (bucket: string, file: Blob): Promise<string> => {
+    const { data: auth } = await client.auth.getSession();
+    const ownerId = auth.session?.user.id;
+    if (!ownerId) throw new Error('Not signed in');
+
     const extension = file.type === 'image/png' ? 'png' : 'jpg';
-    const path = `${prefix}-${Date.now()}.${extension}`;
+    const path = `${ownerId}/${Date.now()}.${extension}`;
 
     const { error } = await client.storage.from(bucket).upload(path, file, {
       cacheControl: '3600',
@@ -20,7 +27,7 @@ export function createSupabaseStorageGateway(client: AppSupabaseClient): Storage
   };
 
   return {
-    uploadAvatar: (file, studentId) => upload('avatars', studentId, file),
-    uploadMarketImage: (file) => upload('market', 'item', file),
+    uploadAvatar: (file) => upload('avatars', file),
+    uploadMarketImage: (file) => upload('market', file),
   };
 }

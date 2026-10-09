@@ -9,6 +9,7 @@ yerdan kerakli faylni oching.
 ## Indeks
 
 - [Yozma vazifa (chop etish)](references/yozma-vazifa-chop-etish.md) — `/teacher/worksheet`; bosib chiqarish **`<body>` portali + `[data-print-root]`** orqali, `@page` global; A4 ga sig'dirish hisobi CSS bilan juftlashgan
+- [Ko'p ustozli platforma](references/platforma-kop-ustoz.md) — 2026-10-10: tenant=ustoz, superadmin + ariza, tariflar (limit + funksiyalar), ustoz balansi (7 kun muhlat), 4 bosqichli chiqarish
 
 ## Eslatma
 

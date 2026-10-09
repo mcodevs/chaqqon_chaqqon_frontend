@@ -4,18 +4,12 @@ import styles from './AvatarPickerModal.module.css';
 import { AVATAR_PRESETS } from './avatarPresets';
 
 interface AvatarPickerModalProps {
-  studentId: string;
   currentAvatarUrl?: string | null;
   onSelect: (avatarUrl: string) => Promise<void> | void;
   onClose: () => void;
 }
 
-export function AvatarPickerModal({
-  studentId,
-  currentAvatarUrl,
-  onSelect,
-  onClose,
-}: AvatarPickerModalProps) {
+export function AvatarPickerModal({ currentAvatarUrl, onSelect, onClose }: AvatarPickerModalProps) {
   const { storage } = useServices();
   const [activeTab, setActiveTab] = useState<'boy' | 'girl'>('boy');
   const [uploading, setUploading] = useState(false);
@@ -42,7 +36,7 @@ export function AvatarPickerModal({
     try {
       setUploading(true);
       setError(null);
-      const url = await storage.uploadAvatar(file, studentId);
+      const url = await storage.uploadAvatar(file);
       await onSelect(url);
       onClose();
     } catch {

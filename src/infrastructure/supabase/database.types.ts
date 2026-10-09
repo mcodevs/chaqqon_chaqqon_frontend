@@ -22,6 +22,8 @@ type ProfileRow = {
   avatar_url: string | null;
   last_active_at: string | null;
   created_at: string;
+  /** A student's teacher; null for a teacher. */
+  teacher_id: string | null;
 };
 
 type WrittenHomeworkRow = {
@@ -39,6 +41,8 @@ type RoomRow = {
   status: RoomStatus;
   participant_ids: string[];
   configs: Json;
+  /** Defaults to the teacher who creates the room. */
+  teacher_id: string;
 };
 
 type RoomProgressRow = {
@@ -76,6 +80,8 @@ type MarketItemRow = {
   image_url: string;
   stock: number | null;
   created_at: string;
+  /** Defaults to the teacher who creates the item. */
+  teacher_id: string;
 };
 
 type MarketOrderRow = {

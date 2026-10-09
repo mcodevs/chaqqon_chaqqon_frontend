@@ -266,7 +266,6 @@ export function StudentProfilePage() {
 
       {isAvatarModalOpen && (
         <AvatarPickerModal
-          studentId={student.id}
           currentAvatarUrl={student.avatarUrl}
           onSelect={handleAvatarSelect}
           onClose={() => setIsAvatarModalOpen(false)}

@@ -108,7 +108,6 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
 
       {showAvatarPicker && (
         <AvatarPickerModal
-          studentId={student.id}
           currentAvatarUrl={avatarUrl}
           onSelect={(newUrl) => setAvatarUrl(newUrl)}
           onClose={() => setShowAvatarPicker(false)}

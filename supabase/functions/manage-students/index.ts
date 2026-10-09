@@ -11,7 +11,8 @@ import { readId, readName, readPassword, readUsername } from '../_shared/validat
 
 /**
  * Teacher-only student account management. Auth admin APIs need the service role,
- * which must never reach the browser, so they run here.
+ * which must never reach the browser, so they run here. A teacher manages only their own
+ * students: new students are theirs, and anyone else's student does not exist for them.
  */
 Deno.serve(
   handle(async (request) => {
@@ -23,11 +24,11 @@ Deno.serve(
     const body = await readJson(request);
     switch (body?.action) {
       case 'create':
-        return createStudent(admin, body);
+        return createStudent(admin, callerId, body);
       case 'set-password':
-        return setPassword(admin, body);
+        return setPassword(admin, callerId, body);
       case 'delete':
-        return deleteStudent(admin, body);
+        return deleteStudent(admin, callerId, body);
       default:
         return fail('BAD_REQUEST', 400);
     }
@@ -40,7 +41,20 @@ async function roleOf(admin: SupabaseClient, userId: string): Promise<string | n
   return data?.role ?? null;
 }
 
-async function createStudent(admin: SupabaseClient, body: Body): Promise<Response> {
+/** Whether the student exists and belongs to this teacher. Other teachers' students look missing. */
+async function isOwnStudent(admin: SupabaseClient, teacherId: string, studentId: string): Promise<boolean> {
+  const { data, error } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('id', studentId)
+    .eq('role', 'student')
+    .eq('teacher_id', teacherId)
+    .maybeSingle();
+  if (error) throw error;
+  return data !== null;
+}
+
+async function createStudent(admin: SupabaseClient, teacherId: string, body: Body): Promise<Response> {
   const username = readUsername(body.username);
   if (!username) return fail('INVALID_USERNAME', 400);
   const password = readPassword(body.password);
@@ -66,6 +80,7 @@ async function createStudent(admin: SupabaseClient, body: Body): Promise<Respons
     username,
     first_name: firstName,
     last_name: lastName,
+    teacher_id: teacherId,
   });
   if (profileError) {
     await admin.auth.admin.deleteUser(student.id);
@@ -76,12 +91,12 @@ async function createStudent(admin: SupabaseClient, body: Body): Promise<Respons
   return json({ student }, 201);
 }
 
-async function setPassword(admin: SupabaseClient, body: Body): Promise<Response> {
+async function setPassword(admin: SupabaseClient, teacherId: string, body: Body): Promise<Response> {
   const studentId = readId(body.studentId);
   const password = readPassword(body.password);
   if (!studentId) return fail('BAD_REQUEST', 400);
   if (!password) return fail('PASSWORD_TOO_SHORT', 400);
-  if ((await roleOf(admin, studentId)) !== 'student') return fail('STUDENT_NOT_FOUND', 404);
+  if (!(await isOwnStudent(admin, teacherId, studentId))) return fail('STUDENT_NOT_FOUND', 404);
 
   const { error } = await admin.auth.admin.updateUserById(studentId, {
     password: authPasswordFor(password),
@@ -90,10 +105,10 @@ async function setPassword(admin: SupabaseClient, body: Body): Promise<Response>
   return json({ ok: true });
 }
 
-async function deleteStudent(admin: SupabaseClient, body: Body): Promise<Response> {
+async function deleteStudent(admin: SupabaseClient, teacherId: string, body: Body): Promise<Response> {
   const studentId = readId(body.studentId);
   if (!studentId) return fail('BAD_REQUEST', 400);
-  if ((await roleOf(admin, studentId)) !== 'student') return fail('STUDENT_NOT_FOUND', 404);
+  if (!(await isOwnStudent(admin, teacherId, studentId))) return fail('STUDENT_NOT_FOUND', 404);
 
   // The profile, results and competition progress are removed by ON DELETE CASCADE.
   const { error } = await admin.auth.admin.deleteUser(studentId);
