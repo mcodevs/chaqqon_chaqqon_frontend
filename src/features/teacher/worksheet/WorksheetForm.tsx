@@ -121,7 +121,7 @@ export function WorksheetForm({ config, brand, onConfigChange, onBrandChange }: 
       <div className={styles.brandBlock}>
         <span className={styles.fieldLabel}>Varaq sarlavhasi</span>
         <TextField
-          label="Markaz nomi"
+          label="Markaz nomi (yoki o‘z nomingiz)"
           value={brand.title}
           maxLength={40}
           onChange={(event) => onBrandChange({ ...brand, title: event.target.value })}
@@ -136,7 +136,7 @@ export function WorksheetForm({ config, brand, onConfigChange, onBrandChange }: 
           label="Pastda (ustoz ismi)"
           value={brand.footer}
           maxLength={60}
-          placeholder="Masalan: NIZOMOVA DILNOZA"
+          placeholder="Ism va familiyangiz"
           onChange={(event) => onBrandChange({ ...brand, footer: event.target.value })}
         />
       </div>

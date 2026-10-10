@@ -12,3 +12,50 @@
   font-size: var(--size-body);
   white-space: nowrap;
 }
+
+/* A closed student: one banner above the page, with the way out. */
+.closedBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  font: var(--text-body);
+}
+
+.closedIcon {
+  font-size: 1.25rem;
+}
+
+.closedText {
+  flex: 1 1 220px;
+}
+
+.closedSection {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+  color: var(--content-secondary);
+  font: var(--text-body);
+}
+
+.closedSection span {
+  font-size: 2.5rem;
+}
+
+.closedSection h2 {
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+}
+
+.closedSection p {
+  margin: 0;
+}

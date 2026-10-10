@@ -49,6 +49,11 @@ describe('drillDetail', () => {
 });
 
 describe('resultCardData', () => {
+  it("carries the child's own teacher to the picture's footer", () => {
+    expect(resultCardData(input).teacher).toBeNull();
+    expect(resultCardData({ ...input, teacher: 'Dilnoza Karimova' }).teacher).toBe('Dilnoza Karimova');
+  });
+
   it('works out the score and writes the day the way it is read', () => {
     expect(resultCardData(input)).toMatchObject({
       title: 'Interaktiv uy vazifasi',

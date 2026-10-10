@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { DEFAULT_PRACTICE_CONFIG, PRACTICE_KINDS, type PracticeConfig } from '@/domain/practice/config';
 import { generateDrillProblems } from '@/domain/practice/drills';
 import type { Problem } from '@/domain/practice/problem';
-import { useCurrentStudent } from '@/features/student/CurrentStudentContext';
+import { useCurrentStudent, useStudentOpen } from '@/features/student/CurrentStudentContext';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useStudentStreak } from '@/shared/services/queries';
 import { useServices } from '@/shared/services/ServicesContext';
@@ -23,6 +23,8 @@ interface PracticeRun {
 
 export function PracticePage() {
   const student = useCurrentStudent();
+  // A closed subscription still practises; the result just is not written down.
+  const subscribed = useStudentOpen();
   const { results } = useServices();
   const streak = useStudentStreak(student.id);
   const [config, setConfig] = useState(DEFAULT_PRACTICE_CONFIG);
@@ -45,7 +47,7 @@ export function PracticePage() {
   const isRecorded = (config: PracticeConfig) => RECORDED_KINDS.includes(config.kind);
 
   const handleProgress = async (progress: PracticeProgress) => {
-    if (!run || !progress.finished || !isRecorded(run.config)) return;
+    if (!run || !progress.finished || !isRecorded(run.config) || !subscribed) return;
     const recorded = await recordResult.run({
       studentId: student.id,
       config: run.config,
@@ -80,6 +82,7 @@ export function PracticePage() {
             <div className={styles.summaryNote}>Sinov rejimi — natija saqlanmaydi</div>
           )}
           {saved && <div className={styles.summaryNote}>Natija saqlandi ✓</div>}
+          {!subscribed && <div className={styles.summaryNote}>Obuna tugagani uchun natija saqlanmadi.</div>}
           {saved && streak !== undefined && streak.current > 0 && (
             <div className={styles.summaryStreak}>
               🔥 {streak.current} kun ketma-ket

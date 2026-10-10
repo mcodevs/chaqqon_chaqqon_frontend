@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { accessOf } from '@/domain/billing';
 import { type Feature, hasFeature } from '@/domain/teacherBilling';
 import {
+  teacherDisplayName,
   useMyFeatures,
+  useMyTeacherCard,
   usePayments,
   useSchoolToday,
   useStudentRoom,
@@ -14,9 +16,12 @@ import { useSession } from '@/shared/session/SessionContext';
 import { type BottomNavItem, DashboardLayout } from '@/shared/ui/DashboardLayout';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import { useServices } from '@/shared/services/ServicesContext';
-import { ClosedAccountPage } from './ClosedAccountPage';
+import { ClosedSection, ClosedStudentBanner } from './ClosedStudentNotice';
 import styles from './StudentLayout.module.css';
-import { CurrentStudentContext } from './CurrentStudentContext';
+import { CurrentStudentContext, StudentOpenContext } from './CurrentStudentContext';
+
+/** What a student whose subscription has ended can still use: practice (not saved) and the abacus. */
+const OPEN_WHEN_CLOSED = ['/student', '/student/abacus'];
 
 export function StudentLayout() {
   const { session, signOut } = useSession();
@@ -27,6 +32,8 @@ export function StudentLayout() {
   const snapshot = useStudentRoom(studentId ?? '');
   const stars = useStudentStars(studentId ?? '');
   const features = useMyFeatures();
+  const teacherCard = useMyTeacherCard();
+  const location = useLocation();
   const student = students?.find((s) => s.id === studentId) ?? null;
   const accountDeleted = students !== undefined && student === null;
 
@@ -50,16 +57,20 @@ export function StudentLayout() {
   if (!student || !payments || !features) return <LoadingScreen />;
 
   const access = accessOf(payments, student.id, today);
-  if (!access.open) {
-    return <ClosedAccountPage student={student} paidUntil={access.paidUntil} onLogout={signOut} />;
-  }
+  const closed = !access.open;
+  const subtitle = teacherCard?.centerName || teacherDisplayName(teacherCard) || 'Chaqqon-chaqqon';
 
   const hasPendingCompetition =
     snapshot?.room?.participantIds.includes(student.id) === true && !snapshot.progress[student.id]?.finished;
 
   // Ustozning tarifi qaysi bo'limlarni ochgan bo'lsa, o'quvchida ham faqat o'shalar ko'rinadi.
-  const open = <T extends { feature?: Feature }>(sections: T[]) =>
-    sections.filter((section) => !section.feature || hasFeature(features, section.feature));
+  // Obunasi tugagan o'quvchida esa faqat mashq va abakus qoladi.
+  const open = <T extends { to: string; feature?: Feature }>(sections: T[]) =>
+    sections.filter(
+      (section) =>
+        (!section.feature || hasFeature(features, section.feature)) &&
+        (!closed || OPEN_WHEN_CLOSED.includes(section.to)),
+    );
 
   // Desktop sidebar uchun to'liq bo'limlar
   const tabs = open([
@@ -91,10 +102,11 @@ export function StudentLayout() {
       { to: '/student/leaderboard', label: 'Reyting', icon: '🏆', feature: 'leaderboard' },
       { to: '/student/results', label: 'Natijalar', icon: '📈' },
     ]).slice(0, 4),
-    { to: '/student/profile', label: 'Profil', icon: '👤' },
+    ...(closed ? [] : [{ to: '/student/profile', label: 'Profil', icon: '👤' }]),
   ];
   // Yulduzlar uy vazifasidan keladi va do'konda sarflanadi; ikkalasi ham yo'q bo'lsa, ko'rsatilmaydi.
-  const showStars = hasFeature(features, 'market') || hasFeature(features, 'homework_rooms');
+  const showStars = !closed && (hasFeature(features, 'market') || hasFeature(features, 'homework_rooms'));
+  const pageOpen = !closed || OPEN_WHEN_CLOSED.includes(location.pathname.replace(/\/$/, '') || '/student');
 
   const starsBadge = (
     <div className={styles.starsBadge} title="Yulduzchalaringiz balansi">
@@ -105,16 +117,19 @@ export function StudentLayout() {
 
   return (
     <CurrentStudentContext.Provider value={student}>
-      <DashboardLayout
-        title={`Salom, ${student.firstName}!`}
-        subtitle="Chaqqon-chaqqon"
-        tabs={tabs}
-        bottomNavItems={bottomNavItems}
-        actions={showStars ? starsBadge : undefined}
-        onLogout={signOut}
-      >
-        <Outlet />
-      </DashboardLayout>
+      <StudentOpenContext.Provider value={!closed}>
+        <DashboardLayout
+          title={`Salom, ${student.firstName}!`}
+          subtitle={subtitle}
+          tabs={tabs}
+          bottomNavItems={bottomNavItems}
+          actions={showStars ? starsBadge : undefined}
+          onLogout={signOut}
+        >
+          {closed && <ClosedStudentBanner paidUntil={access.paidUntil} onLogout={signOut} />}
+          {pageOpen ? <Outlet /> : <ClosedSection />}
+        </DashboardLayout>
+      </StudentOpenContext.Provider>
     </CurrentStudentContext.Provider>
   );
 }

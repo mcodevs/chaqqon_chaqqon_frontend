@@ -74,6 +74,18 @@ export function createLocalAccountRepository({ platform, records }: Dependencies
       return platform.featuresOf(platform.myTeacherId());
     },
 
+    async myTeacherCard() {
+      const teacher = (await platform.listTeachers()).find((t) => t.id === platform.myTeacherId());
+      return teacher
+        ? {
+            firstName: teacher.firstName,
+            lastName: teacher.lastName,
+            centerName: teacher.centerName,
+            phone: teacher.phone,
+          }
+        : null;
+    },
+
     subscribe: platform.subscribe,
   };
 }

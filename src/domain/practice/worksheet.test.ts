@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSeededRandom } from '../random';
 import {
+  DEFAULT_WORKSHEET_BRAND,
   DEFAULT_WORKSHEET_CONFIG,
   type WorksheetConfig,
   WORKSHEET_LIMITS,
@@ -9,6 +10,7 @@ import {
   normalizeWorksheetConfig,
   rowCountForTable,
   tableLabel,
+  worksheetBrandFor,
 } from './worksheet';
 
 const config = (overrides: Partial<WorksheetConfig> = {}): WorksheetConfig => ({
@@ -163,5 +165,24 @@ describe('buildWorksheet', () => {
     const [first, second] = worksheet.sheets;
 
     expect(JSON.stringify(first.tables)).not.toBe(JSON.stringify(second.tables));
+  });
+});
+
+describe('worksheetBrandFor', () => {
+  it("heads the sheet with the teacher's centre, phone and name", () => {
+    expect(
+      worksheetBrandFor({
+        firstName: 'Dilnoza',
+        lastName: 'Karimova',
+        centerName: 'Bilim',
+        phone: '+998 90 123 45 67',
+      }),
+    ).toEqual({ title: 'BILIM', contact: '+998 90 123 45 67', footer: 'DILNOZA KARIMOVA' });
+  });
+
+  it('falls back to the platform when the teacher works without a centre or phone', () => {
+    expect(worksheetBrandFor({ firstName: '', lastName: '', centerName: '', phone: '' })).toEqual(
+      DEFAULT_WORKSHEET_BRAND,
+    );
   });
 });

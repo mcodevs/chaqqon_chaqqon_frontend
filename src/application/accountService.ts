@@ -52,6 +52,8 @@ export function createAccountService({ account, clock }: AccountDependencies) {
 
     myFeatures: () => account.myFeatures(),
 
+    myTeacherCard: () => account.myTeacherCard(),
+
     subscribe: account.subscribe,
   };
 }

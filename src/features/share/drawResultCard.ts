@@ -6,7 +6,7 @@ import type { ResultCardData } from './resultCard';
  * It deliberately does NOT read the theme tokens. A picture that leaves the app is looked at
  * in someone else's chat, on someone else's phone: it has to be the same warm, light card for
  * everyone, whether the child had dark mode on or not. So this file carries its own palette,
- * the way the abacus illustration does — the brand's green, gold and cream, taken from the logo.
+ * the way the abacus illustration does — the brand's green, gold and cream.
  */
 
 const WIDTH = 1080;
@@ -14,7 +14,7 @@ const WIDTH = 1080;
 const HEIGHT = 1350;
 
 const CARD = {
-  /* Exactly the logo's own background, so the logo has no square edge of its own. */
+  /* The warm cream of the platform's printed materials. */
   page: '#fdfdef',
   frame: '#3f9d4a',
   frameInner: '#f6b21b',
@@ -29,8 +29,6 @@ const CARD = {
 const DISPLAY = '"Baloo 2", "Nunito", system-ui, sans-serif';
 const BODY = '"Nunito", system-ui, sans-serif';
 
-const LOGO_URL = '/logo.webp';
-
 /** Draws the card and hands back a PNG. Throws when the browser cannot give a canvas or a blob. */
 export async function drawResultCard(data: ResultCardData): Promise<Blob> {
   const canvas = document.createElement('canvas');
@@ -39,11 +37,11 @@ export async function drawResultCard(data: ResultCardData): Promise<Blob> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Bu brauzerda rasm chizib bo‘lmadi');
 
-  const [logo] = await Promise.all([loadLogo(), loadFonts()]);
+  await loadFonts();
 
   paintBackground(ctx);
-  const logoBottom = paintLogo(ctx, logo);
-  paintHeadline(ctx, data, logoBottom);
+  const markBottom = paintBrandMark(ctx);
+  paintHeadline(ctx, data, markBottom);
   paintScorePanel(ctx, data);
   paintFooter(ctx, data);
 
@@ -56,8 +54,8 @@ function paintBackground(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = CARD.page;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  // A green wash along the bottom, so the card is not a flat block of cream. It stays well clear
-  // of the logo: the logo is opaque, and any tint behind it would outline its square.
+  // A green wash along the bottom, so the card is not a flat block of cream; the top stays clear
+  // for the brand mark.
   const wash = ctx.createLinearGradient(0, HEIGHT * 0.55, 0, HEIGHT);
   wash.addColorStop(0, 'rgba(63, 157, 74, 0)');
   wash.addColorStop(1, 'rgba(63, 157, 74, 0.13)');
@@ -76,19 +74,33 @@ function paintBackground(ctx: CanvasRenderingContext2D): void {
   ctx.stroke();
 }
 
-function paintLogo(ctx: CanvasRenderingContext2D, logo: CanvasImageSource | null): number {
-  const size = 330;
+/**
+ * The platform's mark, drawn rather than loaded: a green badge ringed in gold, the way the old
+ * logo was, with the name under it. It fills the same space the logo picture did.
+ */
+function paintBrandMark(ctx: CanvasRenderingContext2D): number {
   const top = 74;
-  if (!logo) {
-    // No logo file: the brand still has to be on the picture.
-    ctx.textAlign = 'center';
-    ctx.fillStyle = CARD.frame;
-    ctx.font = `800 64px ${DISPLAY}`;
-    ctx.fillText('Chaqqon-chaqqon', WIDTH / 2, top + 90);
-    return top + 130;
-  }
-  ctx.drawImage(logo, (WIDTH - size) / 2, top, size, size);
-  return top + size;
+  const radius = 112;
+  const centerY = top + radius + 8;
+
+  ctx.beginPath();
+  ctx.arc(WIDTH / 2, centerY, radius, 0, Math.PI * 2);
+  ctx.fillStyle = CARD.frame;
+  ctx.fill();
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = CARD.frameInner;
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `120px ${BODY}`;
+  ctx.fillText('⚡', WIDTH / 2, centerY + 6);
+  ctx.textBaseline = 'alphabetic';
+
+  ctx.fillStyle = CARD.frame;
+  ctx.font = `800 58px ${DISPLAY}`;
+  ctx.fillText('Chaqqon-chaqqon', WIDTH / 2, top + 310);
+  return top + 330;
 }
 
 function paintHeadline(ctx: CanvasRenderingContext2D, data: ResultCardData, top: number): void {
@@ -154,7 +166,10 @@ function paintFooter(ctx: CanvasRenderingContext2D, data: ResultCardData): void 
 
   ctx.fillStyle = CARD.inkSoft;
   ctx.font = `700 30px ${BODY}`;
-  ctx.fillText('Mental arifmetika · Mohira ustoz bilan', WIDTH / 2, HEIGHT - 118);
+  // Every teacher's students share these pictures, so the line names the child's own teacher.
+  const line = data.teacher ? `Mental arifmetika · ${data.teacher} bilan` : 'Mental arifmetika platformasi';
+  fitText(ctx, line, WIDTH / 2, HEIGHT - 118, WIDTH - 200, 30, BODY, 700);
+  ctx.font = `700 30px ${BODY}`;
   ctx.fillText(data.date, WIDTH / 2, HEIGHT - 70);
 }
 
@@ -201,18 +216,6 @@ async function loadFonts(): Promise<void> {
   const faces = [`800 176px ${DISPLAY}`, `700 46px ${BODY}`];
   await Promise.all(faces.map((face) => document.fonts.load(face).catch(() => undefined)));
   await document.fonts.ready;
-}
-
-/** A missing or blocked logo must not cost the child their picture, so this resolves to null. */
-async function loadLogo(): Promise<HTMLImageElement | null> {
-  try {
-    const image = new Image();
-    image.src = LOGO_URL;
-    await image.decode();
-    return image;
-  } catch {
-    return null;
-  }
 }
 
 function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {

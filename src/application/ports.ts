@@ -156,6 +156,14 @@ export interface TeacherProfileInput {
   centerName: string;
 }
 
+/** What a student shows of their teacher (and a teacher of themselves). */
+export interface TeacherCard {
+  firstName: string;
+  lastName: string;
+  centerName: string;
+  phone: string;
+}
+
 /** What the signed-in user may see of their own platform account. */
 export interface AccountRepository {
   /** Teacher only. Any monthly fee that fell due is taken first. */
@@ -163,6 +171,8 @@ export interface AccountRepository {
   updateMyTeacherProfile(profile: TeacherProfileInput): Promise<void>;
   /** The sections open to the user: a teacher's tariff, a student's teacher's, all for the admin. */
   myFeatures(): Promise<Feature[]>;
+  /** The caller's teacher (or themselves for a teacher); null for the admin. */
+  myTeacherCard(): Promise<TeacherCard | null>;
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 

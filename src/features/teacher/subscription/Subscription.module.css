@@ -29,7 +29,7 @@
   font-weight: 600;
 }
 
-/* The lock page: its own shell, as ClosedAccountPage. */
+/* The lock page stands on its own, without the dashboard: there is nowhere to navigate to. */
 .shell {
   display: flex;
   flex-direction: column;

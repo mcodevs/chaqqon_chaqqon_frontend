@@ -22,6 +22,8 @@ export interface ResultCardData {
   detail: string;
   /** Tashkent day, already written the way it is read: "29.09.2026". */
   date: string;
+  /** The child's teacher, named in the footer; null when the teacher has not written a name. */
+  teacher: string | null;
 }
 
 interface Praise {
@@ -58,6 +60,7 @@ interface ResultCardInput {
   total: number;
   /** Tashkent day, 'YYYY-MM-DD'. */
   date: string;
+  teacher?: string | null;
 }
 
 export function resultCardData({
@@ -67,6 +70,7 @@ export function resultCardData({
   correct,
   total,
   date,
+  teacher = null,
 }: ResultCardInput): ResultCardData {
   const accuracy = accuracyPercent(correct, total);
   return {
@@ -78,6 +82,7 @@ export function resultCardData({
     accuracy,
     detail,
     date: formatCalendarDate(date),
+    teacher,
   };
 }
 

@@ -2,14 +2,16 @@ import { type CSSProperties, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createSeededRandom } from '@/domain/random';
 import {
-  DEFAULT_WORKSHEET_BRAND,
   DEFAULT_WORKSHEET_CONFIG,
   type Worksheet,
   type WorksheetBrand,
   type WorksheetConfig,
   buildWorksheet,
   normalizeWorksheetConfig,
+  worksheetBrandFor,
 } from '@/domain/practice/worksheet';
+import { useTeacherAccount } from '@/shared/services/queries';
+import { useSession } from '@/shared/session/SessionContext';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/Notice';
@@ -27,7 +29,10 @@ import styles from './Worksheet.module.css';
  * takes a moment, which would make every chip tap feel slow.
  */
 
-const STORAGE_KEY = 'chaqqon.worksheet';
+/** Kept per teacher, so two teachers sharing a computer each get their own header back. */
+const storageKey = (teacherId: string) => `chaqqon.worksheet:${teacherId}`;
+/** Where the single-teacher app kept it; read once as a fallback so that teacher keeps theirs. */
+const LEGACY_STORAGE_KEY = 'chaqqon.worksheet';
 
 interface SavedSetup {
   config: WorksheetConfig;
@@ -35,23 +40,23 @@ interface SavedSetup {
 }
 
 /** The last setup the teacher used, so next week's packet starts where this one left off. */
-function loadSetup(): SavedSetup {
+function loadSetup(teacherId: string, firstBrand: WorksheetBrand): SavedSetup {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { config: DEFAULT_WORKSHEET_CONFIG, brand: DEFAULT_WORKSHEET_BRAND };
+    const raw = localStorage.getItem(storageKey(teacherId)) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return { config: DEFAULT_WORKSHEET_CONFIG, brand: firstBrand };
     const saved = JSON.parse(raw) as Partial<SavedSetup>;
     return {
       config: normalizeWorksheetConfig(saved.config),
-      brand: { ...DEFAULT_WORKSHEET_BRAND, ...saved.brand },
+      brand: { ...firstBrand, ...saved.brand },
     };
   } catch {
-    return { config: DEFAULT_WORKSHEET_CONFIG, brand: DEFAULT_WORKSHEET_BRAND };
+    return { config: DEFAULT_WORKSHEET_CONFIG, brand: firstBrand };
   }
 }
 
-function saveSetup(setup: SavedSetup): void {
+function saveSetup(teacherId: string, setup: SavedSetup): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(setup));
+    localStorage.setItem(storageKey(teacherId), JSON.stringify(setup));
   } catch {
     // A full or blocked storage only costs the teacher their last setup; the page still works.
   }
@@ -62,7 +67,14 @@ function problemCount(config: WorksheetConfig): number {
 }
 
 export function WorksheetPage() {
-  const [setup, setSetup] = useState(loadSetup);
+  const { session } = useSession();
+  const account = useTeacherAccount();
+  if (session?.role !== 'teacher' || !account) return null;
+  return <WorksheetBuilder teacherId={session.teacherId} firstBrand={worksheetBrandFor(account)} />;
+}
+
+function WorksheetBuilder({ teacherId, firstBrand }: { teacherId: string; firstBrand: WorksheetBrand }) {
+  const [setup, setSetup] = useState(() => loadSetup(teacherId, firstBrand));
   /** Bumped to redraw; null means nothing has been generated yet. */
   const [draw, setDraw] = useState<{ config: WorksheetConfig; seed: number } | null>(null);
 
@@ -72,7 +84,7 @@ export function WorksheetPage() {
   const update = (next: Partial<SavedSetup>) => {
     setSetup((current) => {
       const merged = { ...current, ...next };
-      saveSetup(merged);
+      saveSetup(teacherId, merged);
       return merged;
     });
   };

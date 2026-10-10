@@ -5,6 +5,7 @@ import type {
   ApplicationRepository,
   PlatformSettingsRepository,
   TariffRepository,
+  TeacherCard,
 } from '@/application/ports';
 import { isFeature } from '@/domain/teacherBilling';
 import type { AppSupabaseClient } from './client';
@@ -66,6 +67,12 @@ export function createSupabaseAccountRepository(client: AppSupabaseClient): Acco
       const { data, error } = await client.rpc('my_features');
       if (error) throw error;
       return (data ?? []).filter(isFeature);
+    },
+
+    async myTeacherCard() {
+      const { data, error } = await client.rpc('my_teacher_card');
+      if (error) throw error;
+      return (data as unknown as TeacherCard | null) ?? null;
     },
 
     subscribe: live.subscribe,

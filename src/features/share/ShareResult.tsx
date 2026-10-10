@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
+import { teacherDisplayName, useMyTeacherCard } from '@/shared/services/queries';
 import { Button } from '@/shared/ui/Button';
 import { ErrorMessage } from '@/shared/ui/Notice';
 import { drawResultCard } from './drawResultCard';
@@ -30,17 +31,24 @@ const OUTCOME_NOTE = {
  * the result is in, so the picture is on screen — and already correct — before anything is tapped.
  */
 export function ShareResult({ title, name, detail, correct, total, today }: ShareResultProps) {
+  // The footer names the child's own teacher; the picture waits for it rather than drawing twice.
+  const card = useMyTeacherCard();
+  const teacher = card === undefined ? undefined : teacherDisplayName(card);
   // Primitives in, so the picture is redrawn when the result changes and never on a re-render.
   const data = useMemo(
-    () => resultCardData({ title, name, detail, correct, total, date: today }),
-    [title, name, detail, correct, total, today],
+    () =>
+      teacher === undefined
+        ? null
+        : resultCardData({ title, name, detail, correct, total, date: today, teacher }),
+    [title, name, detail, correct, total, today, teacher],
   );
 
-  const [card, setCard] = useState<{ blob: Blob; url: string } | null>(null);
+  const [picture, setPicture] = useState<{ blob: Blob; url: string } | null>(null);
   const [drawError, setDrawError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!data) return;
     let url: string | null = null;
     let cancelled = false;
 
@@ -48,7 +56,7 @@ export function ShareResult({ title, name, detail, correct, total, today }: Shar
       .then((blob) => {
         if (cancelled) return;
         url = URL.createObjectURL(blob);
-        setCard({ blob, url });
+        setPicture({ blob, url });
       })
       .catch((error: unknown) => {
         if (!cancelled) setDrawError(error instanceof Error ? error.message : 'Rasm tayyorlanmadi');
@@ -60,24 +68,29 @@ export function ShareResult({ title, name, detail, correct, total, today }: Shar
     };
   }, [data]);
 
-  const fileName = shareFileName(data);
+  const fileName = data ? shareFileName(data) : '';
   const share = useAsyncAction(async () => {
-    if (!card) return;
-    const outcome = await shareImage({ blob: card.blob, fileName, title: data.title, text: shareText(data) });
+    if (!picture || !data) return;
+    const outcome = await shareImage({
+      blob: picture.blob,
+      fileName,
+      title: data.title,
+      text: shareText(data),
+    });
     setNote(OUTCOME_NOTE[outcome]);
   });
 
   if (drawError) return <ErrorMessage>{drawError}</ErrorMessage>;
 
-  const canShare = card !== null && canShareImage(card.blob, fileName);
+  const canShare = picture !== null && canShareImage(picture.blob, fileName);
 
   return (
     <div className={styles.block}>
       <p className={styles.lead}>Natijangni ota-onangga yoki do‘stlaringga yuboring!</p>
 
       <div className={styles.preview}>
-        {card ? (
-          <img src={card.url} alt={`${name} natijasi: ${correct}/${total}`} className={styles.image} />
+        {picture ? (
+          <img src={picture.url} alt={`${name} natijasi: ${correct}/${total}`} className={styles.image} />
         ) : (
           <div className={styles.placeholder} role="status">
             Rasm tayyorlanmoqda…
@@ -95,8 +108,8 @@ export function ShareResult({ title, name, detail, correct, total, today }: Shar
           size="lg"
           block
           variant={canShare ? 'outline' : 'primary'}
-          disabled={!card}
-          onClick={() => card && (saveImage(card.blob, fileName), setNote(OUTCOME_NOTE.saved))}
+          disabled={!picture}
+          onClick={() => picture && (saveImage(picture.blob, fileName), setNote(OUTCOME_NOTE.saved))}
         >
           ⬇️ Rasmni saqlash
         </Button>

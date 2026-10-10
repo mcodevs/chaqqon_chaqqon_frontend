@@ -1411,3 +1411,23 @@ describe('applications from the landing page', () => {
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("the teacher's card", () => {
+  it("shows a student their own teacher's name, a teacher their own, and nobody else anything", async () => {
+    await db.query("update public.teachers set center_name = 'Bilim' where profile_id = $1", [TEACHER_B]);
+    expect(await as('authenticated', BOBUR, 'select public.my_teacher_card() as card')).toEqual([
+      { card: { firstName: 'Bahrom', lastName: '', centerName: 'Bilim', phone: '' } },
+    ]);
+    expect(
+      await as('authenticated', TEACHER_B, "select public.my_teacher_card()->>'firstName' as name"),
+    ).toEqual([{ name: 'Bahrom' }]);
+    expect(
+      await as(
+        'authenticated',
+        '00000000-0000-4000-8000-0000000000e1',
+        'select public.my_teacher_card() as card',
+      ),
+    ).toEqual([{ card: null }]);
+    await expect(as('anon', null, 'select public.my_teacher_card()')).rejects.toThrow(/permission denied/);
+  });
+});

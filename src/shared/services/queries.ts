@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeacherAccountView } from '@/application/accountService';
 import type { RoomSnapshot } from '@/application/competitionService';
-import type { PlatformSettings } from '@/application/ports';
+import type { PlatformSettings, TeacherCard } from '@/application/ports';
 import type { TeacherApplication } from '@/domain/applications';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
@@ -208,4 +208,16 @@ export function useAdminTariffs(): Tariff[] | undefined {
 export function useApplications(): TeacherApplication[] | undefined {
   const { applications } = useServices();
   return useLiveQuery({ load: applications.list, subscribe: applications.subscribe });
+}
+
+/** The signed-in student's teacher (or the teacher themselves): name and optional centre. */
+export function useMyTeacherCard(): TeacherCard | null | undefined {
+  const { account } = useServices();
+  return useLiveQuery({ load: account.myTeacherCard, subscribe: account.subscribe });
+}
+
+/** "Dilnoza Karimova", or null while the teacher has not written a name. */
+export function teacherDisplayName(card: TeacherCard | null | undefined): string | null {
+  const name = card ? `${card.firstName} ${card.lastName}`.trim() : '';
+  return name || null;
 }

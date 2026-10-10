@@ -344,6 +344,7 @@ export type Database = {
       };
       my_features: { Args: NoArgs; Returns: string[] };
       my_teacher_account: { Args: NoArgs; Returns: Json };
+      my_teacher_card: { Args: NoArgs; Returns: Json };
       update_my_teacher_profile: {
         Args: { p_first_name: string; p_last_name: string; p_phone: string; p_center_name: string };
         Returns: void;

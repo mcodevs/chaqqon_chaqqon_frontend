@@ -1,10 +1,21 @@
 # Chaqqon-chaqqon
 
-Bolalar uchun mental arifmetika (flash-anzan) mashq ilovasi. Ustoz o'quvchilarni boshqaradi,
-o'quvchilar abakus formulalari bo'yicha mashq qiladi. Ikki xil mashq bor: **anzan** (sonlar ketma-ket
-chaqnaydi, yig'indisi so'raladi) va **chaqnovchi** (abakus bir lahza chaqnaydi, undagi son so'raladi).
-Ilovada sinf reytingi, jonli onlayn musobaqa xonasi va sinfda bitta ekranda o'tkaziladigan
-split-screen musobaqa bor.
+Mental arifmetika ustozlari va ularning o'quvchilari uchun platforma. Har bir ustoz o'z sinfini
+boshqaradi, o'quvchilar abakus formulalari bo'yicha mashq qiladi. Uch xil mashq bor: **anzan** (sonlar
+ketma-ket chaqnaydi, yig'indisi so'raladi), **chaqnovchi** (abakus bir lahza chaqnaydi, undagi son
+so'raladi) va **ustunlar**. Ilovada sinf reytingi, interaktiv uy vazifasi, sinfda bitta ekranda
+o'tkaziladigan split-screen musobaqa va yulduzcha do'koni bor.
+
+**Uch rol:**
+
+- **Superadmin** (platforma egasi, `/admin`) — ustozlar arizalarini ko'radi, ustoz akkauntini ochadi,
+  tariflarni boshqaradi, ustozlar to'lovini yozadi va platforma statistikasi hamda moliyasini kuzatadi.
+  O'quvchilarning shaxsiy ma'lumotini ko'rmaydi.
+- **Ustoz** (`/teacher`) — faqat o'z o'quvchilarini ko'radi va boshqaradi. Qaysi bo'limlar ochiq ekani
+  va nechta o'quvchi qo'shish mumkinligi ustozning tarifiga bog'liq.
+- **O'quvchi** (`/student`) — ustozi bergan login bilan kiradi; bo'limlar ustozning tarifiga qarab ochiladi.
+
+Bosh sahifa (`/`) — ustozlar uchun landing: imkoniyatlar, tariflar va ariza formasi.
 
 **Ilova manzili:** https://chaqqon-chaqqon.vercel.app
 
@@ -57,38 +68,47 @@ Sxema o'zgargan bo'lsa, avval migratsiyani Supabase'ga qo'llang, keyin push qili
    npx supabase login
    npx supabase link --project-ref <project-ref>
    npx supabase db push
-   npx supabase functions deploy register-teacher
+   npx supabase functions deploy manage-teachers
    npx supabase functions deploy manage-students
    ```
 
 3. `.env.example` ni `.env.local` ga nusxalang. Dashboard → Project Settings → API keys bo'limidan
    Project URL va publishable key'ni yozing. Service-role (secret) kalit hech qachon frontendga qo'yilmaydi.
-4. `npm run dev` ni ishga tushiring. Birinchi ochilishda ustoz hisobi yaratiladi.
+4. **Superadmin hisobi** qo'lda yaratiladi (ilovada ro'yxatdan o'tish yo'q): Dashboard → Authentication →
+   Add user, email `<login>@chaqqon.example.com`, parol `chaqqon:<parol>`, auto-confirm. Keyin SQL Editor'da:
+   `insert into public.profiles (id, role, username) select id, 'admin', '<login>' from auth.users where email = '<login>@chaqqon.example.com';`
+5. `npm run dev` ni ishga tushiring va superadmin bilan "Ustoz" tanlovi orqali kiring.
+
+Local rejimda (`npm run dev:local`) birinchi ochilishda superadmin hisobi ilovaning o'zida yaratiladi.
 
 ### Qanday ishlaydi
 
 - **Hisoblar** Supabase Auth'da saqlanadi. `ali10` logini `ali10@chaqqon.example.com` manziliga aylanadi,
   bu manzilga xat yuborilmaydi. 4 xonali PIN esa Auth'ning 6 belgili talabiga prefiks bilan moslanadi.
   Bu qoidalar klient va funksiyalar uchun yagona kontraktda: `supabase/functions/_shared/identity.ts`.
-- **Hisoblarni boshqarish** Auth admin API'ni talab qiladi. Ustoz hisobini yaratish, o'quvchi yaratish,
-  yangi parol berish va o'chirish shu sabab `register-teacher` va `manage-students` Edge Function'larida
-  bajariladi. `manage-students` chaqiruvchi ustoz ekanini o'zi tekshiradi.
+- **Hisoblarni boshqarish** Auth admin API'ni talab qiladi. Ustoz akkauntini superadmin `manage-teachers`
+  orqali yaratadi; o'quvchini yaratish, yangi parol berish va o'chirish `manage-students` da. Har ikkala
+  funksiya chaqiruvchining rolini o'zi tekshiradi.
+- **Ko'p ustozlilik (tenant = ustoz).** O'quvchida `profiles.teacher_id`, xona va do'kon mahsulotida
+  `teacher_id` bor; qolgan hamma narsa o'quvchi orqali ustozga bog'lanadi. Siyosatlar `private` sxemadagi
+  SECURITY DEFINER yordamchilar orqali tekshiriladi (`my_student_ids()`, `visible_student_ids()`,
+  `only_my_students()`): policy ichidagi oddiy `profiles` subquery chaqiruvchining RLS'i ostida ishlaydi
+  va begona qatorni umuman ko'rmaydi.
 - **RLS** qoidalari:
-  - mehmon faqat "ustoz bormi?" deb so'ray oladi;
-  - sinfdoshlar bir-birining ismini ko'radi, loginlarni esa faqat ustoz ko'radi (`student_accounts()` orqali);
-  - o'quvchi faqat o'z natijasini yozadi (mashq yoki onlayn musobaqa);
-  - sinf musobaqasi natijasini faqat ustoz yozadi va faqat o'quvchilar uchun;
-  - musobaqa progressini faqat xona ishtirokchisi yozadi, faqat xona boshlanganda;
-  - xonani faqat ustoz boshqaradi, bir vaqtda bitta faol xona bo'ladi;
-  - to'lovni faqat ustoz yozadi. Sana ertangi kundan 24 oygacha bo'lishi kerak va baza soati bo'yicha tekshiriladi;
-  - to'lovi tugagan o'quvchi faqat o'z profili va to'lovlarini ko'radi, hech narsa yoza olmaydi. To'lov ustozni
-    cheklamaydi.
+  - mehmon faqat public tariflarni, platforma kontaktini o'qiydi va `submit_teacher_application()` orqali ariza yuboradi;
+  - ustoz faqat o'z o'quvchilari, xonalari, natijalari, to'lovlari, do'koni va yulduzlarini ko'radi va o'zgartiradi;
+  - to'lagan o'quvchi faqat o'z sinfdoshlarini ko'radi; loginlarni faqat o'z ustozi ko'radi (`student_accounts()`);
+  - o'quvchi faqat o'z natijasini yozadi; do'kondan faqat `place_order()` orqali sotib oladi;
+  - to'lovi tugagan o'quvchi faqat o'z profili va to'lovlarini ko'radi, hech narsa yoza olmaydi;
+  - bloklangan ustozning boshqaruv yozuvlari rad etiladi, o'qishi ochiq qoladi; o'quvchilari ishlayveradi;
+  - tarifdagi funksiyalar yozish yo'llarini ochadi (xona, sinf natijasi, do'kon, yozma vazifa, Telegram);
+  - superadmin ustozlar, tariflar, ustoz hisob daftari va arizalarni ko'radi, o'quvchi ma'lumotini ko'rmaydi.
 
   Barcha qoidalar `src/infrastructure/supabase/schema.test.ts` da haqiqiy migratsiya ustida sinaladi.
 
-- **Realtime** `rooms`, `room_progress`, `practice_results` va `student_payments` o'zgarishlarini uzatadi:
-  musobaqa monitori va reyting jonli yangilanadi, yopiq o'quvchining sahifasi esa to'lov belgilanishi bilan
-  ochiladi. `profiles` Realtime'ga qo'shilmagan, aks holda loginlar payload'da ko'rinib qolardi.
+- **Realtime** `rooms`, `room_progress`, `practice_results`, `student_payments`, ustoz hisob daftari va
+  tariflar o'zgarishlarini uzatadi: musobaqa monitori va reyting jonli yangilanadi, yopiq o'quvchining va
+  bloklangan ustozning sahifasi to'lov belgilanishi bilan ochiladi. `profiles` Realtime'ga qo'shilmagan, aks holda loginlar payload'da ko'rinib qolardi.
 - Sxema o'zgarsa, tiplarni qayta yarating:
   `npx supabase gen types typescript --linked > src/infrastructure/supabase/database.types.ts`.
 
@@ -117,7 +137,7 @@ src/
 └── testing/           Test uchun in-memory bog'liqliklar
 supabase/
 ├── migrations/        Sxema, ruxsatlar, RLS siyosatlari, Realtime publikatsiyasi
-└── functions/         register-teacher, manage-students, _shared (identity kontrakti, validatsiya)
+└── functions/         manage-teachers, manage-students, telegram-*, _shared (identity kontrakti, validatsiya)
 ```
 
 ### Asosiy qarorlar
@@ -184,7 +204,8 @@ supabase/
   u yo'q brauzerlarda esa faqat "Rasmni saqlash" ko'rsatiladi; ikkalasi ham ishlamaydigan ichki
   brauzerlar uchun rasmni bosib turib saqlash eslatmasi bor. Rasm mavzu (light/dark) tokenlarini
   **o'qimaydi**: u boshqa odamning telefonida ko'riladi, shuning uchun abakus illyustratsiyasi kabi
-  o'z doimiy palitrasiga ega (`drawResultCard.ts`). Logotip — `public/logo.webp`.
+  o'z doimiy palitrasiga ega (`drawResultCard.ts`). Brend belgisi rasmning o'zida chiziladi, pastki
+  qatorda esa o'quvchining o'z ustozi nomi yoziladi.
 - **Natija turi** — har bir natijada `mode` bor: `practice`, `online` yoki `classroom`. "Natijalarim"da onlayn
   musobaqa 🏆, sinf musobaqasi 🏫 belgisi bilan ko'rsatiladi.
 - **To'lov** (`domain/billing.ts`). Ustoz "To'ladi" tugmasini bosib, o'quvchi qaysi sanagacha ochiq bo'lishini
@@ -192,9 +213,17 @@ supabase/
   to'lashi mumkin). Oylar joriy muddat oxiridan sanaladi, shuning uchun oldindan to'langanda kun yo'qolmaydi.
   Kiritilgan sanada profil yopiladi. Sana ertangi kundan 24 oygacha bo'lishi kerak, buni baza soati tekshiradi.
   Oxirgi yozilgan to'lov amal qiladi: xato sana to'g'risini yozib tuzatiladi, "bekor qilish" esa oldingi to'lovni
-  qaytaradi. Kunlar Toshkent vaqti (UTC+5) bo'yicha sanaladi. Yopiq o'quvchi "Profilingiz yopiq" sahifasini
-  ko'radi, bu sahifa to'lov belgilanishi bilan o'zi ochiladi. To'lov tizimi ishga tushganda bor bo'lgan
-  o'quvchilar shu oy oxirigacha ochiq qoldi.
+  qaytaradi. Kunlar Toshkent vaqti (UTC+5) bo'yicha sanaladi. Obunasi tugagan o'quvchida faqat mashq (natija
+  saqlanmaydi) va abakus qoladi; to'lov belgilanishi bilan hammasi o'zi ochiladi.
+- **Ustoz to'lovi** (`domain/teacherBilling.ts`). Ustozning tarifi oylik narx, o'quvchi limiti va
+  funksiyalar to'plamini belgilaydi. Ustozda **balans** bor: superadmin yozgan to'lov, bonus va tuzatishlar
+  hamda baza har oy hisob sanasida yechadigan oylik to'lov (`pg_cron`, Toshkent vaqti 00:05; ilova ochilganda
+  ham yetishmagan oylar yechiladi). Balans yetmagan oy "qarz" bo'ladi: ustoz ogohlantirish bilan ishlayveradi,
+  7 kundan keyin boshqaruv yopiladi va to'lov yozilishi bilan darhol ochiladi. Telegram'da ustozga balans manfiy
+  bo'lganda, blokka 3 va 1 kun qolganda, bloklanganda va to'lov qabul qilinganda xabar boradi. SQL va TS
+  qoidalari PGlite testida o'zaro solishtiriladi.
+- **Arizalar.** Landing'dagi formadan kelgan ariza superadminga Telegram'da yetadi; "Ustoz yaratish" yangi
+  ustoz formasini ariza ma'lumotlari bilan to'ldirib ochadi.
 - **Parollarni** hech kim o'qiy olmaydi: local rejimda ular PBKDF2-SHA256 bilan xeshlanadi, Supabase'da
   Auth'da saqlanadi. O'quvchi paroli faqat yaratilganda yoki "Yangi parol" bosilganda bir marta ko'rsatiladi.
 - **Musobaqa progressi** har bir o'quvchi uchun alohida yozuvda saqlanadi (local kalit yoki `room_progress`

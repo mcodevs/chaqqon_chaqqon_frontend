@@ -69,6 +69,23 @@ export const DEFAULT_WORKSHEET_BRAND: WorksheetBrand = {
   footer: '',
 };
 
+/**
+ * A teacher's first sheet is headed with what they already told the platform: their centre (or the
+ * platform's name when they work on their own), their phone, and their name to sign it.
+ */
+export function worksheetBrandFor(teacher: {
+  firstName: string;
+  lastName: string;
+  centerName: string;
+  phone: string;
+}): WorksheetBrand {
+  return {
+    title: (teacher.centerName.trim() || DEFAULT_WORKSHEET_BRAND.title).toUpperCase().slice(0, 40),
+    contact: (teacher.phone.trim() || DEFAULT_WORKSHEET_BRAND.contact).slice(0, 40),
+    footer: `${teacher.firstName} ${teacher.lastName}`.trim().toUpperCase().slice(0, 60),
+  };
+}
+
 export interface WorksheetColumn {
   /** Signed rows; negative values are subtractions. */
   numbers: number[];
