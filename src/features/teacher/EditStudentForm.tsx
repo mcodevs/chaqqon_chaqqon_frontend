@@ -24,7 +24,10 @@ export function EditStudentForm({ student, onSaved, onCancel }: EditStudentFormP
   const [avatarUrl, setAvatarUrl] = useState<string | null>(student.avatarUrl ?? null);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
-  const updateProfile = useAsyncAction(students.updateProfile);
+  const updateProfile = useAsyncAction(async (...args: Parameters<typeof students.updateProfile>) => {
+    await students.updateProfile(...args);
+    return true;
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
