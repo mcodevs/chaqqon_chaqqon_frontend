@@ -81,7 +81,7 @@ Edge function'lar: `manage-students` (egalik + limit + blok), yangi `manage-teac
 
 **Topilgan tuzoqlar:** `useAsyncAction.run` void action uchun ham `undefined` qaytaradi — forma muvaffaqiyatni ko'rishi kerak bo'lsa, action `true` qaytarsin; `prettier` ni butun papkaga ishlatish begona fayllarni qayta formatlaydi.
 
-**Admin "Tariflar" sahifasi redizayni (2026-10-10):** foydalanuvchi eski formani "zich va tushunarsiz" dedi. Endi:
+**Admin "Tariflar" sahifasi redizayni (2026-10-10, jonli — `c8dd006`; quyidagi ro'yxat va filtr tuzatishlari ham shu commit'da):** foydalanuvchi eski formani "zich va tushunarsiz" dedi. Endi:
 `TariffForm.tsx` 4 sarlavhali bo'lim (Asosiy · O'quvchilar soni · Ochiladigan bo'limlar · Ko'rinish); funksiyalar
 **auditoriya bo'yicha** guruhlangan ("Ustozga ham, o'quvchiga ham" / "Faqat ustozga" — `FEATURE_META.student`
 bo'yicha) va har biri butun qator checkbox. `TariffCard.tsx` 9 bo'limni har doim bir tartibda ✓/– bilan ko'rsatadi
