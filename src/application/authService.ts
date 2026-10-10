@@ -1,40 +1,36 @@
-import { MIN_PASSWORD_LENGTH, isValidUsername, normalizeUsername } from '@/domain/users';
+import { MIN_TEACHER_PASSWORD_LENGTH, isValidUsername, normalizeUsername } from '@/domain/users';
 import { AppError } from './errors';
 import type { AuthGateway, ChangeListener, Unsubscribe } from './ports';
-import type { Role, Session } from './session';
+import type { LoginRole, Session } from './session';
 
 interface AuthDependencies {
   gateway: AuthGateway;
 }
 
-export interface RegisterTeacherInput {
+export interface SetUpAdminInput {
   username: string;
   password: string;
   passwordConfirmation: string;
 }
 
 export interface LoginInput {
-  role: Role;
+  role: LoginRole;
   username: string;
   password: string;
 }
 
 export function createAuthService({ gateway }: AuthDependencies) {
   return {
-    hasTeacher: (): Promise<boolean> => gateway.hasTeacher(),
+    needsSetup: (): Promise<boolean> => gateway.needsSetup(),
 
-    async registerTeacher({
-      username,
-      password,
-      passwordConfirmation,
-    }: RegisterTeacherInput): Promise<Session> {
+    async setUpAdmin({ username, password, passwordConfirmation }: SetUpAdminInput): Promise<Session> {
       const normalizedUsername = normalizeUsername(username);
       if (!normalizedUsername) throw new AppError('USERNAME_REQUIRED');
       if (!isValidUsername(normalizedUsername)) throw new AppError('INVALID_USERNAME');
-      if (password.length < MIN_PASSWORD_LENGTH) throw new AppError('PASSWORD_TOO_SHORT');
+      if (password.length < MIN_TEACHER_PASSWORD_LENGTH) throw new AppError('TEACHER_PASSWORD_TOO_SHORT');
       if (password !== passwordConfirmation) throw new AppError('PASSWORDS_MISMATCH');
 
-      return gateway.registerTeacher({ username: normalizedUsername, password });
+      return gateway.setUpAdmin({ username: normalizedUsername, password });
     },
 
     async login({ role, username, password }: LoginInput): Promise<Session> {

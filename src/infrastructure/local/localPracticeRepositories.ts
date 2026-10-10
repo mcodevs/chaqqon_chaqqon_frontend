@@ -1,8 +1,17 @@
+import { AppError } from '@/application/errors';
 import type { MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
 import type { Room, RoomProgress } from '@/domain/competition';
-import type { MarketItem, MarketOrder, OrderStatus, StarAward } from '@/domain/market';
+import {
+  type MarketItem,
+  type MarketOrder,
+  type OrderStatus,
+  type StarAward,
+  computeStudentStars,
+} from '@/domain/market';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
+import { hasFeature } from '@/domain/teacherBilling';
 import { type KeyValueStore, keyMatches } from '../storage/keyValueStore';
+import type { LocalPlatform } from './localPlatform';
 
 const KEYS = {
   results: 'results',
@@ -14,8 +23,13 @@ const KEYS = {
   marketPrefix: 'market/',
 } as const;
 
-export function createLocalResultRepository(store: KeyValueStore): ResultRepository {
-  const list = async (): Promise<PracticeResult[]> => {
+/** Rooms and shop items are stored with their teacher, as the database keeps them. */
+type Owned<T> = T & { teacherId?: string };
+
+const withoutOwner = <T extends object>({ teacherId: _owner, ...rest }: Owned<T>): T => rest as T;
+
+export function createLocalResultRepository(store: KeyValueStore, platform: LocalPlatform): ResultRepository {
+  const listAll = async (): Promise<PracticeResult[]> => {
     const stored = (await store.get<PracticeResult[]>(KEYS.results)) ?? [];
     return stored.map((result) => ({
       ...result,
@@ -24,36 +38,51 @@ export function createLocalResultRepository(store: KeyValueStore): ResultReposit
   };
 
   return {
-    list,
+    /** The caller's class only: a teacher's students, or a student's classmates. */
+    async list() {
+      const visible = await platform.visibleStudentIds();
+      return (await listAll()).filter((result) => visible.has(result.studentId));
+    },
     async add(results) {
-      await store.set(KEYS.results, [...(await list()), ...results]);
+      await store.set(KEYS.results, [...(await listAll()), ...results]);
     },
     subscribe: (listener) =>
       store.subscribe((key) => keyMatches(key, (k) => k === KEYS.results) && listener()),
   };
 }
 
-export function createLocalRoomRepository(store: KeyValueStore): RoomRepository {
-  const listAll = async (): Promise<Room[]> => {
-    return (await store.get<Room[]>(KEYS.roomsList)) ?? [];
+export function createLocalRoomRepository(store: KeyValueStore, platform: LocalPlatform): RoomRepository {
+  const listAll = async (): Promise<Owned<Room>[]> => (await store.get<Owned<Room>[]>(KEYS.roomsList)) ?? [];
+
+  /** A teacher's own rooms, or the rooms a student takes part in. */
+  const isVisible = (room: Owned<Room>) => {
+    const current = platform.session();
+    if (current?.role === 'teacher') return room.teacherId === current.teacherId;
+    if (current?.role === 'student') return room.participantIds.includes(current.studentId);
+    return false;
   };
 
   return {
     async listActive() {
-      const all = await listAll();
-      return all
-        .filter((room) => room.status !== 'finished')
-        .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+      return (await listAll())
+        .filter((room) => room.status !== 'finished' && isVisible(room))
+        .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1))
+        .map(withoutOwner<Room>);
     },
     async getById(id: string) {
-      const all = await listAll();
-      return all.find((room) => room.id === id) ?? null;
+      const room = (await listAll()).find((r) => r.id === id && isVisible(r));
+      return room ? withoutOwner<Room>(room) : null;
     },
     async save(room: Room) {
+      await platform.assertCanManage();
       const all = await listAll();
-      const next = all.some((r) => r.id === room.id)
-        ? all.map((r) => (r.id === room.id ? room : r))
-        : [...all, room];
+      const existing = all.find((r) => r.id === room.id);
+      if (existing && existing.teacherId !== platform.myTeacherId()) throw new AppError('ROOM_NOT_FOUND');
+      const owned: Owned<Room> = {
+        ...room,
+        teacherId: existing?.teacherId ?? platform.myTeacherId() ?? undefined,
+      };
+      const next = existing ? all.map((r) => (r.id === room.id ? owned : r)) : [...all, owned];
       await store.set(KEYS.roomsList, next);
     },
     async listProgress(roomId) {
@@ -68,13 +97,18 @@ export function createLocalRoomRepository(store: KeyValueStore): RoomRepository 
   };
 }
 
-export function createLocalMarketRepository(store: KeyValueStore): MarketRepository {
-  const listItems = async (): Promise<MarketItem[]> => {
-    return (await store.get<MarketItem[]>(KEYS.marketItems)) ?? [];
-  };
+export function createLocalMarketRepository(store: KeyValueStore, platform: LocalPlatform): MarketRepository {
+  const listAllItems = async (): Promise<Owned<MarketItem>[]> =>
+    (await store.get<Owned<MarketItem>[]>(KEYS.marketItems)) ?? [];
 
-  const listOrders = async (): Promise<MarketOrder[]> => {
-    return (await store.get<MarketOrder[]>(KEYS.marketOrders)) ?? [];
+  const listAllOrders = async (): Promise<MarketOrder[]> =>
+    (await store.get<MarketOrder[]>(KEYS.marketOrders)) ?? [];
+
+  /** A teacher sees their students' orders and stars, a student only their own. */
+  const isMine = async (studentId: string) => {
+    const current = platform.session();
+    if (current?.role === 'student') return current.studentId === studentId;
+    return (await platform.ownStudentIds()).has(studentId);
   };
 
   /*
@@ -82,11 +116,8 @@ export function createLocalMarketRepository(store: KeyValueStore): MarketReposit
    * so it works the ledger out from what it does store, following the same two rules: a homework
    * answered without a mistake pays one star, and an order spends its price back until cancelled.
    */
-  const listAwards = async (): Promise<StarAward[]> => {
-    const [results, orders] = await Promise.all([
-      store.get<PracticeResult[]>(KEYS.results),
-      listOrders(),
-    ]);
+  const allAwards = async (): Promise<StarAward[]> => {
+    const [results, orders] = await Promise.all([store.get<PracticeResult[]>(KEYS.results), listAllOrders()]);
 
     const awards: StarAward[] = [];
 
@@ -122,33 +153,88 @@ export function createLocalMarketRepository(store: KeyValueStore): MarketReposit
     return awards;
   };
 
+  const filterMine = async <T extends { studentId: string }>(rows: T[]): Promise<T[]> => {
+    const keep = await Promise.all(rows.map((row) => isMine(row.studentId)));
+    return rows.filter((_, i) => keep[i]);
+  };
+
   return {
-    listItems,
-    listAwards,
-    async saveItem(item: MarketItem) {
-      const all = await listItems();
-      const next = all.some((i) => i.id === item.id)
-        ? all.map((i) => (i.id === item.id ? item : i))
-        : [...all, item];
-      await store.set(KEYS.marketItems, next);
+    async listItems() {
+      const teacherId = platform.myTeacherId();
+      return (await listAllItems())
+        .filter((item) => item.teacherId === teacherId)
+        .map(withoutOwner<MarketItem>);
     },
-    async deleteItem(id: string) {
-      const all = await listItems();
+
+    listAwards: async () => filterMine(await allAwards()),
+
+    async saveItem(item: MarketItem) {
+      await platform.assertCanManage();
+      const teacherId = platform.myTeacherId() ?? undefined;
+      const all = await listAllItems();
+      const existing = all.find((i) => i.id === item.id);
+      if (existing && existing.teacherId !== teacherId) throw new AppError('ITEM_NOT_FOUND');
+      const owned: Owned<MarketItem> = { ...item, teacherId };
       await store.set(
         KEYS.marketItems,
-        all.filter((i) => i.id !== id),
+        existing ? all.map((i) => (i.id === item.id ? owned : i)) : [...all, owned],
       );
     },
-    listOrders,
-    async createOrder(order: MarketOrder) {
-      const all = await listOrders();
-      await store.set(KEYS.marketOrders, [order, ...all]);
+
+    async deleteItem(id: string) {
+      await platform.assertCanManage();
+      const teacherId = platform.myTeacherId();
+      await store.set(
+        KEYS.marketItems,
+        (await listAllItems()).filter((i) => !(i.id === id && i.teacherId === teacherId)),
+      );
     },
+
+    listOrders: async () => filterMine(await listAllOrders()),
+
+    async placeOrder(itemId: string) {
+      const current = platform.session();
+      if (current?.role !== 'student') throw new AppError('FORBIDDEN');
+      if (!hasFeature(await platform.featuresOf(current.teacherId), 'market'))
+        throw new AppError('FEATURE_DISABLED');
+
+      const items = await listAllItems();
+      const item = items.find((i) => i.id === itemId && i.teacherId === current.teacherId);
+      if (!item) throw new AppError('ITEM_NOT_FOUND');
+      if (item.stock !== null && item.stock <= 0) throw new AppError('OUT_OF_STOCK');
+      if (computeStudentStars(current.studentId, await allAwards()).balance < item.costStars) {
+        throw new AppError('INSUFFICIENT_STARS');
+      }
+
+      if (item.stock !== null) {
+        await store.set(
+          KEYS.marketItems,
+          items.map((i) => (i.id === item.id ? { ...i, stock: (i.stock ?? 1) - 1 } : i)),
+        );
+      }
+      const order: MarketOrder = {
+        id: crypto.randomUUID(),
+        studentId: current.studentId,
+        itemId: item.id,
+        itemTitle: item.title,
+        costStars: item.costStars,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+      await store.set(KEYS.marketOrders, [order, ...(await listAllOrders())]);
+    },
+
     async updateOrderStatus(orderId: string, status: OrderStatus) {
-      const all = await listOrders();
-      const next = all.map((o) => (o.id === orderId ? { ...o, status } : o));
-      await store.set(KEYS.marketOrders, next);
+      await platform.assertCanManage();
+      const all = await listAllOrders();
+      const order = all.find((o) => o.id === orderId);
+      if (!order || !(await isMine(order.studentId))) throw new AppError('ORDER_NOT_FOUND');
+      await store.set(
+        KEYS.marketOrders,
+        all.map((o) => (o.id === orderId ? { ...o, status } : o)),
+      );
     },
+
     subscribe: (listener) =>
       store.subscribe((key) => keyMatches(key, (k) => k.startsWith(KEYS.marketPrefix)) && listener()),
   };

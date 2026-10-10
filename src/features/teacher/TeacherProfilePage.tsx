@@ -1,10 +1,22 @@
 import { Link } from 'react-router-dom';
+import { type Feature, hasFeature } from '@/domain/teacherBilling';
+import { useMyFeatures, useTeacherAccount } from '@/shared/services/queries';
 import { useSession } from '@/shared/session/SessionContext';
 import { ThemeToggle } from '@/shared/theme/ThemeToggle';
+import { SkeletonList } from '@/shared/ui/LoadingScreen';
+import { SubscriptionCard } from './subscription/SubscriptionCard';
+import { TeacherProfileForm } from './subscription/TeacherProfileForm';
 import styles from './TeacherProfilePage.module.css';
 
 export function TeacherProfilePage() {
   const { signOut } = useSession();
+  const account = useTeacherAccount();
+  const features = useMyFeatures();
+
+  if (!account) return <SkeletonList rows={4} />;
+
+  const name = `${account.firstName} ${account.lastName}`.trim() || account.username;
+  const opens = (feature: Feature) => hasFeature(features, feature);
 
   return (
     <div className={styles.container}>
@@ -14,72 +26,87 @@ export function TeacherProfilePage() {
           <span>👩‍🏫</span>
         </div>
         <div className={styles.profileInfo}>
-          <h2 className={styles.fullName}>Mohira ustoz</h2>
-          <span className={styles.badge}>Boshqaruvchi ustoz</span>
+          <h2 className={styles.fullName}>{name}</h2>
+          <span className={styles.badge}>{account.centerName || 'Ustoz'}</span>
         </div>
       </section>
+
+      <SubscriptionCard account={account} />
+      <TeacherProfileForm account={account} />
 
       {/* 2. Ichki bo'limlar menyusi */}
-      <section className={styles.sectionBlock}>
-        <div className={styles.sectionTitle}>Qoʻshimcha boshqaruv boʻlimlari</div>
-        <div className={styles.menuCard}>
-          <Link to="/teacher/classroom" className={styles.menuItem}>
-            <div className={styles.menuItemLeft}>
-              <div className={`${styles.menuIconWrap} ${styles.menuIconWarning}`}>🏫</div>
-              <div className={styles.menuItemText}>
-                <span className={styles.menuItemTitle}>Sinf musobaqasi (Katta ekran)</span>
-                <span className={styles.menuItemDesc}>Dars paytida proyektor yoki monitorda koʻrsatish</span>
-              </div>
-            </div>
-            <div className={styles.menuItemRight}>
-              <span className={styles.arrowIcon}>›</span>
-            </div>
-          </Link>
+      {(['classroom', 'worksheet', 'market', 'leaderboard'] as const).some(opens) && (
+        <section className={styles.sectionBlock}>
+          <div className={styles.sectionTitle}>Qoʻshimcha boshqaruv boʻlimlari</div>
+          <div className={styles.menuCard}>
+            {opens('classroom') && (
+              <Link to="/teacher/classroom" className={styles.menuItem}>
+                <div className={styles.menuItemLeft}>
+                  <div className={`${styles.menuIconWrap} ${styles.menuIconWarning}`}>🏫</div>
+                  <div className={styles.menuItemText}>
+                    <span className={styles.menuItemTitle}>Sinf musobaqasi (Katta ekran)</span>
+                    <span className={styles.menuItemDesc}>
+                      Dars paytida proyektor yoki monitorda koʻrsatish
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.menuItemRight}>
+                  <span className={styles.arrowIcon}>›</span>
+                </div>
+              </Link>
+            )}
 
-          <Link to="/teacher/worksheet" className={styles.menuItem}>
-            <div className={styles.menuItemLeft}>
-              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🖨️</div>
-              <div className={styles.menuItemText}>
-                <span className={styles.menuItemTitle}>Yozma uy vazifasi (chop etish)</span>
-                <span className={styles.menuItemDesc}>
-                  Mavzu boʻyicha misollar varagʻini tayyorlab, printerga chiqarish
-                </span>
-              </div>
-            </div>
-            <div className={styles.menuItemRight}>
-              <span className={styles.arrowIcon}>›</span>
-            </div>
-          </Link>
+            {opens('worksheet') && (
+              <Link to="/teacher/worksheet" className={styles.menuItem}>
+                <div className={styles.menuItemLeft}>
+                  <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🖨️</div>
+                  <div className={styles.menuItemText}>
+                    <span className={styles.menuItemTitle}>Yozma uy vazifasi (chop etish)</span>
+                    <span className={styles.menuItemDesc}>
+                      Mavzu boʻyicha misollar varagʻini tayyorlab, printerga chiqarish
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.menuItemRight}>
+                  <span className={styles.arrowIcon}>›</span>
+                </div>
+              </Link>
+            )}
 
-          <Link to="/teacher/market" className={styles.menuItem}>
-            <div className={styles.menuItemLeft}>
-              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🎁</div>
-              <div className={styles.menuItemText}>
-                <span className={styles.menuItemTitle}>Sovgʻalar doʻkoni boshqaruvi</span>
-                <span className={styles.menuItemDesc}>
-                  Sovgʻalar roʻyxatini toʻldirish va narxlarini belgilash
-                </span>
-              </div>
-            </div>
-            <div className={styles.menuItemRight}>
-              <span className={styles.arrowIcon}>›</span>
-            </div>
-          </Link>
+            {opens('market') && (
+              <Link to="/teacher/market" className={styles.menuItem}>
+                <div className={styles.menuItemLeft}>
+                  <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🎁</div>
+                  <div className={styles.menuItemText}>
+                    <span className={styles.menuItemTitle}>Sovgʻalar doʻkoni boshqaruvi</span>
+                    <span className={styles.menuItemDesc}>
+                      Sovgʻalar roʻyxatini toʻldirish va narxlarini belgilash
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.menuItemRight}>
+                  <span className={styles.arrowIcon}>›</span>
+                </div>
+              </Link>
+            )}
 
-          <Link to="/teacher/leaderboard" className={styles.menuItem}>
-            <div className={styles.menuItemLeft}>
-              <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🏆</div>
-              <div className={styles.menuItemText}>
-                <span className={styles.menuItemTitle}>Peshqadamlar reytingi</span>
-                <span className={styles.menuItemDesc}>Barcha oʻquvchilarning reyting va medallari</span>
-              </div>
-            </div>
-            <div className={styles.menuItemRight}>
-              <span className={styles.arrowIcon}>›</span>
-            </div>
-          </Link>
-        </div>
-      </section>
+            {opens('leaderboard') && (
+              <Link to="/teacher/leaderboard" className={styles.menuItem}>
+                <div className={styles.menuItemLeft}>
+                  <div className={`${styles.menuIconWrap} ${styles.menuIconBrand}`}>🏆</div>
+                  <div className={styles.menuItemText}>
+                    <span className={styles.menuItemTitle}>Peshqadamlar reytingi</span>
+                    <span className={styles.menuItemDesc}>Barcha oʻquvchilarning reyting va medallari</span>
+                  </div>
+                </div>
+                <div className={styles.menuItemRight}>
+                  <span className={styles.arrowIcon}>›</span>
+                </div>
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Ko'rinish sozlamasi — mobilda sidebar ko'rinmagani uchun shu yerda ham turadi */}
       <section className={styles.sectionBlock}>

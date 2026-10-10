@@ -3,7 +3,13 @@ export const LEVEL_GROUPS: readonly LevelGroup[] = ['A', 'B', 'C', 'D'];
 
 export const LEVEL_META: Record<
   LevelGroup,
-  { label: string; formula: string; description: string; sectionId: string; tone: 'green' | 'blue' | 'violet' | 'pink' }
+  {
+    label: string;
+    formula: string;
+    description: string;
+    sectionId: string;
+    tone: 'green' | 'blue' | 'violet' | 'pink';
+  }
 > = {
   A: {
     label: 'A toifa',
@@ -67,6 +73,8 @@ export interface StudentAccount extends Student {
 }
 
 export const MIN_PASSWORD_LENGTH = 4;
+/** Teachers manage a whole class, so their password is a little longer than a child's PIN. */
+export const MIN_TEACHER_PASSWORD_LENGTH = 6;
 export const BIRTH_YEAR_RANGE = { min: 1900, max: 2100 } as const;
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
@@ -84,17 +92,12 @@ export function isValidBirthYear(birthYear: number | null | undefined): boolean 
   return (
     birthYear === null ||
     birthYear === undefined ||
-    (Number.isInteger(birthYear) &&
-      birthYear >= BIRTH_YEAR_RANGE.min &&
-      birthYear <= BIRTH_YEAR_RANGE.max)
+    (Number.isInteger(birthYear) && birthYear >= BIRTH_YEAR_RANGE.min && birthYear <= BIRTH_YEAR_RANGE.max)
   );
 }
 
 /** Age in whole years, counting only the year: the exact birthday is not recorded. */
-export function ageFromBirthYear(
-  birthYear: number | null | undefined,
-  currentYear: number,
-): number | null {
+export function ageFromBirthYear(birthYear: number | null | undefined, currentYear: number): number | null {
   if (!birthYear || birthYear < BIRTH_YEAR_RANGE.min) return null;
   const age = currentYear - birthYear;
   return age >= 0 ? age : null;

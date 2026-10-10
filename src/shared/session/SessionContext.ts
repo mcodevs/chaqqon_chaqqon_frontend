@@ -17,5 +17,5 @@ export function useSession(): SessionContextValue {
 
 export function homePath(session: Session | null): string {
   if (!session) return '/login';
-  return session.role === 'teacher' ? '/teacher' : '/student';
+  return session.role === 'admin' ? '/admin' : session.role === 'teacher' ? '/teacher' : '/student';
 }

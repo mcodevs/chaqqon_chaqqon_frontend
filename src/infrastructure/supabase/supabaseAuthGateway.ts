@@ -1,8 +1,8 @@
+import { AppError } from '@/application/errors';
 import type { AuthGateway, Credentials } from '@/application/ports';
-import type { Role, Session } from '@/application/session';
+import type { LoginRole, Session } from '@/application/session';
 import { authEmailFor, authPasswordFor } from '../../../supabase/functions/_shared/identity';
 import type { AppSupabaseClient } from './client';
-import { invokeFunction } from './edgeFunctions';
 
 /**
  * Ends the session on this device only. The supabase-js default (`global`) would also
@@ -10,16 +10,28 @@ import { invokeFunction } from './edgeFunctions';
  */
 const THIS_DEVICE = { scope: 'local' } as const;
 
+/** The superadmin uses the teacher form; it has no form of its own. */
+const ROLES_FOR_FORM: Record<LoginRole, readonly Session['role'][]> = {
+  student: ['student'],
+  teacher: ['teacher', 'admin'],
+};
+
 /** Accounts in Supabase Auth; the role comes from the user's profile row. */
 export function createSupabaseAuthGateway(client: AppSupabaseClient): AuthGateway {
   const sessionFor = async (userId: string): Promise<Session | null> => {
-    const { data, error } = await client.from('profiles').select('id, role').eq('id', userId).maybeSingle();
+    const { data, error } = await client
+      .from('profiles')
+      .select('id, role, teacher_id')
+      .eq('id', userId)
+      .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    return data.role === 'teacher' ? { role: 'teacher' } : { role: 'student', studentId: data.id };
+    if (data.role === 'admin') return { role: 'admin', adminId: data.id };
+    if (data.role === 'teacher') return { role: 'teacher', teacherId: data.id };
+    return data.teacher_id ? { role: 'student', studentId: data.id, teacherId: data.teacher_id } : null;
   };
 
-  const signIn = async (role: Role, { username, password }: Credentials): Promise<Session | null> => {
+  const signIn = async (role: LoginRole, { username, password }: Credentials): Promise<Session | null> => {
     const { data, error } = await client.auth.signInWithPassword({
       email: authEmailFor(username),
       password: authPasswordFor(password),
@@ -30,7 +42,7 @@ export function createSupabaseAuthGateway(client: AppSupabaseClient): AuthGatewa
     }
 
     const session = await sessionFor(data.user.id);
-    if (session?.role !== role) {
+    if (!session || !ROLES_FOR_FORM[role].includes(session.role)) {
       await client.auth.signOut(THIS_DEVICE);
       return null;
     }
@@ -38,17 +50,11 @@ export function createSupabaseAuthGateway(client: AppSupabaseClient): AuthGatewa
   };
 
   return {
-    async hasTeacher() {
-      const { data, error } = await client.rpc('teacher_exists');
-      if (error) throw error;
-      return data;
-    },
+    // The superadmin account is created by hand on Supabase, never from the app.
+    needsSetup: async () => false,
 
-    async registerTeacher(credentials) {
-      await invokeFunction(client, 'register-teacher', { ...credentials });
-      const session = await signIn('teacher', credentials);
-      if (!session) throw new Error('The new teacher account could not sign in');
-      return session;
+    async setUpAdmin() {
+      throw new AppError('ALREADY_SET_UP');
     },
 
     signIn,

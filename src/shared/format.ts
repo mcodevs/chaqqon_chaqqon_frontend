@@ -75,3 +75,12 @@ export function formatLastActive(
 
   return { text: formatDate(isoDate), isOnline: false };
 }
+
+/**
+ * Money as teachers read it: 150000 → "150 000 so'm", negative with a real minus sign. Written by
+ * hand like the other formats here; the database's private.format_som writes the same text.
+ */
+export function formatSom(amount: number): string {
+  const digits = String(Math.abs(Math.round(amount))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return `${amount < 0 ? '−' : ''}${digits} so'm`;
+}

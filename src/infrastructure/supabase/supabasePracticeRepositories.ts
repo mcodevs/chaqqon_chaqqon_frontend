@@ -1,13 +1,12 @@
 import { AppError } from '@/application/errors';
 import type { MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
 import type { AppSupabaseClient } from './client';
-import { POSTGRES_UNIQUE_VIOLATION } from './edgeFunctions';
+import { POSTGRES_UNIQUE_VIOLATION, raisedAppError } from './edgeFunctions';
 import {
   toMarketItem,
   toMarketItemRow,
   toMarketOrder,
   toStarAward,
-  toMarketOrderRow,
   toPracticeResult,
   toPracticeResultRow,
   toRoom,
@@ -53,11 +52,7 @@ export function createSupabaseRoomRepository(client: AppSupabaseClient): RoomRep
     },
 
     async getById(id: string) {
-      const { data, error } = await client
-        .from('rooms')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      const { data, error } = await client.from('rooms').select('*').eq('id', id).maybeSingle();
       if (error) throw error;
       return data ? toRoom(data) : null;
     },
@@ -121,9 +116,16 @@ export function createSupabaseMarketRepository(client: AppSupabaseClient): Marke
       return data.map(toMarketOrder);
     },
 
-    async createOrder(order) {
-      const { error } = await client.from('market_orders').insert(toMarketOrderRow(order));
-      if (error) throw error;
+    async placeOrder(itemId) {
+      const { error } = await client.rpc('place_order', { p_item_id: itemId });
+      if (error) {
+        throw raisedAppError(error, [
+          'ITEM_NOT_FOUND',
+          'OUT_OF_STOCK',
+          'INSUFFICIENT_STARS',
+          'FEATURE_DISABLED',
+        ]);
+      }
       live.notify();
     },
 

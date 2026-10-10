@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react';
-import type { Role, Session } from '@/application/session';
+import type { LoginRole, Session } from '@/application/session';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useServices } from '@/shared/services/ServicesContext';
 import { Button } from '@/shared/ui/Button';
@@ -15,7 +15,7 @@ const ROLE_OPTIONS = [
 
 export function LoginForm({ onAuthenticated }: { onAuthenticated: (session: Session) => void }) {
   const { auth } = useServices();
-  const [role, setRole] = useState<Role>('student');
+  const [role, setRole] = useState<LoginRole>('student');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const login = useAsyncAction(auth.login);

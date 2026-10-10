@@ -6,7 +6,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 type NoArgs = Record<PropertyKey, never>;
-type Role = 'teacher' | 'student';
+type Role = 'admin' | 'teacher' | 'student';
 type RoomStatus = 'waiting' | 'running' | 'finished';
 type PracticeMode = 'practice' | 'online' | 'classroom';
 type PaymentKind = 'payment' | 'launch';
@@ -105,6 +105,71 @@ type StarAwardRow = {
   created_at: string;
 };
 
+type TariffRow = {
+  id: string;
+  name: string;
+  monthly_price: number;
+  max_students: number | null;
+  features: string[];
+  description: string;
+  is_public: boolean;
+  sort_order: number;
+  archived_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type TeacherRow = {
+  profile_id: string;
+  tariff_id: string;
+  billing_starts_on: string | null;
+  phone: string;
+  center_name: string;
+  disabled_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type TeacherLedgerRow = {
+  id: string;
+  teacher_id: string;
+  kind: 'payment' | 'bonus' | 'adjustment' | 'charge';
+  amount: number;
+  period_start: string | null;
+  tariff_id: string | null;
+  note: string;
+  recorded_by: string | null;
+  created_at: string;
+};
+
+type PlatformSettingsRow = {
+  id: boolean;
+  contact_phone: string;
+  contact_telegram: string;
+  updated_at: string;
+};
+
+type TeacherOverviewRow = {
+  id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  center_name: string;
+  tariff_id: string;
+  billing_starts_on: string | null;
+  disabled_at: string | null;
+  created_at: string;
+  student_count: number;
+  active_students: number;
+  open_students: number;
+  new_students: number;
+  practice_count: number;
+  correct_answers: number;
+  total_answers: number;
+  homework_rooms: number;
+};
+
 type TelegramLinkRow = {
   id: string;
   profile_id: string;
@@ -179,6 +244,47 @@ export type Database = {
         Update: Partial<TelegramLinkRow>;
         Relationships: [];
       };
+      tariffs: {
+        Row: TariffRow;
+        Insert: Pick<TariffRow, 'name' | 'monthly_price'> &
+          Partial<Pick<TariffRow, 'max_students' | 'features' | 'description' | 'is_public' | 'sort_order'>>;
+        Update: Partial<
+          Pick<
+            TariffRow,
+            | 'name'
+            | 'monthly_price'
+            | 'max_students'
+            | 'features'
+            | 'description'
+            | 'is_public'
+            | 'sort_order'
+            | 'archived_at'
+            | 'updated_at'
+          >
+        >;
+        Relationships: [];
+      };
+      teachers: {
+        Row: TeacherRow;
+        // Written only through RPCs and the Edge Functions.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      teacher_ledger: {
+        Row: TeacherLedgerRow;
+        // The admin records money; charges come from the database.
+        Insert: Pick<TeacherLedgerRow, 'teacher_id' | 'kind' | 'amount'> &
+          Partial<Pick<TeacherLedgerRow, 'note'>>;
+        Update: never;
+        Relationships: [];
+      };
+      platform_settings: {
+        Row: PlatformSettingsRow;
+        Insert: never;
+        Update: Partial<Pick<PlatformSettingsRow, 'contact_phone' | 'contact_telegram' | 'updated_at'>>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -197,6 +303,27 @@ export type Database = {
           | 'last_active_at'
         >[];
       };
+      my_features: { Args: NoArgs; Returns: string[] };
+      my_teacher_account: { Args: NoArgs; Returns: Json };
+      update_my_teacher_profile: {
+        Args: { p_first_name: string; p_last_name: string; p_phone: string; p_center_name: string };
+        Returns: void;
+      };
+      admin_teacher_overview: { Args: { p_from: string; p_to: string }; Returns: TeacherOverviewRow[] };
+      admin_update_teacher: {
+        Args: {
+          p_teacher: string;
+          p_first_name: string;
+          p_last_name: string;
+          p_phone: string;
+          p_center_name: string;
+          p_tariff_id: string;
+          p_billing_starts_on: string | null;
+          p_disabled: boolean;
+        };
+        Returns: void;
+      };
+      place_order: { Args: { p_item_id: string }; Returns: string };
       update_student_profile: {
         Args: {
           student_id: string;

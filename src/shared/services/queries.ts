@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { TeacherAccountView } from '@/application/accountService';
 import type { RoomSnapshot } from '@/application/competitionService';
+import type { PlatformSettings } from '@/application/ports';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
 import {
@@ -9,7 +11,9 @@ import {
   type StudentStarsBalance,
   computeStarsByStudent,
 } from '@/domain/market';
+import type { DateRange, TeacherOverview } from '@/domain/platformStats';
 import type { PracticeResult } from '@/domain/results';
+import type { Feature, LedgerEntry, Tariff } from '@/domain/teacherBilling';
 import { computeStudentStats } from '@/domain/statistics';
 import { type StreakInfo, computeStreak } from '@/domain/streak';
 import type { Student, StudentAccount } from '@/domain/users';
@@ -150,4 +154,51 @@ export function useStarsByStudent(): Map<string, StudentStarsBalance> | undefine
     () => (students && awards ? computeStarsByStudent(students, awards) : undefined),
     [students, awards],
   );
+}
+
+/** The sections open to the signed-in user (a student's come from their teacher's tariff). */
+export function useMyFeatures(): Feature[] | undefined {
+  const { account } = useServices();
+  return useLiveQuery({ load: account.myFeatures, subscribe: account.subscribe, pollIntervalMs: 120_000 });
+}
+
+/** Teacher only: tariff, balance and what the balance means today. */
+export function useTeacherAccount(): TeacherAccountView | undefined {
+  const { account } = useServices();
+  return useLiveQuery({
+    load: account.getTeacherAccount,
+    subscribe: account.subscribe,
+    pollIntervalMs: 300_000,
+  });
+}
+
+/** How teachers reach the superadmin to pay. */
+export function usePlatformSettings(): PlatformSettings | undefined {
+  const { platform } = useServices();
+  return useLiveQuery({ load: platform.getSettings, subscribe: platform.subscribeSettings });
+}
+
+/** The tariffs the landing page offers. */
+export function useOfferedTariffs(): Tariff[] | undefined {
+  const { platform } = useServices();
+  return useLiveQuery({ load: platform.listOfferedTariffs, subscribe: platform.subscribeTariffs });
+}
+
+/** Superadmin: every teacher, with their class counted for the period. */
+export function useAdminTeachers(range: DateRange): TeacherOverview[] | undefined {
+  const { admin } = useServices();
+  const load = useCallback(() => admin.listTeachers(range), [admin, range]);
+  return useLiveQuery({ load, subscribe: admin.subscribe, pollIntervalMs: 120_000 });
+}
+
+/** Superadmin: every teacher's ledger. */
+export function useAdminLedger(): LedgerEntry[] | undefined {
+  const { admin } = useServices();
+  return useLiveQuery({ load: admin.listLedger, subscribe: admin.subscribe });
+}
+
+/** Superadmin: every tariff, archived ones too. */
+export function useAdminTariffs(): Tariff[] | undefined {
+  const { admin } = useServices();
+  return useLiveQuery({ load: admin.listTariffs, subscribe: admin.subscribe });
 }

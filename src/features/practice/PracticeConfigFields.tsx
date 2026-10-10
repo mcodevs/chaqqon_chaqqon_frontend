@@ -52,16 +52,19 @@ export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }
 
   return (
     <>
-      <div className={styles.fieldBlock}>
-        <span className={styles.fieldLabel}>Mashq turi</span>
-        <SegmentedControl
-          label="Mashq turi"
-          options={kindOptions(kinds)}
-          value={value.kind}
-          onChange={setKind}
-        />
-        <p className={styles.topicHint}>{DRILL_META[value.kind].description}</p>
-      </div>
+      {/* With a single drill there is nothing to choose, so the switch stays out of the way. */}
+      {kinds.length > 1 && (
+        <div className={styles.fieldBlock}>
+          <span className={styles.fieldLabel}>Mashq turi</span>
+          <SegmentedControl
+            label="Mashq turi"
+            options={kindOptions(kinds)}
+            value={value.kind}
+            onChange={setKind}
+          />
+          <p className={styles.topicHint}>{DRILL_META[value.kind].description}</p>
+        </div>
+      )}
 
       {isAdding && (
         <TopicField

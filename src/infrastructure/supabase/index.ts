@@ -4,6 +4,12 @@ import { createSupabaseAuthGateway } from './supabaseAuthGateway';
 import { createSupabaseHomeworkRepository } from './supabaseHomeworkRepository';
 import { createSupabasePaymentRepository } from './supabasePaymentRepository';
 import {
+  createSupabaseAccountRepository,
+  createSupabaseAdminRepository,
+  createSupabasePlatformSettingsRepository,
+  createSupabaseTariffRepository,
+} from './supabasePlatformRepositories';
+import {
   createSupabaseMarketRepository,
   createSupabaseResultRepository,
   createSupabaseRoomRepository,
@@ -24,6 +30,10 @@ export function createSupabasePorts(config: SupabaseConfig): Ports {
     payments: createSupabasePaymentRepository(client),
     market: createSupabaseMarketRepository(client),
     homework: createSupabaseHomeworkRepository(client),
+    account: createSupabaseAccountRepository(client),
+    tariffs: createSupabaseTariffRepository(client),
+    admin: createSupabaseAdminRepository(client),
+    settings: createSupabasePlatformSettingsRepository(client),
     storage: createSupabaseStorageGateway(client),
     telegram: createSupabaseTelegramGateway(client, window),
   };

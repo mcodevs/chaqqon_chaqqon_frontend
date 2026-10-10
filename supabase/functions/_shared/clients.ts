@@ -23,6 +23,18 @@ export async function getCallerId(admin: SupabaseClient, request: Request): Prom
   return error ? null : data.user.id;
 }
 
+/** The caller's role from their profile, or null when they have none. */
+export async function roleOf(admin: SupabaseClient, userId: string): Promise<string | null> {
+  const { data, error } = await admin.from('profiles').select('role').eq('id', userId).maybeSingle();
+  if (error) throw error;
+  return data?.role ?? null;
+}
+
+/** A database rule raised one of these by name (see the platform migration). */
+export function raisedCode<T extends string>(error: { message?: string }, codes: readonly T[]): T | null {
+  return codes.find((code) => error.message?.includes(code)) ?? null;
+}
+
 export function isEmailTaken(error: { code?: string; message: string }): boolean {
   return error.code === 'email_exists' || /already (been )?registered/i.test(error.message);
 }

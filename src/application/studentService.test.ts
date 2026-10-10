@@ -12,7 +12,7 @@ const input = {
 
 describe('studentService', () => {
   it('adds a student and returns the plain credentials once', async () => {
-    const deps = createTestDependencies();
+    const deps = await createTestDependencies();
     const service = createStudentService(deps);
 
     const { student, credentials } = await service.add(input);
@@ -23,7 +23,7 @@ describe('studentService', () => {
   });
 
   it('shows usernames only in the account list', async () => {
-    const service = createStudentService(createTestDependencies());
+    const service = createStudentService(await createTestDependencies());
     await service.add(input);
 
     const [publicProfile] = await service.list();
@@ -32,7 +32,7 @@ describe('studentService', () => {
   });
 
   it('rejects duplicate usernames case-insensitively', async () => {
-    const service = createStudentService(createTestDependencies());
+    const service = createStudentService(await createTestDependencies());
     await service.add(input);
     await expect(service.add({ ...input, username: 'ALI10' })).rejects.toMatchObject({
       code: 'USERNAME_TAKEN',
@@ -45,12 +45,12 @@ describe('studentService', () => {
     [{ ...input, password: '12' }, 'PASSWORD_TOO_SHORT'],
     [{ ...input, birthYear: 1.5 }, 'INVALID_BIRTH_YEAR'],
   ])('validates new students (%#)', async (invalid, code) => {
-    const service = createStudentService(createTestDependencies());
+    const service = createStudentService(await createTestDependencies());
     await expect(service.add(invalid)).rejects.toMatchObject({ code });
   });
 
   it('issues a new password that replaces the old one', async () => {
-    const deps = createTestDependencies();
+    const deps = await createTestDependencies();
     const service = createStudentService(deps);
     const { student } = await service.add(input);
 
@@ -62,15 +62,15 @@ describe('studentService', () => {
     await expect(service.resetPassword('missing')).rejects.toMatchObject({ code: 'STUDENT_NOT_FOUND' });
   });
 
-  it('suggests valid latin usernames and 4-digit passwords', () => {
-    const service = createStudentService(createTestDependencies());
+  it('suggests valid latin usernames and 4-digit passwords', async () => {
+    const service = createStudentService(await createTestDependencies());
     const suggestion = service.suggestCredentials("G'ayrat");
     expect(suggestion.username).toMatch(/^gayrat\d{2}$/);
     expect(suggestion.password).toMatch(/^\d{4}$/);
   });
 
   it('updates student profile and validates input', async () => {
-    const deps = createTestDependencies();
+    const deps = await createTestDependencies();
     const service = createStudentService(deps);
     const { student } = await service.add(input);
 

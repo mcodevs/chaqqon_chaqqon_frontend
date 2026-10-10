@@ -3,9 +3,16 @@ import { DEFAULT_PRACTICE_CONFIG } from '@/domain/practice/config';
 import { createTestDependencies } from '@/testing/fakes';
 import { createResultService } from './resultService';
 
+/** Results are read back for the teacher's own class, so the ids belong to students in it. */
+async function classOf(...ids: string[]) {
+  const deps = await createTestDependencies();
+  await deps.enrol(...ids);
+  return deps;
+}
+
 describe('resultService', () => {
   it('records a practice result', async () => {
-    const service = createResultService(createTestDependencies());
+    const service = createResultService(await classOf('s1', 'a', 'b'));
     const result = await service.record({
       studentId: 's1',
       config: DEFAULT_PRACTICE_CONFIG,
@@ -18,7 +25,7 @@ describe('resultService', () => {
   });
 
   it('records every participant of a classroom match with one timestamp', async () => {
-    const service = createResultService(createTestDependencies());
+    const service = createResultService(await classOf('s1', 'a', 'b'));
     const recorded = await service.recordClassroomMatch({
       config: DEFAULT_PRACTICE_CONFIG,
       scores: [
@@ -36,7 +43,7 @@ describe('resultService', () => {
   });
 
   it.each([1, 5])('refuses a classroom match with %i participants', async (count) => {
-    const service = createResultService(createTestDependencies());
+    const service = createResultService(await classOf('s1', 'a', 'b'));
     const scores = Array.from({ length: count }, (_, index) => ({
       studentId: `s${index}`,
       correct: 1,

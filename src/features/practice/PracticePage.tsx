@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { DEFAULT_PRACTICE_CONFIG, type PracticeConfig } from '@/domain/practice/config';
+import { DEFAULT_PRACTICE_CONFIG, PRACTICE_KINDS, type PracticeConfig } from '@/domain/practice/config';
 import { generateDrillProblems } from '@/domain/practice/drills';
 import type { Problem } from '@/domain/practice/problem';
 import { useCurrentStudent } from '@/features/student/CurrentStudentContext';
@@ -13,6 +13,7 @@ import styles from './Practice.module.css';
 import { PracticeConfigFields } from './PracticeConfigFields';
 import { type PracticeProgress, PracticeRunner } from './PracticeRunner';
 import { RECORDED_KINDS } from './sections';
+import { useDrillKinds } from './useDrillKinds';
 
 interface PracticeRun {
   id: number;
@@ -29,6 +30,8 @@ export function PracticePage() {
   const [saved, setSaved] = useState(false);
   const recordResult = useAsyncAction(results.record);
   const nextRunId = useRef(0);
+  // Chaqnovchi va ustunlar mashqlari ustozning tarifida bo'lsagina ochiladi.
+  const kinds = useDrillKinds(PRACTICE_KINDS);
 
   const start = () => {
     setSaved(false);
@@ -57,7 +60,7 @@ export function PracticePage() {
   if (!run) {
     return (
       <Card title="Mashqni sozlang">
-        <PracticeConfigFields value={config} onChange={setConfig} />
+        <PracticeConfigFields value={config} onChange={setConfig} kinds={kinds} />
         <Button size="lg" block onClick={start}>
           Boshlash!
         </Button>

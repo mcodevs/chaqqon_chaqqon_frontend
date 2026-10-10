@@ -115,6 +115,9 @@
   --data-3: #2f8f4e;
   --data-4: #c8761a;
   --data-5: #d4497f;
+  /* Admin finance chart: money received vs fees charged (a validated pair, see dataviz). */
+  --chart-income: #6d46d6;
+  --chart-charge: #c8761a;
 
   --medal-gold: #e0a32b;
   --medal-silver: #9aa0ab;
@@ -185,6 +188,8 @@
     --data-3: #5cc47c;
     --data-4: #e3a14f;
     --data-5: #ec7ba9;
+    --chart-income: #8a6ae8;
+    --chart-charge: #b87d33;
 
     --medal-gold: #e8bb55;
     --medal-silver: #a9b0bc;
@@ -246,6 +251,8 @@
   --data-3: #5cc47c;
   --data-4: #e3a14f;
   --data-5: #ec7ba9;
+  --chart-income: #8a6ae8;
+  --chart-charge: #b87d33;
 
   --medal-gold: #e8bb55;
   --medal-silver: #a9b0bc;

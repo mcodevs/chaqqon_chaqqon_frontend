@@ -1,10 +1,10 @@
 import { type AppErrorCode, isAppError } from '@/application/errors';
 import { MAX_PREPAID_MONTHS } from '@/domain/billing';
 import { CLASSROOM_PARTICIPANTS } from '@/domain/classroom';
-import { MIN_PASSWORD_LENGTH } from '@/domain/users';
+import { MIN_PASSWORD_LENGTH, MIN_TEACHER_PASSWORD_LENGTH } from '@/domain/users';
 
 const ERROR_MESSAGES: Record<AppErrorCode, string> = {
-  TEACHER_EXISTS: "O'qituvchi hisobi allaqachon yaratilgan",
+  ALREADY_SET_UP: 'Platforma allaqachon sozlangan',
   USERNAME_REQUIRED: 'Login kiriting',
   INVALID_USERNAME: "Login 3–30 ta lotin harfi, raqam yoki . _ - belgilaridan iborat bo'lsin",
   PASSWORD_TOO_SHORT: `Parol kamida ${MIN_PASSWORD_LENGTH} belgidan iborat bo'lsin`,
@@ -25,8 +25,20 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   PAYMENT_NOT_FOUND: "Bekor qilinadigan to'lov yo'q",
   INVALID_PAID_UNTIL: `Ertangi kundan ${MAX_PREPAID_MONTHS} oygacha bo'lgan sanani tanlang`,
   ITEM_NOT_FOUND: 'Mahsulot topilmadi',
-  INSUFFICIENT_STARS: "Yulduzchalaringiz yetarli emas",
+  INSUFFICIENT_STARS: 'Yulduzchalaringiz yetarli emas',
   ORDER_NOT_FOUND: 'Buyurtma topilmadi',
+  OUT_OF_STOCK: "Bu sovg'a qolmagan",
+  STUDENT_LIMIT: "Tarifingizdagi o'quvchilar soni to'ldi. Ko'proq o'quvchi uchun tarifni o'zgartiring.",
+  TEACHER_BLOCKED: "To'lov kechikkani uchun boshqaruv vaqtincha yopilgan",
+  FEATURE_DISABLED: "Bu bo'lim tarifingizga kirmaydi",
+  TEACHER_FIELDS_REQUIRED: "Ismni kiriting; telefon va markaz nomi uzun bo'lmasin",
+  TEACHER_NOT_FOUND: 'Ustoz topilmadi',
+  TEACHER_PASSWORD_TOO_SHORT: `Parol kamida ${MIN_TEACHER_PASSWORD_LENGTH} belgidan iborat bo'lsin`,
+  TARIFF_FIELDS_REQUIRED: "Tarif nomi, narxi va o'quvchilar sonini to'g'ri kiriting",
+  TARIFF_NOT_FOUND: 'Tarifni tanlang',
+  BILLING_STARTED: "To'lov yechilgani uchun hisob boshlanish sanasini o'zgartirib bo'lmaydi",
+  INVALID_AMOUNT: "Summani to'g'ri kiriting",
+  INVALID_DATE: "Sanani to'g'ri kiriting",
 };
 
 const UNEXPECTED_ERROR = "Kutilmagan xatolik yuz berdi. Qaytadan urinib ko'ring.";

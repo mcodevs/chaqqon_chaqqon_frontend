@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCalendarDate, formatLastActive, formatSeconds } from './format';
+import { formatCalendarDate, formatLastActive, formatSeconds, formatSom } from './format';
 
 describe('formatSeconds', () => {
   it('writes tenths with a decimal comma and whole seconds without one', () => {
@@ -73,5 +73,14 @@ describe('formatLastActive', () => {
       text: 'Hozir onlayn',
       isOnline: true,
     });
+  });
+});
+
+describe('formatSom', () => {
+  it('groups thousands with spaces and writes a real minus', () => {
+    expect(formatSom(150_000)).toBe("150 000 so'm");
+    expect(formatSom(-1_500_000)).toBe("−1 500 000 so'm");
+    expect(formatSom(0)).toBe("0 so'm");
+    expect(formatSom(999)).toBe("999 so'm");
   });
 });

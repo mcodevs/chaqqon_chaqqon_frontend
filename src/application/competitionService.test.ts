@@ -5,13 +5,13 @@ import { createTestDependencies } from '@/testing/fakes';
 
 const configsFor = (ids: string[]) => Object.fromEntries(ids.map((id) => [id, DEFAULT_PRACTICE_CONFIG]));
 
-function setup() {
-  return createCompetitionService(createTestDependencies());
+async function setup() {
+  return createCompetitionService(await createTestDependencies());
 }
 
 describe('competitionService', () => {
   it('runs a room from opening to closing', async () => {
-    const service = setup();
+    const service = await setup();
     const room = await service.open({ participantIds: ['a', 'b'], configs: configsFor(['a', 'b']) });
 
     let snapshot = await service.getSnapshot();
@@ -36,7 +36,7 @@ describe('competitionService', () => {
   });
 
   it('allows multiple active rooms concurrently', async () => {
-    const service = setup();
+    const service = await setup();
     const room1 = await service.open({ participantIds: ['a'], configs: configsFor(['a']) });
     const room2 = await service.open({ participantIds: ['b'], configs: configsFor(['b']) });
 
@@ -52,7 +52,7 @@ describe('competitionService', () => {
   });
 
   it('validates participant count', async () => {
-    const service = setup();
+    const service = await setup();
     await expect(service.open({ participantIds: [], configs: {} })).rejects.toMatchObject({
       code: 'ROOM_EMPTY',
     });
@@ -64,7 +64,7 @@ describe('competitionService', () => {
   });
 
   it('rejects progress from students outside the room', async () => {
-    const service = setup();
+    const service = await setup();
     const room = await service.open({ participantIds: ['a'], configs: configsFor(['a']) });
     await service.start(room.id);
     await expect(

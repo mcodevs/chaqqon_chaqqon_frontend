@@ -11,7 +11,11 @@ export type RealtimeTable =
   | 'market_items'
   | 'market_orders'
   | 'star_awards'
-  | 'written_homework';
+  | 'written_homework'
+  | 'tariffs'
+  | 'teachers'
+  | 'teacher_ledger'
+  | 'platform_settings';
 
 /** Calls `listener` whenever rows this user may see (per RLS) change in the given tables. */
 export function subscribeToTables(

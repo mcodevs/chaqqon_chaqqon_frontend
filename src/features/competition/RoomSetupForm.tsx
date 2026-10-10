@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { ErrorMessage } from '@/shared/ui/Notice';
 import styles from './Competition.module.css';
+import { useDrillKinds } from '@/features/practice/useDrillKinds';
 import { StudentPicker } from './StudentPicker';
 
 interface RoomSetupFormProps {
@@ -32,6 +33,7 @@ export function RoomSetupForm({
   onOpen,
   onCancel,
 }: RoomSetupFormProps) {
+  const drillKinds = useDrillKinds(RECORDED_KINDS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sameForAll, setSameForAll] = useState(true);
   const [sharedConfig, setSharedConfig] = useState(DEFAULT_PRACTICE_CONFIG);
@@ -62,7 +64,7 @@ export function RoomSetupForm({
       </label>
 
       {sameForAll ? (
-        <PracticeConfigFields value={sharedConfig} onChange={setSharedConfig} kinds={RECORDED_KINDS} />
+        <PracticeConfigFields value={sharedConfig} onChange={setSharedConfig} kinds={drillKinds} />
       ) : (
         selectedIds.map((id) => (
           <fieldset key={id} className={styles.individual}>
@@ -70,7 +72,7 @@ export function RoomSetupForm({
             <PracticeConfigFields
               value={configFor(id)}
               onChange={(config) => setIndividualConfigs((current) => ({ ...current, [id]: config }))}
-              kinds={RECORDED_KINDS}
+              kinds={drillKinds}
             />
           </fieldset>
         ))

@@ -38,6 +38,11 @@ export function createMemorySessionStore(): SessionStore {
 function isSession(value: unknown): value is Session {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Record<string, unknown>;
-  if (candidate.role === 'teacher') return true;
-  return candidate.role === 'student' && typeof candidate.studentId === 'string';
+  if (candidate.role === 'admin') return typeof candidate.adminId === 'string';
+  if (candidate.role === 'teacher') return typeof candidate.teacherId === 'string';
+  return (
+    candidate.role === 'student' &&
+    typeof candidate.studentId === 'string' &&
+    typeof candidate.teacherId === 'string'
+  );
 }

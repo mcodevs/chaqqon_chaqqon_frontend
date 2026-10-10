@@ -6,13 +6,19 @@ import styles from './Teacher.module.css';
 interface CredentialsNoticeProps {
   credentials: StudentCredentials;
   onDismiss: () => void;
+  /** Who the sign-in is for; a student unless said otherwise. */
+  title?: string;
 }
 
 /** Passwords are stored hashed, so this is the only moment the teacher can see one. */
-export function CredentialsNotice({ credentials, onDismiss }: CredentialsNoticeProps) {
+export function CredentialsNotice({
+  credentials,
+  onDismiss,
+  title = "O'quvchiga kirish ma'lumotlarini bering",
+}: CredentialsNoticeProps) {
   return (
     <Card className={styles.credentials} role="status">
-      <div className={styles.credentialsTitle}>O'quvchiga kirish ma'lumotlarini bering</div>
+      <div className={styles.credentialsTitle}>{title}</div>
       <dl className={styles.credentialsList}>
         <dt>Login</dt>
         <dd>{credentials.username}</dd>

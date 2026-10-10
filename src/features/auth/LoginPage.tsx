@@ -6,17 +6,17 @@ import { homePath, useSession } from '@/shared/session/SessionContext';
 import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 import { AuthLayout } from './AuthLayout';
 import { LoginForm } from './LoginForm';
-import { TeacherSetupForm } from './TeacherSetupForm';
+import { AdminSetupForm } from './AdminSetupForm';
 
 export function LoginPage() {
   const { auth } = useServices();
   const { signIn } = useSession();
   const navigate = useNavigate();
-  const [hasTeacher, setHasTeacher] = useState<boolean>();
+  const [needsSetup, setNeedsSetup] = useState<boolean>();
 
   useEffect(() => {
     let active = true;
-    auth.hasTeacher().then((exists) => active && setHasTeacher(exists));
+    auth.needsSetup().then((value) => active && setNeedsSetup(value));
     return () => {
       active = false;
     };
@@ -27,14 +27,14 @@ export function LoginPage() {
     navigate(homePath(session), { replace: true });
   };
 
-  if (hasTeacher === undefined) return <LoadingScreen />;
+  if (needsSetup === undefined) return <LoadingScreen />;
 
   return (
     <AuthLayout>
-      {hasTeacher ? (
-        <LoginForm onAuthenticated={handleAuthenticated} />
+      {needsSetup ? (
+        <AdminSetupForm onAuthenticated={handleAuthenticated} />
       ) : (
-        <TeacherSetupForm onAuthenticated={handleAuthenticated} />
+        <LoginForm onAuthenticated={handleAuthenticated} />
       )}
     </AuthLayout>
   );

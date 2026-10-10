@@ -1,18 +1,6 @@
-import {
-  type MarketItem,
-  type MarketOrder,
-  type OrderStatus,
-  canAfford,
-  computeStudentStars,
-} from '@/domain/market';
+import { type MarketItem, type OrderStatus, canAfford, computeStudentStars } from '@/domain/market';
 import { AppError } from './errors';
-import type {
-  ChangeListener,
-  Clock,
-  IdGenerator,
-  MarketRepository,
-  Unsubscribe,
-} from './ports';
+import type { ChangeListener, Clock, IdGenerator, MarketRepository, Unsubscribe } from './ports';
 
 interface MarketDependencies {
   market: MarketRepository;
@@ -56,34 +44,20 @@ export function createMarketService({ market, generateId, clock }: MarketDepende
       await market.deleteItem(id);
     },
 
-    async buyItem(studentId: string, itemId: string): Promise<MarketOrder> {
+    /** Checked here for a quick answer; the backend checks stock and stars again as it takes them. */
+    async buyItem(studentId: string, itemId: string): Promise<void> {
       const [items, awards] = await Promise.all([market.listItems(), market.listAwards()]);
 
       const item = items.find((i) => i.id === itemId);
       if (!item) throw new AppError('ITEM_NOT_FOUND');
+      if (item.stock !== null && item.stock <= 0) throw new AppError('OUT_OF_STOCK');
 
       const stars = computeStudentStars(studentId, awards);
       if (!canAfford(stars.balance, item)) {
         throw new AppError('INSUFFICIENT_STARS');
       }
 
-      const order: MarketOrder = {
-        id: generateId(),
-        studentId,
-        itemId: item.id,
-        itemTitle: item.title,
-        costStars: item.costStars,
-        status: 'pending',
-        createdAt: clock.now().toISOString(),
-      };
-
-      // If item has stock, decrease it
-      if (item.stock !== null && item.stock > 0) {
-        await market.saveItem({ ...item, stock: item.stock - 1 });
-      }
-
-      await market.createOrder(order);
-      return order;
+      await market.placeOrder(item.id);
     },
 
     async updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {

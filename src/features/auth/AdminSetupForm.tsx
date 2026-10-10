@@ -7,12 +7,13 @@ import { ErrorMessage } from '@/shared/ui/Notice';
 import { TextField } from '@/shared/ui/TextField';
 import styles from './forms.module.css';
 
-export function TeacherSetupForm({ onAuthenticated }: { onAuthenticated: (session: Session) => void }) {
+/** First run of the browser-only backend: the platform's superadmin account. */
+export function AdminSetupForm({ onAuthenticated }: { onAuthenticated: (session: Session) => void }) {
   const { auth } = useServices();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const register = useAsyncAction(auth.registerTeacher);
+  const register = useAsyncAction(auth.setUpAdmin);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -22,10 +23,10 @@ export function TeacherSetupForm({ onAuthenticated }: { onAuthenticated: (sessio
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h2 className={styles.title}>O'qituvchi hisobini yarating</h2>
+      <h2 className={styles.title}>Platforma administratori hisobini yarating</h2>
       <TextField
         label="Login"
-        placeholder="masalan: mohira"
+        placeholder="masalan: admin"
         autoComplete="username"
         autoCapitalize="none"
         value={username}

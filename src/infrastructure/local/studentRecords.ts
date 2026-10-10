@@ -5,6 +5,9 @@ import { type KeyValueStore, keyMatches } from '../storage/keyValueStore';
 /** Local persistence shape: the account plus its password hash, which never leaves this module family. */
 export interface StudentRecord extends StudentAccount {
   passwordHash: string;
+  /** Missing only on records from the single-teacher days, until the platform hands them over. */
+  teacherId?: string;
+  createdAt?: string;
 }
 
 const KEY = 'students';

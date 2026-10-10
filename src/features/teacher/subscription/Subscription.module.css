@@ -1,0 +1,237 @@
+/* The banner sits above the page content, inside the dashboard. */
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  align-items: baseline;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  font: var(--text-body);
+}
+
+.bannerWarning {
+  background: var(--warning-soft);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+  color: var(--warning-content);
+}
+
+.bannerDanger {
+  background: var(--danger-soft);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  color: var(--danger-content);
+}
+
+.bannerContact {
+  flex-basis: 100%;
+  font: var(--text-caption);
+  font-weight: 600;
+}
+
+/* The lock page: its own shell, as ClosedAccountPage. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--surface-page);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: calc(var(--space-3) + var(--tg-safe-top, 0px)) var(--space-4) var(--space-3);
+}
+
+.brandLogo {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  font-size: 1rem;
+}
+
+.brandText {
+  font: var(--text-body);
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--space-6) var(--space-5);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-3);
+  text-align: center;
+}
+
+.lock {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--danger-soft);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--danger) 8%, transparent);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.title {
+  margin: 0 0 var(--space-1);
+  font: var(--text-h2);
+  color: var(--content-primary);
+}
+
+.greeting {
+  margin: 0 0 var(--space-5);
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  font: var(--text-body);
+}
+
+.fact dt {
+  color: var(--content-secondary);
+}
+
+.fact dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+.negative {
+  color: var(--danger-content) !important;
+}
+
+.help {
+  margin: 0 0 var(--space-5);
+  font: var(--text-caption);
+  color: var(--content-secondary);
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* The "Obuna" section on the teacher's profile page. */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
+  gap: var(--space-3);
+}
+
+.summaryItem {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+.summaryLabel {
+  display: block;
+  font: var(--text-caption);
+  color: var(--content-secondary);
+}
+
+.summaryValue {
+  display: block;
+  margin-top: var(--space-1);
+  font: var(--text-h3);
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.featureList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.featureChip {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  color: var(--content-primary);
+  font: var(--text-caption);
+}
+
+.ledger {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledgerRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font: var(--text-body);
+}
+
+.ledgerRow:last-child {
+  border-bottom: none;
+}
+
+.ledgerMeta {
+  display: block;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
+.amountIn {
+  color: var(--success-content);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.amountOut {
+  color: var(--content-secondary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hint {
+  margin: var(--space-3) 0 0;
+  font: var(--text-caption);
+  color: var(--content-secondary);
+}

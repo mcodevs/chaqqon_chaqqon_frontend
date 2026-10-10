@@ -1,9 +1,12 @@
+import { createAccountService } from '@/application/accountService';
+import { createAdminService } from '@/application/adminService';
 import type { AppServices } from '@/application/appServices';
 import { createAuthService } from '@/application/authService';
 import { createBillingService } from '@/application/billingService';
 import { createCompetitionService } from '@/application/competitionService';
 import { createHomeworkService } from '@/application/homeworkService';
 import { createMarketService } from '@/application/marketService';
+import { createPlatformService } from '@/application/platformService';
 import type { Clock, Ports } from '@/application/ports';
 import { createResultService } from '@/application/resultService';
 import { createStudentService } from '@/application/studentService';
@@ -24,6 +27,14 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
     billing: createBillingService({ payments: ports.payments, clock }),
     market: createMarketService({ market: ports.market, generateId, clock }),
     homework: createHomeworkService({ homework: ports.homework }),
+    account: createAccountService({ account: ports.account, clock }),
+    admin: createAdminService({
+      admin: ports.admin,
+      tariffs: ports.tariffs,
+      settings: ports.settings,
+      random: Math.random,
+    }),
+    platform: createPlatformService({ tariffs: ports.tariffs, settings: ports.settings }),
     storage: ports.storage,
     telegram: ports.telegram,
   };

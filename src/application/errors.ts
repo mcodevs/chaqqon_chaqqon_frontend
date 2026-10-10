@@ -1,5 +1,5 @@
 export type AppErrorCode =
-  | 'TEACHER_EXISTS'
+  | 'ALREADY_SET_UP'
   | 'USERNAME_REQUIRED'
   | 'INVALID_USERNAME'
   | 'PASSWORD_TOO_SHORT'
@@ -21,7 +21,19 @@ export type AppErrorCode =
   | 'INVALID_PAID_UNTIL'
   | 'ITEM_NOT_FOUND'
   | 'INSUFFICIENT_STARS'
-  | 'ORDER_NOT_FOUND';
+  | 'ORDER_NOT_FOUND'
+  | 'OUT_OF_STOCK'
+  | 'STUDENT_LIMIT'
+  | 'TEACHER_BLOCKED'
+  | 'FEATURE_DISABLED'
+  | 'TEACHER_FIELDS_REQUIRED'
+  | 'TEACHER_NOT_FOUND'
+  | 'TEACHER_PASSWORD_TOO_SHORT'
+  | 'TARIFF_FIELDS_REQUIRED'
+  | 'TARIFF_NOT_FOUND'
+  | 'BILLING_STARTED'
+  | 'INVALID_AMOUNT'
+  | 'INVALID_DATE';
 
 /** Expected, user-facing failure of a use case. Presentation maps `code` to a message. */
 export class AppError extends Error {

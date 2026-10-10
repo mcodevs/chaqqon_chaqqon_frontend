@@ -15,6 +15,12 @@ export type FunctionErrorCode =
   | 'PASSWORD_TOO_SHORT'
   | 'INVALID_BIRTH_YEAR'
   | 'STUDENT_NOT_FOUND'
+  | 'STUDENT_LIMIT'
+  | 'TEACHER_BLOCKED'
+  | 'TEACHER_NOT_FOUND'
+  | 'TARIFF_NOT_FOUND'
+  | 'INVALID_DATE'
+  | 'INVALID_AMOUNT'
   | 'INTERNAL';
 
 export type Body = Record<string, unknown>;

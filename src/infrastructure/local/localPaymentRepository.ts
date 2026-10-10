@@ -2,6 +2,7 @@ import { AppError } from '@/application/errors';
 import type { Clock, IdGenerator, PaymentRepository } from '@/application/ports';
 import { type Payment, type PaymentKind, launchPaidUntil, schoolDate } from '@/domain/billing';
 import { type KeyValueStore, keyMatches } from '../storage/keyValueStore';
+import type { LocalPlatform } from './localPlatform';
 import type { StudentRecords } from './studentRecords';
 
 const KEY = 'payments';
@@ -9,6 +10,7 @@ const KEY = 'payments';
 interface Dependencies {
   store: KeyValueStore;
   records: StudentRecords;
+  platform: LocalPlatform;
   clock: Clock;
   generateId: IdGenerator;
 }
@@ -16,6 +18,7 @@ interface Dependencies {
 export function createLocalPaymentRepository({
   store,
   records,
+  platform,
   clock,
   generateId,
 }: Dependencies): PaymentRepository {
@@ -40,18 +43,30 @@ export function createLocalPaymentRepository({
   };
 
   return {
-    list,
+    /** A teacher sees their students' payments, a student only their own. */
+    async list() {
+      const current = platform.session();
+      const all = await list();
+      if (current?.role === 'student')
+        return all.filter((payment) => payment.studentId === current.studentId);
+      const own = await platform.ownStudentIds();
+      return all.filter((payment) => own.has(payment.studentId));
+    },
 
     async record(studentId, paidUntil) {
-      if (!(await records.list()).some((record) => record.id === studentId)) {
-        throw new AppError('STUDENT_NOT_FOUND');
-      }
+      await platform.assertCanManage();
+      if (!(await platform.ownStudentIds()).has(studentId)) throw new AppError('STUDENT_NOT_FOUND');
       const payment = newPayment(studentId, paidUntil, 'payment');
       await store.set(KEY, [...(await list()), payment]);
       return payment;
     },
 
     async remove(paymentId) {
+      await platform.assertCanManage();
+      const own = await platform.ownStudentIds();
+      if (!(await list()).some((payment) => payment.id === paymentId && own.has(payment.studentId))) {
+        throw new AppError('PAYMENT_NOT_FOUND');
+      }
       await store.set(
         KEY,
         (await list()).filter((payment) => payment.id !== paymentId),

@@ -4,6 +4,8 @@ import {
   createAdminClient,
   getCallerId,
   isEmailTaken,
+  raisedCode,
+  roleOf,
 } from '../_shared/clients.ts';
 import { type Body, fail, handle, json, readJson } from '../_shared/http.ts';
 import { authEmailFor, authPasswordFor } from '../_shared/identity.ts';
@@ -13,6 +15,8 @@ import { readId, readName, readPassword, readUsername } from '../_shared/validat
  * Teacher-only student account management. Auth admin APIs need the service role,
  * which must never reach the browser, so they run here. A teacher manages only their own
  * students: new students are theirs, and anyone else's student does not exist for them.
+ * A teacher blocked for an unpaid balance manages nobody, and a new student must fit the tariff;
+ * the database enforces both too, these checks only give the teacher a clear answer first.
  */
 Deno.serve(
   handle(async (request) => {
@@ -20,10 +24,15 @@ Deno.serve(
     const callerId = await getCallerId(admin, request);
     if (!callerId) return fail('UNAUTHORIZED', 401);
     if ((await roleOf(admin, callerId)) !== 'teacher') return fail('FORBIDDEN', 403);
+    const guard = await teacherGuard(admin, callerId);
+    if (guard?.blocked) return fail('TEACHER_BLOCKED', 403);
 
     const body = await readJson(request);
     switch (body?.action) {
       case 'create':
+        if (guard && guard.max_students !== null && guard.student_count >= guard.max_students) {
+          return fail('STUDENT_LIMIT', 409);
+        }
         return createStudent(admin, callerId, body);
       case 'set-password':
         return setPassword(admin, callerId, body);
@@ -35,10 +44,16 @@ Deno.serve(
   }),
 );
 
-async function roleOf(admin: SupabaseClient, userId: string): Promise<string | null> {
-  const { data, error } = await admin.from('profiles').select('role').eq('id', userId).maybeSingle();
+interface TeacherGuard {
+  blocked: boolean;
+  student_count: number;
+  max_students: number | null;
+}
+
+async function teacherGuard(admin: SupabaseClient, teacherId: string): Promise<TeacherGuard | null> {
+  const { data, error } = await admin.rpc('teacher_guard', { p_teacher: teacherId });
   if (error) throw error;
-  return data?.role ?? null;
+  return (data as TeacherGuard[] | null)?.[0] ?? null;
 }
 
 /** Whether the student exists and belongs to this teacher. Other teachers' students look missing. */
@@ -85,6 +100,8 @@ async function createStudent(admin: SupabaseClient, teacherId: string, body: Bod
   if (profileError) {
     await admin.auth.admin.deleteUser(student.id);
     if (profileError.code === POSTGRES_UNIQUE_VIOLATION) return fail('USERNAME_TAKEN', 409);
+    const raised = raisedCode(profileError, ['STUDENT_LIMIT', 'TEACHER_BLOCKED'] as const);
+    if (raised) return fail(raised, raised === 'STUDENT_LIMIT' ? 409 : 403);
     throw profileError;
   }
 

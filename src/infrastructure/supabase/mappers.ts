@@ -4,6 +4,9 @@ import type { MarketItem, MarketOrder, StarAward } from '@/domain/market';
 import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/config';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
 import type { WrittenHomework } from '@/domain/homework';
+import type { TariffInput } from '@/application/ports';
+import type { TeacherOverview } from '@/domain/platformStats';
+import { type LedgerEntry, type Tariff, isFeature } from '@/domain/teacherBilling';
 import type { Student, StudentAccount } from '@/domain/users';
 import type { Database, Json } from './database.types';
 
@@ -21,7 +24,8 @@ export function toStudent(row: ProfileRow): Student {
   if (row.birth_year !== undefined && row.birth_year !== null) student.birthYear = row.birth_year;
   if (row.level_group !== undefined && row.level_group !== null) student.levelGroup = row.level_group;
   if (row.avatar_url !== undefined && row.avatar_url !== null) student.avatarUrl = row.avatar_url;
-  if (row.last_active_at !== undefined && row.last_active_at !== null) student.lastActiveAt = row.last_active_at;
+  if (row.last_active_at !== undefined && row.last_active_at !== null)
+    student.lastActiveAt = row.last_active_at;
   return student;
 }
 
@@ -166,15 +170,68 @@ export function toMarketOrder(row: Tables['market_orders']['Row']): MarketOrder 
   };
 }
 
-export function toMarketOrderRow(order: MarketOrder): Tables['market_orders']['Insert'] {
+/** A tariff row; feature names the app no longer knows are dropped. */
+export function toTariff(row: Tables['tariffs']['Row']): Tariff {
   return {
-    id: order.id,
-    student_id: order.studentId,
-    item_id: order.itemId,
-    item_title: order.itemTitle,
-    cost_stars: order.costStars,
-    status: order.status,
-    created_at: order.createdAt,
+    id: row.id,
+    name: row.name,
+    monthlyPrice: Number(row.monthly_price),
+    maxStudents: row.max_students,
+    features: row.features.filter(isFeature),
+    description: row.description,
+    isPublic: row.is_public,
+    sortOrder: row.sort_order,
+    archivedAt: row.archived_at,
+  };
+}
+
+export function toTariffRow(input: TariffInput) {
+  return {
+    name: input.name,
+    monthly_price: input.monthlyPrice,
+    max_students: input.maxStudents,
+    features: input.features,
+    description: input.description,
+    is_public: input.isPublic,
+    sort_order: input.sortOrder,
+  };
+}
+
+export function toLedgerEntry(row: Tables['teacher_ledger']['Row']): LedgerEntry {
+  return {
+    id: row.id,
+    teacherId: row.teacher_id,
+    kind: row.kind,
+    amount: Number(row.amount),
+    periodStart: row.period_start,
+    tariffId: row.tariff_id,
+    note: row.note,
+    createdAt: row.created_at,
+  };
+}
+
+export function toTeacherOverview(
+  row: Database['public']['Functions']['admin_teacher_overview']['Returns'][number],
+): TeacherOverview {
+  return {
+    id: row.id,
+    username: row.username,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    phone: row.phone,
+    centerName: row.center_name,
+    tariffId: row.tariff_id,
+    billingStartsOn: row.billing_starts_on,
+    disabledAt: row.disabled_at,
+    createdAt: row.created_at,
+    studentCount: row.student_count,
+    activeStudents: row.active_students,
+    openStudents: row.open_students,
+    newStudents: row.new_students,
+    practiceCount: row.practice_count,
+    correctAnswers: row.correct_answers,
+    totalAnswers: row.total_answers,
+    homeworkRooms: row.homework_rooms,
   };
 }
 

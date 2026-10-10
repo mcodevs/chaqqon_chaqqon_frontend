@@ -4,6 +4,15 @@ import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { addDays, addMonths, isValidPaidUntil, launchPaidUntil, schoolDate } from '@/domain/billing';
+import {
+  FEATURES,
+  type LedgerEntry,
+  balanceOf,
+  chargeDates,
+  isBlocked,
+  overdueSince,
+} from '@/domain/teacherBilling';
+import { formatSom } from '@/shared/format';
 
 /*
  * Runs the real migrations in an embedded Postgres (PGlite) and checks the
@@ -59,12 +68,32 @@ let db: PGlite;
 /** Students added once teachers are tenants name their teacher; the first accounts predate that. */
 async function addUser(
   id: string,
-  role: 'teacher' | 'student',
+  role: 'admin' | 'teacher' | 'student',
   username: string,
   firstName: string,
   teacherId?: string,
 ) {
   await db.query('insert into auth.users (id) values ($1)', [id]);
+  await insertProfile(id, role, username, firstName, teacherId);
+  // Once the platform exists, a teacher also has a platform row; the free legacy tariff opens everything.
+  const platform = await db.query<{ exists: boolean }>(
+    "select to_regclass('public.teachers') is not null as exists",
+  );
+  if (role === 'teacher' && platform.rows[0].exists) {
+    await db.query(
+      "insert into public.teachers (profile_id, tariff_id) select $1, id from public.tariffs where name = 'Legacy'",
+      [id],
+    );
+  }
+}
+
+async function insertProfile(
+  id: string,
+  role: 'admin' | 'teacher' | 'student',
+  username: string,
+  firstName: string,
+  teacherId?: string,
+) {
   if (teacherId) {
     await db.query(
       'insert into public.profiles (id, role, username, first_name, teacher_id) values ($1, $2, $3, $4, $5)',
@@ -145,9 +174,13 @@ const recordPayment =
   'insert into public.student_payments (student_id, paid_until) values ($1, $2) returning paid_until::text, kind';
 
 describe('the move to many teachers', () => {
-  it('can be applied a second time', async () => {
-    const file = readdirSync(MIGRATIONS_DIR).find((name) => name.includes('teacher_tenancy'));
-    await db.exec(readFileSync(join(MIGRATIONS_DIR, file!), 'utf8'));
+  it('can be applied a second time, in order with the migrations after it', async () => {
+    const files = readdirSync(MIGRATIONS_DIR)
+      .filter((name) => name.endsWith('.sql'))
+      .sort();
+    for (const file of files.slice(files.findIndex((name) => name.includes('teacher_tenancy')))) {
+      await db.exec(readFileSync(join(MIGRATIONS_DIR, file), 'utf8'));
+    }
   });
 
   it('gives everything from the single-teacher days to that teacher', async () => {
@@ -551,13 +584,19 @@ describe('teachers as tenants', () => {
     );
     ids.itemB = await one(
       `insert into public.market_items (title, cost_stars, image_url, teacher_id)
-       values ('Daftar', 2, '📒', $1) returning id`,
+       values ('Daftar', 1, '📒', $1) returning id`,
       [TEACHER_B],
     );
     ids.orderA = await one(
       `insert into public.market_orders (student_id, item_id, item_title, cost_stars)
        values ($1, $2, 'Ruchka', 3) returning id`,
       [VALI, ids.itemA],
+    );
+    // A perfect homework: Bobur's one star.
+    await db.query(
+      `insert into public.practice_results (student_id, config, correct, total, mode, room_id)
+       values ($1, $2, 5, 5, 'online', $3)`,
+      [BOBUR, CONFIG, ids.roomB],
     );
     for (const student of [VALI, BOBUR]) {
       await db.query(recordResult, [student, CONFIG]);
@@ -593,7 +632,7 @@ describe('teachers as tenants', () => {
       { id: ids.itemB },
     ]);
     expect(await as('authenticated', TEACHER_B, 'select id from public.market_orders')).toEqual([]);
-    expect(await as('authenticated', TEACHER_B, 'select id from public.star_awards')).toEqual([]);
+    expect(await studentsSeenBy(TEACHER_B, 'select student_id from public.star_awards')).toEqual([BOBUR]);
 
     const teacherAProfiles = await as<{ id: string }>(
       'authenticated',
@@ -694,18 +733,24 @@ describe('teachers as tenants', () => {
 
   it("shows a paid student only their own class and their own teacher's shop", async () => {
     expect(await as('authenticated', BOBUR, 'select id from public.profiles')).toEqual([{ id: BOBUR }]);
-    expect(await studentsSeenBy(BOBUR, 'select student_id from public.practice_results')).toEqual([BOBUR]);
+    expect(await studentsSeenBy(BOBUR, 'select distinct student_id from public.practice_results')).toEqual([
+      BOBUR,
+    ]);
     expect(await as('authenticated', BOBUR, 'select id from public.market_items')).toEqual([
       { id: ids.itemB },
     ]);
 
-    const order = `insert into public.market_orders (student_id, item_id, item_title, cost_stars)
-                   values ($1, $2, 'X', $3)`;
-    await expect(as('authenticated', BOBUR, order, [BOBUR, ids.itemA, 3])).rejects.toThrow(
-      /row-level security/,
-    );
-    await expect(as('authenticated', BOBUR, order, [BOBUR, ids.itemB, 1])).rejects.toThrow(
-      /row-level security/,
+    // Orders only go through place_order, which knows nothing of another teacher's shop.
+    await expect(
+      as(
+        'authenticated',
+        BOBUR,
+        "insert into public.market_orders (student_id, item_id, item_title, cost_stars) values ($1, $2, 'X', 1)",
+        [BOBUR, ids.itemB],
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await expect(as('authenticated', BOBUR, 'select public.place_order($1)', [ids.itemA])).rejects.toThrow(
+      /ITEM_NOT_FOUND/,
     );
 
     const valiSees = await studentsSeenBy(VALI, 'select id as student_id from public.profiles');
@@ -716,7 +761,7 @@ describe('teachers as tenants', () => {
     // A stand-in for the real dispatcher, which needs pg_net and Vault.
     await db.exec(`
       create table private.sent_notifications (profile_id uuid, text text);
-      create or replace function private.notify_telegram(p_profile_id uuid, p_text text)
+      create or replace function private.send_telegram(p_profile_id uuid, p_text text)
       returns void language sql security definer set search_path = '' as $fn$
         insert into private.sent_notifications values (p_profile_id, p_text);
       $fn$;
@@ -726,12 +771,7 @@ describe('teachers as tenants', () => {
         (row) => row.profile_id,
       );
 
-    await as(
-      'authenticated',
-      BOBUR,
-      `insert into public.market_orders (student_id, item_id, item_title, cost_stars) values ($1, $2, 'Daftar', 2)`,
-      [BOBUR, ids.itemB],
-    );
+    await as('authenticated', BOBUR, 'select public.place_order($1)', [ids.itemB]);
     expect(await told()).toEqual([BOBUR, TEACHER_B]);
 
     await db.exec('delete from private.sent_notifications');
@@ -794,5 +834,505 @@ describe('teachers as tenants', () => {
     await expect(
       addUser('00000000-0000-4000-8000-0000000000b5', 'student', 'nobody', 'X', VALI),
     ).rejects.toThrow(/must name a teacher/);
+  });
+});
+
+describe('the platform: tariffs, the teacher balance and the superadmin', () => {
+  const ADMIN = '00000000-0000-4000-8000-0000000000e1';
+  /** A teacher on a small tariff: two students, the leaderboard only. */
+  const TEACHER_C = '00000000-0000-4000-8000-00000000000e';
+  /** A teacher whose ledger the cross-checks rewrite freely. */
+  const TEACHER_X = '00000000-0000-4000-8000-00000000000f';
+  const CAMOL = '00000000-0000-4000-8000-0000000000b6';
+  const CAMOL2 = '00000000-0000-4000-8000-0000000000b7';
+  const tariffs: Record<string, string> = {};
+
+  const one = async <T = { id: string }>(sql: string, params: unknown[] = []) =>
+    (await db.query<T>(sql, params)).rows[0];
+
+  beforeAll(async () => {
+    await addUser(ADMIN, 'admin', 'boss', 'Admin');
+    tariffs.start = (
+      await one(
+        `insert into public.tariffs (name, monthly_price, max_students, features, is_public)
+         values ('Start', 100000, 2, '{leaderboard}', true) returning id`,
+      )
+    ).id;
+    tariffs.old = (
+      await one(
+        `insert into public.tariffs (name, monthly_price, features, is_public, archived_at)
+         values ('Old', 50000, '{}', true, now()) returning id`,
+      )
+    ).id;
+    tariffs.x = (
+      await one("insert into public.tariffs (name, monthly_price) values ('X', 100) returning id")
+    ).id;
+
+    await addUser(TEACHER_C, 'teacher', 'camila', 'Camila');
+    await db.query('update public.teachers set tariff_id = $1 where profile_id = $2', [
+      tariffs.start,
+      TEACHER_C,
+    ]);
+    await addUser(TEACHER_X, 'teacher', 'xtest', 'X');
+    await db.query('update public.teachers set tariff_id = $1 where profile_id = $2', [tariffs.x, TEACHER_X]);
+  });
+
+  const resetLedger = async (teacherId: string) =>
+    db.query('delete from public.teacher_ledger where teacher_id = $1', [teacherId]);
+
+  const told = async (profileId: string) =>
+    (
+      await db.query<{ text: string }>('select text from private.sent_notifications where profile_id = $1', [
+        profileId,
+      ])
+    ).rows.map((row) => row.text);
+
+  it('takes the same monthly charges as the app', async () => {
+    for (const anchor of ['2026-01-31', '2028-01-31', '2026-08-31', '2026-03-30']) {
+      const days = [
+        addDays(anchor, -1),
+        anchor,
+        addDays(addMonths(anchor, 1), -1),
+        addMonths(anchor, 1),
+        addMonths(anchor, 13),
+      ];
+      for (const day of days) {
+        await resetLedger(TEACHER_X);
+        await db.query('update public.teachers set billing_starts_on = $1 where profile_id = $2', [
+          anchor,
+          TEACHER_X,
+        ]);
+        await db.query('select private.generate_teacher_charges($1::date, $2)', [day, TEACHER_X]);
+        const { rows } = await db.query<{ period: string }>(
+          'select period_start::text as period from public.teacher_ledger where teacher_id = $1 order by period_start',
+          [TEACHER_X],
+        );
+        expect(
+          rows.map((row) => row.period),
+          `${anchor} on ${day}`,
+        ).toEqual(chargeDates(anchor, day));
+      }
+    }
+  });
+
+  it('takes a month once, at the price it had then', async () => {
+    await resetLedger(TEACHER_X);
+    await db.query("update public.teachers set billing_starts_on = '2026-01-15' where profile_id = $1", [
+      TEACHER_X,
+    ]);
+    const generate = (day: string) =>
+      db.query('select private.generate_teacher_charges($1::date, $2)', [day, TEACHER_X]);
+    await generate('2026-03-20');
+    await generate('2026-03-20');
+    await db.query('update public.tariffs set monthly_price = 200 where id = $1', [tariffs.x]);
+    await generate('2026-04-20');
+
+    const { rows } = await db.query<{ amount: number }>(
+      'select amount::int from public.teacher_ledger where teacher_id = $1 order by period_start',
+      [TEACHER_X],
+    );
+    expect(rows.map((row) => row.amount)).toEqual([-100, -100, -100, -200]);
+  });
+
+  it('agrees with the app on the balance, the debt and the block', async () => {
+    const charge = (periodStart: string, amount = 100) => ({
+      kind: 'charge' as const,
+      amount: -amount,
+      periodStart,
+    });
+    const credit = (kind: 'payment' | 'bonus' | 'adjustment', amount: number) => ({
+      kind,
+      amount,
+      periodStart: null,
+    });
+    const scenarios = [
+      [credit('payment', 300), charge('2026-01-05'), charge('2026-02-05')],
+      [credit('payment', 200), charge('2026-01-05'), charge('2026-02-05')],
+      [credit('payment', 150), charge('2026-01-05'), charge('2026-02-05'), charge('2026-03-05')],
+      [credit('bonus', 100), credit('payment', 50), charge('2026-01-10'), charge('2026-02-10')],
+      [credit('payment', 100), charge('2026-01-05'), credit('adjustment', -100)],
+      [charge('2026-01-05')],
+    ];
+
+    for (const [index, scenario] of scenarios.entries()) {
+      await resetLedger(TEACHER_X);
+      for (const row of scenario) {
+        await db.query(
+          'insert into public.teacher_ledger (teacher_id, kind, amount, period_start) values ($1, $2, $3, $4)',
+          [TEACHER_X, row.kind, row.amount, row.periodStart],
+        );
+      }
+      const entries = scenario.map((row, i) => ({
+        ...row,
+        id: String(i),
+        teacherId: TEACHER_X,
+        tariffId: null,
+        note: '',
+        createdAt: '',
+      })) satisfies LedgerEntry[];
+      const since = overdueSince(entries);
+      for (const day of since ? [addDays(since, 6), addDays(since, 7)] : ['2026-06-01']) {
+        const [state] = (
+          await db.query<{ balance: number; overdue_since: string | null; blocked: boolean }>(
+            'select balance::int, overdue_since::text, blocked from private.teacher_billing_state($1, $2::date)',
+            [TEACHER_X, day],
+          )
+        ).rows;
+        expect(state, `scenario ${index} on ${day}`).toEqual({
+          balance: balanceOf(entries),
+          overdue_since: since,
+          blocked: isBlocked(since, day),
+        });
+      }
+    }
+  });
+
+  it('accepts exactly the features the app knows', async () => {
+    await db.query("insert into public.tariffs (name, monthly_price, features) values ('All', 1, $1)", [
+      FEATURES,
+    ]);
+    await expect(
+      db.query("insert into public.tariffs (name, monthly_price, features) values ('Bad', 1, '{bogus}')"),
+    ).rejects.toThrow(/tariffs_features_check/);
+  });
+
+  it('writes money the way the app does', async () => {
+    for (const amount of [0, 999, 150_000, -1_500_000]) {
+      const { rows } = await db.query<{ text: string }>('select private.format_som($1) as text', [amount]);
+      expect(rows[0].text).toBe(formatSom(amount));
+    }
+  });
+
+  it("keeps a teacher to their tariff's student limit", async () => {
+    await addUser(CAMOL, 'student', 'camol1', 'Camol', TEACHER_C);
+    await addUser(CAMOL2, 'student', 'camol2', 'Camol', TEACHER_C);
+    await expect(
+      addUser('00000000-0000-4000-8000-0000000000b8', 'student', 'camol3', 'Camol', TEACHER_C),
+    ).rejects.toThrow(/STUDENT_LIMIT/);
+  });
+
+  it('keeps every section the tariff does not include closed, for the teacher and the students', async () => {
+    await db.query(
+      "insert into public.student_payments (student_id, paid_until, recorded_at) values ($1, $2, now() + interval '2 hours')",
+      [CAMOL, addMonths(today(), 1)],
+    );
+    const item = await one(
+      "insert into public.market_items (title, cost_stars, image_url, teacher_id) values ('Q', 1, 'Q', $1) returning id",
+      [TEACHER_C],
+    );
+    const rls = /row-level security/;
+
+    await expect(as('authenticated', TEACHER_C, openRoom([CAMOL], 'waiting', TEACHER_C))).rejects.toThrow(
+      rls,
+    );
+    await expect(
+      as(
+        'authenticated',
+        TEACHER_C,
+        "insert into public.market_items (title, cost_stars, image_url) values ('X', 1, 'X')",
+      ),
+    ).rejects.toThrow(rls);
+    await expect(
+      as(
+        'authenticated',
+        TEACHER_C,
+        "insert into public.written_homework (student_id, status) values ($1, 'chala')",
+        [CAMOL],
+      ),
+    ).rejects.toThrow(rls);
+    await expect(
+      as(
+        'authenticated',
+        TEACHER_C,
+        "insert into public.practice_results (student_id, config, correct, total, mode) values ($1, $2, 3, 5, 'classroom')",
+        [CAMOL, CONFIG],
+      ),
+    ).rejects.toThrow(rls);
+    await expect(as('authenticated', CAMOL, 'select public.place_order($1)', [item.id])).rejects.toThrow(
+      /FEATURE_DISABLED/,
+    );
+
+    // What is always open stays open.
+    await as('authenticated', TEACHER_C, recordPayment, [CAMOL2, addMonths(today(), 1)]);
+
+    expect(await as('authenticated', CAMOL, 'select public.my_features() as f')).toEqual([
+      { f: ['leaderboard'] },
+    ]);
+    expect(await as('authenticated', TEACHER_C, 'select public.my_features() as f')).toEqual([
+      { f: ['leaderboard'] },
+    ]);
+    expect(await as('authenticated', ADMIN, 'select public.my_features() as f')).toEqual([
+      { f: [...FEATURES] },
+    ]);
+  });
+
+  it('sends class notifications only on a tariff with Telegram', async () => {
+    await db.exec('delete from private.sent_notifications');
+    await db.query("insert into public.written_homework (student_id, status) values ($1, 'bajardi')", [
+      CAMOL2,
+    ]);
+    await db.query(
+      "insert into public.written_homework (student_id, status, date) values ($1, 'bajardi', '2026-01-01')",
+      [BOBUR],
+    );
+    expect(await told(CAMOL2)).toEqual([]);
+    expect(await told(BOBUR)).toHaveLength(1);
+  });
+
+  it('gives the teacher their own account: tariff, class size and ledger', async () => {
+    const [{ account }] = await as<{
+      account: { tariff: { name: string }; studentCount: number; ledger: unknown[] };
+    }>('authenticated', TEACHER_C, 'select public.my_teacher_account() as account');
+    expect(account.tariff.name).toBe('Start');
+    expect(account.studentCount).toBe(2);
+    expect(account.ledger).toEqual([]);
+    await expect(as('authenticated', CAMOL, 'select public.my_teacher_account()')).rejects.toThrow(
+      /FORBIDDEN/,
+    );
+  });
+
+  it('blocks management seven days into a debt, but never the students', async () => {
+    await db.query('update public.teachers set billing_starts_on = $1 where profile_id = $2', [
+      addDays(today(), -10),
+      TEACHER_C,
+    ]);
+    await db.query('select private.generate_teacher_charges(private.school_today(), $1)', [TEACHER_C]);
+    const rls = /row-level security/;
+
+    await expect(
+      as('authenticated', TEACHER_C, recordPayment, [CAMOL, addMonths(today(), 2)]),
+    ).rejects.toThrow(rls);
+    await expect(
+      as('authenticated', TEACHER_C, "update public.profiles set first_name = 'X' where id = $1", [CAMOL]),
+    ).rejects.toThrow(rls);
+    await expect(
+      as('authenticated', TEACHER_C, "select public.update_student_profile($1, 'X')", [CAMOL]),
+    ).rejects.toThrow(/TEACHER_BLOCKED/);
+    await expect(
+      addUser('00000000-0000-4000-8000-0000000000b9', 'student', 'camol4', 'Camol', TEACHER_C),
+    ).rejects.toThrow(/TEACHER_BLOCKED/);
+
+    // Reading stays open, so the lock page works; the students keep practising.
+    const seen = await as<{ id: string }>(
+      'authenticated',
+      TEACHER_C,
+      "select id from public.profiles where role = 'student'",
+    );
+    expect(seen.map((row) => row.id).sort()).toEqual([CAMOL, CAMOL2].sort());
+    await as('authenticated', CAMOL, recordResult, [CAMOL, CONFIG]);
+
+    // The admin records the payment and management opens at once.
+    await as(
+      'authenticated',
+      ADMIN,
+      "insert into public.teacher_ledger (teacher_id, kind, amount, note) values ($1, 'payment', 100000, 'naqd')",
+      [TEACHER_C],
+    );
+    await as('authenticated', TEACHER_C, recordPayment, [CAMOL, addMonths(today(), 2)]);
+    expect(await told(TEACHER_C)).toEqual([`✅ <b>To'lov qabul qilindi</b>\n+100 000 so'm\nBalans: 0 so'm`]);
+  });
+
+  it('reminds an overdue teacher once per step, with the contact to pay', async () => {
+    await db.query(
+      "update public.platform_settings set contact_phone = '+998901234567', contact_telegram = '@chaqqon'",
+    );
+    await resetLedger(TEACHER_X);
+    await db.query("update public.teachers set billing_starts_on = '2026-01-05' where profile_id = $1", [
+      TEACHER_X,
+    ]);
+    await db.query(
+      "insert into public.teacher_ledger (teacher_id, kind, amount, period_start) values ($1, 'charge', -200, '2026-01-05')",
+      [TEACHER_X],
+    );
+    await db.exec('delete from private.sent_notifications');
+    const remind = (day: string) => db.query('select private.send_billing_reminders($1::date)', [day]);
+
+    await remind('2026-01-05');
+    await remind('2026-01-05');
+    let messages = await told(TEACHER_X);
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toContain("Balans: −200 so'm");
+    expect(messages[0]).toContain('12.01.2026 gacha');
+    expect(messages[0]).toContain("📞 To'lov uchun: +998901234567 · @chaqqon");
+
+    await remind('2026-01-09');
+    await remind('2026-01-11');
+    await remind('2026-01-12');
+    await remind('2026-01-13');
+    messages = await told(TEACHER_X);
+    expect(messages.map((text) => text.split('\n')[0])).toEqual([
+      "💳 <b>Oylik to'lov yechildi</b>",
+      '⏳ <b>3 kundan keyin akkaunt bloklanadi</b>',
+      '⏳ <b>1 kundan keyin akkaunt bloklanadi</b>',
+      '🔒 <b>Akkaunt bloklandi</b>',
+    ]);
+    expect(await told(ADMIN)).toEqual([`🔒 <b>X</b> bloklandi\nBalans: −200 so'm`]);
+
+    // Paid up, the next charge three days away and not covered: one warning.
+    await db.query(
+      "insert into public.teacher_ledger (teacher_id, kind, amount) values ($1, 'payment', 200)",
+      [TEACHER_X],
+    );
+    await db.exec('delete from private.sent_notifications');
+    await remind('2026-02-02');
+    expect((await told(TEACHER_X)).map((text) => text.split('\n')[0])).toEqual([
+      "🔔 <b>3 kundan keyin oylik to'lov</b>",
+    ]);
+  });
+
+  it('lets the admin record money, but never a charge, and never rewrite the ledger', async () => {
+    const rls = /row-level security/;
+    await expect(
+      as(
+        'authenticated',
+        ADMIN,
+        "insert into public.teacher_ledger (teacher_id, kind, amount) values ($1, 'charge', -1)",
+        [TEACHER_C],
+      ),
+    ).rejects.toThrow(rls);
+    await expect(as('authenticated', ADMIN, 'update public.teacher_ledger set amount = 1')).rejects.toThrow(
+      /permission denied/,
+    );
+    await expect(as('authenticated', ADMIN, 'delete from public.teacher_ledger')).rejects.toThrow(
+      /permission denied/,
+    );
+
+    await expect(
+      as(
+        'authenticated',
+        TEACHER_C,
+        "insert into public.teacher_ledger (teacher_id, kind, amount) values ($1, 'payment', 1)",
+        [TEACHER_C],
+      ),
+    ).rejects.toThrow(rls);
+    const ledger = await as<{ teacher_id: string }>(
+      'authenticated',
+      TEACHER_C,
+      'select teacher_id from public.teacher_ledger',
+    );
+    expect(new Set(ledger.map((row) => row.teacher_id))).toEqual(new Set([TEACHER_C]));
+    expect(await as('authenticated', TEACHER_C, 'select profile_id from public.teachers')).toEqual([
+      { profile_id: TEACHER_C },
+    ]);
+  });
+
+  it('shows the admin teachers and numbers, never a student', async () => {
+    expect(await as('authenticated', ADMIN, 'select id from public.profiles')).toEqual([{ id: ADMIN }]);
+    for (const table of [
+      'practice_results',
+      'student_payments',
+      'star_awards',
+      'written_homework',
+      'rooms',
+    ]) {
+      expect(await as('authenticated', ADMIN, `select 1 from public.${table}`), table).toEqual([]);
+    }
+    const overview = await as<{
+      id: string;
+      student_count: number;
+      tariff_id: string;
+      practice_count: number;
+    }>(
+      'authenticated',
+      ADMIN,
+      'select id, student_count, tariff_id, practice_count from public.admin_teacher_overview($1, $2)',
+      [addDays(today(), -30), today()],
+    );
+    expect(overview.find((row) => row.id === TEACHER_C)).toEqual({
+      id: TEACHER_C,
+      student_count: 2,
+      tariff_id: tariffs.start,
+      practice_count: 1,
+    });
+    await expect(
+      as('authenticated', TEACHER_C, 'select * from public.admin_teacher_overview($1, $2)', [
+        today(),
+        today(),
+      ]),
+    ).rejects.toThrow(/FORBIDDEN/);
+  });
+
+  it('keeps the first billing day once a fee has been taken', async () => {
+    const update = `select public.admin_update_teacher($1, 'Camila', '', '+998', '', $2, $3::date, false)`;
+    await expect(
+      as('authenticated', ADMIN, update, [TEACHER_C, tariffs.start, addDays(today(), -3)]),
+    ).rejects.toThrow(/BILLING_STARTED/);
+    await as('authenticated', ADMIN, update, [TEACHER_C, tariffs.old, addDays(today(), -10)]);
+    expect(await as('authenticated', TEACHER_C, 'select tariff_id from public.teachers')).toEqual([
+      { tariff_id: tariffs.old },
+    ]);
+    await expect(as('authenticated', TEACHER_C, update, [TEACHER_C, tariffs.start, null])).rejects.toThrow(
+      /FORBIDDEN/,
+    );
+  });
+
+  it('sells a gift only while it is in stock and the stars are there', async () => {
+    const homework = async () => {
+      const [room] = (await db.query<{ id: string }>(openRoom([BOBUR], 'finished', TEACHER_B))).rows;
+      await db.query(
+        `insert into public.practice_results (student_id, config, correct, total, mode, room_id)
+         values ($1, $2, 5, 5, 'online', $3)`,
+        [BOBUR, CONFIG, room.id],
+      );
+    };
+    await homework();
+    const last = await one(
+      "insert into public.market_items (title, cost_stars, image_url, stock, teacher_id) values ('Oxirgi', 1, 'O', 1, $1) returning id",
+      [TEACHER_B],
+    );
+    await as('authenticated', BOBUR, 'select public.place_order($1)', [last.id]);
+    expect(
+      await as('authenticated', BOBUR, 'select stock from public.market_items where id = $1', [last.id]),
+    ).toEqual([{ stock: 0 }]);
+    await homework();
+    await expect(as('authenticated', BOBUR, 'select public.place_order($1)', [last.id])).rejects.toThrow(
+      /OUT_OF_STOCK/,
+    );
+
+    const dear = await one(
+      "insert into public.market_items (title, cost_stars, image_url, teacher_id) values ('Qimmat', 50, 'Q', $1) returning id",
+      [TEACHER_B],
+    );
+    await expect(as('authenticated', BOBUR, 'select public.place_order($1)', [dear.id])).rejects.toThrow(
+      /INSUFFICIENT_STARS/,
+    );
+  });
+
+  it('offers guests only the public tariffs and the contact', async () => {
+    const names = await as<{ name: string }>('anon', null, 'select name from public.tariffs');
+    expect(names.map((row) => row.name)).toContain('Start');
+    expect(names.map((row) => row.name)).not.toContain('Old');
+    expect(names.map((row) => row.name)).not.toContain('Legacy');
+    expect(await as('anon', null, 'select contact_phone from public.platform_settings')).toEqual([
+      { contact_phone: '+998901234567' },
+    ]);
+    for (const sql of [
+      'select 1 from public.teachers',
+      'select 1 from public.teacher_ledger',
+      'select public.my_features()',
+      'select public.place_order(gen_random_uuid())',
+    ]) {
+      await expect(as('anon', null, sql), sql).rejects.toThrow(/permission denied/);
+    }
+  });
+
+  it('widens only the role check, leaving the other profile checks alone', async () => {
+    const { rows } = await db.query<{ conname: string }>(
+      "select conname from pg_constraint where conrelid = 'public.profiles'::regclass and contype = 'c' order by conname",
+    );
+    expect(rows.map((row) => row.conname)).toEqual([
+      'profiles_birth_year_check',
+      'profiles_level_group_check',
+      'profiles_role_check',
+      'profiles_teacher_link',
+      'profiles_username_check',
+    ]);
+  });
+
+  it('never gives an admin a teacher', async () => {
+    await db.query("insert into auth.users (id) values ('00000000-0000-4000-8000-0000000000e2')");
+    await expect(
+      insertProfile('00000000-0000-4000-8000-0000000000e2', 'admin', 'boss2', 'X', TEACHER_C),
+    ).rejects.toThrow(/profiles_teacher_link|must name a teacher/);
   });
 });

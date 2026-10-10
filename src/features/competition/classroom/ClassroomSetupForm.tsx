@@ -8,6 +8,7 @@ import { useFullscreen } from '@/shared/hooks/useFullscreen';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { StudentPicker } from '../StudentPicker';
+import { useDrillKinds } from '@/features/practice/useDrillKinds';
 import styles from './Classroom.module.css';
 
 interface ClassroomSetupFormProps {
@@ -18,6 +19,7 @@ interface ClassroomSetupFormProps {
 }
 
 export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSetupFormProps) {
+  const drillKinds = useDrillKinds(RECORDED_KINDS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [config, setConfig] = useState(DEFAULT_PRACTICE_CONFIG);
   const fullscreen = useFullscreen();
@@ -46,7 +48,7 @@ export function ClassroomSetupForm({ students, closedIds, onStart }: ClassroomSe
         max={CLASSROOM_PARTICIPANTS.max}
         onChange={setSelectedIds}
       />
-      <PracticeConfigFields value={config} onChange={setConfig} kinds={RECORDED_KINDS} />
+      <PracticeConfigFields value={config} onChange={setConfig} kinds={drillKinds} />
       <Button size="lg" block disabled={missing > 0} onClick={start}>
         {missing > 0 ? `Yana kamida ${missing} ta o'quvchi tanlang` : 'Boshlash'}
       </Button>

@@ -8,7 +8,7 @@ const ALI = { firstName: 'Ali', lastName: '', username: 'ali10', password: '1234
 
 /** Billing is already in use when Ali joins. The test clock reads 2026-09-13, 15:00 in Tashkent. */
 async function withNewStudent() {
-  const deps = createTestDependencies();
+  const deps = await createTestDependencies();
   const billing = createBillingService(deps);
   await billing.listPayments();
   const { student } = await createStudentService(deps).add(ALI);
@@ -66,7 +66,7 @@ describe('billingService', () => {
   });
 
   it('gives students who existed before billing the rest of the month', async () => {
-    const deps = createTestDependencies();
+    const deps = await createTestDependencies();
     const { student } = await createStudentService(deps).add(ALI);
 
     expect(await createBillingService(deps).listPayments()).toEqual([
@@ -74,8 +74,8 @@ describe('billingService', () => {
     ]);
   });
 
-  it('counts the time left until the next day in Tashkent', () => {
-    const billing = createBillingService(createTestDependencies());
+  it('counts the time left until the next day in Tashkent', async () => {
+    const billing = createBillingService(await createTestDependencies());
     expect(billing.msUntilTomorrow()).toBe(9 * 60 * 60 * 1000);
   });
 });

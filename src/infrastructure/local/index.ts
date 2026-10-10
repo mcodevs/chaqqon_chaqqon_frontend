@@ -9,6 +9,13 @@ import {
   createLocalResultRepository,
   createLocalRoomRepository,
 } from './localPracticeRepositories';
+import { createLocalPlatform } from './localPlatform';
+import {
+  createLocalAccountRepository,
+  createLocalAdminRepository,
+  createLocalPlatformSettingsRepository,
+  createLocalTariffRepository,
+} from './localPlatformRepositories';
 import { createLocalStudentRepository } from './localStudentRepository';
 import { createStudentRecords } from './studentRecords';
 import { createWebSessionStore } from './webSessionStore';
@@ -50,20 +57,22 @@ export function createLocalPorts(browser: Window, clock: Clock): Ports {
   const hasher = createPbkdf2PasswordHasher();
   const records = createStudentRecords(store);
   const generateId = () => crypto.randomUUID();
+  const sessions = createWebSessionStore(browser.sessionStorage);
+  const platform = createLocalPlatform({ store, records, sessions, clock, generateId });
+  const platformDeps = { store, platform, records, hasher, clock, generateId };
 
   return {
-    auth: createLocalAuthGateway({
-      store,
-      records,
-      hasher,
-      sessions: createWebSessionStore(browser.sessionStorage),
-    }),
-    students: createLocalStudentRepository({ records, hasher, generateId }),
-    results: createLocalResultRepository(store),
-    rooms: createLocalRoomRepository(store),
-    payments: createLocalPaymentRepository({ store, records, clock, generateId }),
-    market: createLocalMarketRepository(store),
-    homework: createLocalHomeworkRepository(store),
+    auth: createLocalAuthGateway({ platform, records, hasher, sessions, generateId }),
+    students: createLocalStudentRepository({ records, platform, hasher, generateId }),
+    results: createLocalResultRepository(store, platform),
+    rooms: createLocalRoomRepository(store, platform),
+    payments: createLocalPaymentRepository({ store, records, platform, clock, generateId }),
+    market: createLocalMarketRepository(store, platform),
+    homework: createLocalHomeworkRepository(store, platform),
+    account: createLocalAccountRepository(platformDeps),
+    tariffs: createLocalTariffRepository(platformDeps),
+    admin: createLocalAdminRepository(platformDeps),
+    settings: createLocalPlatformSettingsRepository(platformDeps),
     storage: createLocalStorageGateway(),
     telegram: createNoopTelegramGateway(),
   };

@@ -3,7 +3,7 @@ import type { AppSupabaseClient } from './client';
 import { createSupabaseAuthGateway } from './supabaseAuthGateway';
 
 interface FakeOptions {
-  profile?: { id: string; role: 'teacher' | 'student' } | null;
+  profile?: { id: string; role: 'admin' | 'teacher' | 'student'; teacher_id?: string | null } | null;
   signInError?: { code?: string; status?: number } | null;
 }
 
@@ -42,12 +42,22 @@ describe('supabaseAuthGateway', () => {
   });
 
   it('returns the session when the role matches', async () => {
-    const { client, signOut } = createFakeClient({ profile: { id: 's1', role: 'student' } });
+    const { client, signOut } = createFakeClient({
+      profile: { id: 's1', role: 'student', teacher_id: 't1' },
+    });
     await expect(createSupabaseAuthGateway(client).signIn('student', credentials)).resolves.toEqual({
       role: 'student',
       studentId: 's1',
+      teacherId: 't1',
     });
     expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it('signs the superadmin in through the teacher form, and only there', async () => {
+    const { client } = createFakeClient({ profile: { id: 'a1', role: 'admin' } });
+    const gateway = createSupabaseAuthGateway(client);
+    await expect(gateway.signIn('teacher', credentials)).resolves.toEqual({ role: 'admin', adminId: 'a1' });
+    await expect(gateway.signIn('student', credentials)).resolves.toBeNull();
   });
 
   it('treats invalid credentials as a failed sign-in', async () => {
