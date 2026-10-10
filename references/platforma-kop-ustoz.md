@@ -74,7 +74,7 @@ Edge function'lar: `manage-students` (egalik + limit + blok), yangi `manage-teac
 
 **Foydalanuvchidan kutilmoqda:**
 
-1. Superadmin akkaunti: Dashboard → Authentication → Add user (`<login>@chaqqon.example.com`, parol `chaqqon:<parol>`, auto-confirm), keyin `profiles` ga `role='admin'` qatori (README'da SQL bor).
+1. ~~Superadmin akkaunti~~ — **bajarildi (2026-10-10)**: foydalanuvchi yaratdi, bazada 1 ta admin, `teacher_id` bo'sh. Yangi admin kerak bo'lsa: Dashboard → Add user (`<login>@chaqqon.example.com`, parol `chaqqon:<parol>`) + `profiles` ga `role='admin'` (README'da SQL).
 2. `/admin` → Sozlamalar: to'lov kontakti; Tariflar: public tariflar (landing'da ko'rinadi).
 3. Mohira ustoz (login `ravshanovna`, ismi bo'sh) — yashirin "Legacy" tarifda, hisob yuritilmaydi; admin unga tarif, hisob sanasi va ism beradi.
 4. Ixtiyoriy: yangi logo (eski `logo.webp` o'chirildi — unda "Mohira ustoz bilan" bor edi).
