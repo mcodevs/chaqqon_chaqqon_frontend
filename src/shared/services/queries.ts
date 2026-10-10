@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeacherAccountView } from '@/application/accountService';
 import type { RoomSnapshot } from '@/application/competitionService';
-import type { PlatformSettings, TeacherCard } from '@/application/ports';
+import type { PlatformSettings, PublicStats, TeacherCard } from '@/application/ports';
 import type { TeacherApplication } from '@/domain/applications';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
@@ -177,6 +177,16 @@ export function useTeacherAccount(): TeacherAccountView | undefined {
 export function usePlatformSettings(): PlatformSettings | undefined {
   const { platform } = useServices();
   return useLiveQuery({ load: platform.getSettings, subscribe: platform.subscribeSettings });
+}
+
+/** The platform in numbers for the landing page; refreshed now and then, it never needs to be live. */
+export function usePublicStats(): PublicStats | undefined {
+  const { platform } = useServices();
+  return useLiveQuery({
+    load: platform.publicStats,
+    subscribe: platform.subscribeSettings,
+    pollIntervalMs: 300_000,
+  });
 }
 
 /** The tariffs the landing page offers. */

@@ -113,6 +113,8 @@ type TariffRow = {
   features: string[];
   description: string;
   is_public: boolean;
+  /** At most one tariff is recommended; marking another takes the mark off. */
+  is_featured: boolean;
   sort_order: number;
   archived_at: string | null;
   created_at: string;
@@ -146,6 +148,9 @@ type PlatformSettingsRow = {
   id: boolean;
   contact_phone: string;
   contact_telegram: string;
+  trial_days: number;
+  money_back_days: number;
+  referral_enabled: boolean;
   updated_at: string;
 };
 
@@ -181,6 +186,8 @@ type TeacherApplicationRow = {
   heard_from: string;
   tariff_id: string | null;
   note: string;
+  /** The login of the teacher who recommended the platform, as typed; '' for none. */
+  referrer_username: string;
   status: 'new' | 'contacted' | 'approved' | 'rejected';
   teacher_id: string | null;
   handled_by: string | null;
@@ -266,7 +273,12 @@ export type Database = {
       tariffs: {
         Row: TariffRow;
         Insert: Pick<TariffRow, 'name' | 'monthly_price'> &
-          Partial<Pick<TariffRow, 'max_students' | 'features' | 'description' | 'is_public' | 'sort_order'>>;
+          Partial<
+            Pick<
+              TariffRow,
+              'max_students' | 'features' | 'description' | 'is_public' | 'is_featured' | 'sort_order'
+            >
+          >;
         Update: Partial<
           Pick<
             TariffRow,
@@ -276,6 +288,7 @@ export type Database = {
             | 'features'
             | 'description'
             | 'is_public'
+            | 'is_featured'
             | 'sort_order'
             | 'archived_at'
             | 'updated_at'
@@ -308,7 +321,17 @@ export type Database = {
       platform_settings: {
         Row: PlatformSettingsRow;
         Insert: never;
-        Update: Partial<Pick<PlatformSettingsRow, 'contact_phone' | 'contact_telegram' | 'updated_at'>>;
+        Update: Partial<
+          Pick<
+            PlatformSettingsRow,
+            | 'contact_phone'
+            | 'contact_telegram'
+            | 'trial_days'
+            | 'money_back_days'
+            | 'referral_enabled'
+            | 'updated_at'
+          >
+        >;
         Relationships: [];
       };
     };
@@ -325,9 +348,11 @@ export type Database = {
           p_heard_from: string;
           p_tariff_id: string | null;
           p_note: string;
+          p_referrer_username: string;
         };
         Returns: void;
       };
+      platform_public_stats: { Args: NoArgs; Returns: Json };
       student_accounts: {
         Args: NoArgs;
         Returns: Pick<

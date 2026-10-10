@@ -4,6 +4,8 @@ import {
   type TeacherApplication,
   applicationFunnel,
   applicationProblem,
+  normalizeReferrer,
+  referralLink,
   telegramLink,
 } from './applications';
 
@@ -17,6 +19,7 @@ const input: ApplicationInput = {
   heardFrom: 'Instagram',
   tariffId: null,
   note: '',
+  referrerUsername: '',
 };
 
 describe('applications', () => {
@@ -29,6 +32,13 @@ describe('applications', () => {
     expect(applicationProblem({ ...input, phone: "qo'ng'iroq" })).toBe('phone');
     expect(applicationProblem({ ...input, studentsCount: -1 })).toBe('count');
     expect(applicationProblem({ ...input, note: 'x'.repeat(1001) })).toBe('length');
+  });
+
+  it("reads the referrer's login the way it was typed, and builds the link that fills it in", () => {
+    expect(normalizeReferrer(' @Mohira ')).toBe('mohira');
+    expect(normalizeReferrer('')).toBe('');
+    expect(applicationProblem({ ...input, referrerUsername: 'x'.repeat(41) })).toBe('length');
+    expect(referralLink('https://chaqqon.uz', 'mohira')).toBe('https://chaqqon.uz/?taklif=mohira#ariza');
   });
 
   it('turns a Telegram username into a chat link', () => {

@@ -231,11 +231,26 @@ export interface AdminRepository {
 export interface PlatformSettings {
   contactPhone: string;
   contactTelegram: string;
+  /** Days a new teacher works before the first monthly fee; 0 for no free trial. */
+  trialDays: number;
+  /** The money-back promise on the landing page, in days; 0 hides it. */
+  moneyBackDays: number;
+  /** A teacher who brings a colleague gets a free month; the colleague earns theirs by inviting in turn. */
+  referralEnabled: boolean;
+}
+
+/** The platform in numbers, for guests: counts only. */
+export interface PublicStats {
+  teachers: number;
+  students: number;
+  correctAnswers: number;
 }
 
 export interface PlatformSettingsRepository {
   get(): Promise<PlatformSettings>;
   save(settings: PlatformSettings): Promise<void>;
+  /** Anyone may read it. */
+  publicStats(): Promise<PublicStats>;
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 
@@ -245,7 +260,10 @@ export interface ApplicationRepository {
   submit(application: ApplicationInput): Promise<void>;
   /** Superadmin: every application, newest first. */
   list(): Promise<TeacherApplication[]>;
-  update(id: string, changes: { status: ApplicationStatus; teacherId?: string | null; adminNote?: string }): Promise<void>;
+  update(
+    id: string,
+    changes: { status: ApplicationStatus; teacherId?: string | null; adminNote?: string },
+  ): Promise<void>;
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 

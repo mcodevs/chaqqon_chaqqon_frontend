@@ -103,9 +103,16 @@ export function createLocalTariffRepository({ platform, generateId }: Dependenci
     features: input.features,
     description: input.description,
     isPublic: input.isPublic,
+    isFeatured: input.isFeatured,
     sortOrder: input.sortOrder,
     archivedAt,
   });
+
+  // Like the database trigger: marking one tariff recommended takes the mark off the rest.
+  const saveAll = (tariffs: Tariff[], featuredId: string | null) =>
+    platform.saveTariffs(
+      featuredId ? tariffs.map((t) => (t.id === featuredId ? t : { ...t, isFeatured: false })) : tariffs,
+    );
 
   const sorted = (tariffs: Tariff[]) =>
     tariffs.toSorted((a, b) => a.sortOrder - b.sortOrder || a.monthlyPrice - b.monthlyPrice);
@@ -121,18 +128,23 @@ export function createLocalTariffRepository({ platform, generateId }: Dependenci
 
     async create(input) {
       requireAdmin(platform);
-      await platform.saveTariffs([...(await platform.listTariffs()), toTariff(generateId(), input, null)]);
+      const id = generateId();
+      await saveAll(
+        [...(await platform.listTariffs()), toTariff(id, input, null)],
+        input.isFeatured ? id : null,
+      );
     },
 
     async update(id, input) {
       requireAdmin(platform);
       const tariffs = await platform.listTariffs();
-      await platform.saveTariffs(
+      await saveAll(
         tariffs.map((t) =>
           t.id === id
             ? toTariff(id, input, input.archived ? (t.archivedAt ?? new Date().toISOString()) : null)
             : t,
         ),
+        input.isFeatured ? id : null,
       );
     },
 
@@ -299,13 +311,27 @@ export function createLocalAdminRepository({
 }
 
 export function createLocalPlatformSettingsRepository({
+  store,
   platform,
+  records,
 }: Dependencies): PlatformSettingsRepository {
   return {
     get: () => platform.getSettings(),
     async save(settings) {
       requireAdmin(platform);
       await platform.saveSettings(settings);
+    },
+    async publicStats() {
+      const [teachers, students, results] = await Promise.all([
+        platform.listTeachers(),
+        records.list(),
+        store.get<PracticeResult[]>('results'),
+      ]);
+      return {
+        teachers: teachers.filter((t) => !t.disabledAt).length,
+        students: students.length,
+        correctAnswers: (results ?? []).reduce((sum, result) => sum + result.correct, 0),
+      };
     },
     subscribe: platform.subscribe,
   };
@@ -319,7 +345,12 @@ export function createLocalApplicationRepository({
   clock,
   generateId,
 }: Dependencies): ApplicationRepository {
-  const list = async () => (await store.get<TeacherApplication[]>(APPLICATIONS_KEY)) ?? [];
+  // Applications saved before referrals existed read as having no referrer.
+  const list = async () =>
+    ((await store.get<TeacherApplication[]>(APPLICATIONS_KEY)) ?? []).map((a) => ({
+      ...a,
+      referrerUsername: a.referrerUsername ?? '',
+    }));
 
   return {
     async submit(application) {

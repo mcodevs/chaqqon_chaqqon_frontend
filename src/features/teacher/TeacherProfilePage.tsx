@@ -4,6 +4,7 @@ import { useMyFeatures, useTeacherAccount } from '@/shared/services/queries';
 import { useSession } from '@/shared/session/SessionContext';
 import { ThemeToggle } from '@/shared/theme/ThemeToggle';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
+import { InviteCard } from './subscription/InviteCard';
 import { SubscriptionCard } from './subscription/SubscriptionCard';
 import { TeacherProfileForm } from './subscription/TeacherProfileForm';
 import styles from './TeacherProfilePage.module.css';
@@ -32,6 +33,7 @@ export function TeacherProfilePage() {
       </section>
 
       <SubscriptionCard account={account} />
+      <InviteCard username={account.username} />
       <TeacherProfileForm account={account} />
 
       {/* 2. Ichki bo'limlar menyusi */}

@@ -17,6 +17,7 @@ const tariff = (id: string, monthlyPrice: number): Tariff => ({
   features: [],
   description: '',
   isPublic: true,
+  isFeatured: false,
   sortOrder: 0,
   archivedAt: null,
 });

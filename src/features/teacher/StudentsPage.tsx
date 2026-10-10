@@ -13,6 +13,7 @@ import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { AddStudentForm } from './AddStudentForm';
 import { CredentialsNotice } from './CredentialsNotice';
+import { OnboardingCard } from './OnboardingCard';
 import { StudentList } from './StudentList';
 import styles from './Teacher.module.css';
 
@@ -42,6 +43,8 @@ export function StudentsPage() {
       {issuedCredentials && (
         <CredentialsNotice credentials={issuedCredentials} onDismiss={() => setIssuedCredentials(null)} />
       )}
+
+      <OnboardingCard onAddStudent={() => setAdding(true)} />
 
       <div className={styles.pageToolbar}>
         <span className={styles.toolbarText}>

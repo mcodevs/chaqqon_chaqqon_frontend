@@ -71,6 +71,11 @@
   }
 }
 
+.referrer {
+  font: var(--text-caption);
+  color: var(--success-content);
+}
+
 .columnHint {
   font: var(--text-caption);
   color: var(--content-tertiary);

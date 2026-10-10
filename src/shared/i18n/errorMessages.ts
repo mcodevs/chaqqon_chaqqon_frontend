@@ -41,6 +41,7 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   INVALID_DATE: "Sanani to'g'ri kiriting",
   INVALID_APPLICATION: "Ism va telefon raqamini to'g'ri kiriting",
   TOO_MANY_APPLICATIONS: "Arizangiz allaqachon qabul qilingan. Tez orada siz bilan bog'lanamiz.",
+  OFFER_DAYS_INVALID: "Kunlar soni 0 dan 90 gacha butun son bo'lsin",
 };
 
 const UNEXPECTED_ERROR = "Kutilmagan xatolik yuz berdi. Qaytadan urinib ko'ring.";

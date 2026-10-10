@@ -5,7 +5,13 @@ import { addDays } from '@/domain/billing';
 import { billingStateOf, teacherName } from '@/domain/platformStats';
 import { CredentialsNotice } from '@/features/teacher/CredentialsNotice';
 import { formatSom } from '@/shared/format';
-import { useAdminLedger, useAdminTariffs, useAdminTeachers, useSchoolToday } from '@/shared/services/queries';
+import {
+  useAdminLedger,
+  useAdminTariffs,
+  useAdminTeachers,
+  usePlatformSettings,
+  useSchoolToday,
+} from '@/shared/services/queries';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
@@ -22,6 +28,7 @@ export function AdminTeachersPage() {
   const teachers = useAdminTeachers(range);
   const tariffs = useAdminTariffs();
   const ledger = useAdminLedger();
+  const settings = usePlatformSettings();
   const [adding, setAdding] = useState(false);
   const [created, setCreated] = useState<Credentials | null>(null);
   const [query, setQuery] = useState('');
@@ -55,9 +62,10 @@ export function AdminTeachersPage() {
         />
       )}
 
-      {adding && tariffs ? (
+      {adding && tariffs && settings ? (
         <NewTeacherForm
           tariffs={tariffs}
+          trialDays={settings.trialDays}
           onCreated={(_id, credentials) => {
             setAdding(false);
             setCreated(credentials);

@@ -19,6 +19,8 @@ export interface TeacherApplication {
   heardFrom: string;
   tariffId: string | null;
   note: string;
+  /** The login of the teacher who recommended the platform, as the guest typed it; '' for none. */
+  referrerUsername: string;
   status: ApplicationStatus;
   teacherId: string | null;
   adminNote: string;
@@ -36,6 +38,7 @@ export type ApplicationInput = Pick<
   | 'heardFrom'
   | 'tariffId'
   | 'note'
+  | 'referrerUsername'
 >;
 
 export const APPLICATION_STATUS_LABEL: Record<ApplicationStatus, string> = {
@@ -61,6 +64,7 @@ export const APPLICATION_LIMITS = {
   centerName: 100,
   heardFrom: 100,
   note: 1000,
+  referrerUsername: 40,
   studentsCount: 10_000,
 } as const;
 
@@ -89,11 +93,25 @@ export function applicationProblem(input: ApplicationInput): 'name' | 'phone' | 
     input.city.length > APPLICATION_LIMITS.city ||
     input.centerName.length > APPLICATION_LIMITS.centerName ||
     input.heardFrom.length > APPLICATION_LIMITS.heardFrom ||
-    input.note.length > APPLICATION_LIMITS.note
+    input.note.length > APPLICATION_LIMITS.note ||
+    input.referrerUsername.length > APPLICATION_LIMITS.referrerUsername
   ) {
     return 'length';
   }
   return null;
+}
+
+/** The query parameter a teacher's invite link carries their login in: `/?taklif=mohira#ariza`. */
+export const REFERRAL_PARAM = 'taklif';
+
+/** " @Mohira " → "mohira": logins are lower case, and people often type the @. Same as the SQL. */
+export function normalizeReferrer(text: string): string {
+  return text.trim().replace(/^@+/, '').toLowerCase().slice(0, APPLICATION_LIMITS.referrerUsername);
+}
+
+/** The link a teacher shares with a colleague: the landing page's form, with their login filled in. */
+export function referralLink(origin: string, username: string): string {
+  return `${origin}/?${REFERRAL_PARAM}=${encodeURIComponent(username)}#ariza`;
 }
 
 /** "@ustoz" or "ustoz" or a t.me link → the link to open a chat, or null. */

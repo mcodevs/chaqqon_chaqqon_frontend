@@ -1,4 +1,9 @@
-import { type ApplicationInput, type ApplicationStatus, applicationProblem } from '@/domain/applications';
+import {
+  type ApplicationInput,
+  type ApplicationStatus,
+  applicationProblem,
+  normalizeReferrer,
+} from '@/domain/applications';
 import { AppError } from './errors';
 import type { ApplicationRepository } from './ports';
 
@@ -18,6 +23,7 @@ export function createApplicationService({ applications }: ApplicationDependenci
         centerName: input.centerName.trim(),
         heardFrom: input.heardFrom.trim(),
         note: input.note.trim(),
+        referrerUsername: normalizeReferrer(input.referrerUsername),
       };
       if (applicationProblem(clean)) throw new AppError('INVALID_APPLICATION');
       await applications.submit(clean);

@@ -235,3 +235,32 @@
   font: var(--text-caption);
   color: var(--content-secondary);
 }
+
+/* The invite card: the reward first, then the link as plain text anyone can select. */
+.inviteText {
+  margin: 0 0 var(--space-3);
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.inviteText strong {
+  color: var(--content-primary);
+}
+
+.inviteLink {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--content-primary);
+  font: var(--text-caption);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.inviteActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}

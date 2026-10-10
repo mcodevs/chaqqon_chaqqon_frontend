@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCalendarDate, formatLastActive, formatSeconds, formatSom } from './format';
+import { formatCalendarDate, formatCount, formatLastActive, formatSeconds, formatSom } from './format';
 
 describe('formatSeconds', () => {
   it('writes tenths with a decimal comma and whole seconds without one', () => {
@@ -73,6 +73,14 @@ describe('formatLastActive', () => {
       text: 'Hozir onlayn',
       isOnline: true,
     });
+  });
+});
+
+describe('formatCount', () => {
+  it('spaces the thousands of a count', () => {
+    expect(formatCount(7)).toBe('7');
+    expect(formatCount(12_345)).toBe('12 345');
+    expect(formatCount(1_234_567)).toBe('1 234 567');
   });
 });
 

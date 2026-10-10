@@ -1431,3 +1431,142 @@ describe("the teacher's card", () => {
     await expect(as('anon', null, 'select public.my_teacher_card()')).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('growing the platform', () => {
+  const ADMIN = '00000000-0000-4000-8000-0000000000e1';
+  const told = async () =>
+    (
+      await db.query<{ profile_id: string; text: string }>(
+        'select profile_id, text from private.sent_notifications',
+      )
+    ).rows;
+
+  it('keeps a single recommended tariff, which only the admin marks and guests can see', async () => {
+    const add = (name: string) =>
+      as<{ id: string }>(
+        'authenticated',
+        ADMIN,
+        `insert into public.tariffs (name, monthly_price, is_public, is_featured) values ($1, 100000, true, true)
+         returning id`,
+        [name],
+      );
+    const [first] = await add('Tanlov A');
+    const [second] = await add('Tanlov B');
+
+    const featured = await db.query<{ id: string }>('select id from public.tariffs where is_featured');
+    expect(featured.rows).toEqual([{ id: second.id }]);
+
+    expect(
+      await as(
+        'authenticated',
+        TEACHER,
+        'update public.tariffs set is_featured = true where id = $1 returning id',
+        [first.id],
+      ),
+    ).toEqual([]);
+    expect(
+      await as<{ name: string }>('anon', null, 'select name from public.tariffs where is_featured'),
+    ).toEqual([{ name: 'Tanlov B' }]);
+  });
+
+  it('lets only the admin set the offer, within its bounds', async () => {
+    expect(
+      await as(
+        'authenticated',
+        TEACHER,
+        'update public.platform_settings set trial_days = 60 returning trial_days',
+      ),
+    ).toEqual([]);
+    expect(
+      await as(
+        'authenticated',
+        ADMIN,
+        `update public.platform_settings set trial_days = 7, money_back_days = 0, referral_enabled = false
+         returning trial_days, money_back_days, referral_enabled`,
+      ),
+    ).toEqual([{ trial_days: 7, money_back_days: 0, referral_enabled: false }]);
+    await expect(
+      as('authenticated', ADMIN, 'update public.platform_settings set trial_days = 365'),
+    ).rejects.toThrow(/check constraint/);
+    expect(
+      await as(
+        'anon',
+        null,
+        'select trial_days, money_back_days, referral_enabled from public.platform_settings',
+      ),
+    ).toEqual([{ trial_days: 7, money_back_days: 0, referral_enabled: false }]);
+  });
+
+  it('keeps who recommended the platform, and tells the admin', async () => {
+    await db.exec('delete from private.sent_notifications');
+    await as(
+      'anon',
+      null,
+      `select public.submit_teacher_application('Sevara Aliyeva', '+998 93 555 44 33', null, '', '', '', '',
+         null, '', ' @Mohira ')`,
+    );
+    // The form from before the referral still goes through.
+    await as('anon', null, "select public.submit_teacher_application('Laylo', '+998 93 555 44 34')");
+
+    const rows = await as<{ full_name: string; referrer_username: string }>(
+      'authenticated',
+      ADMIN,
+      "select full_name, referrer_username from public.teacher_applications where phone like '+998 93 555 44 3%' order by full_name",
+    );
+    expect(rows).toEqual([
+      { full_name: 'Laylo', referrer_username: '' },
+      { full_name: 'Sevara Aliyeva', referrer_username: 'mohira' },
+    ]);
+    expect((await told()).find((n) => n.text.includes('Sevara'))?.text).toContain('🤝 Tavsiya: @mohira');
+  });
+
+  it('shows guests the platform in numbers, and nothing more', async () => {
+    const expected = await db.query<{ teachers: number; students: number; correct: number }>(
+      `select (select count(*)::int from public.teachers where disabled_at is null) as teachers,
+              (select count(*)::int from public.profiles where role = 'student') as students,
+              (select coalesce(sum(correct), 0)::int from public.practice_results) as correct`,
+    );
+    const [{ stats }] = await as<{ stats: Record<string, number> }>(
+      'anon',
+      null,
+      'select public.platform_public_stats() as stats',
+    );
+    expect(stats).toEqual({
+      teachers: expected.rows[0].teachers,
+      students: expected.rows[0].students,
+      correctAnswers: expected.rows[0].correct,
+    });
+    expect(stats.students).toBeGreaterThan(0);
+  });
+
+  it('reminds the admins once a day about applications left unanswered', async () => {
+    await db.exec('delete from private.sent_notifications');
+    await db.query("update public.teacher_applications set status = 'contacted' where status = 'new'");
+    expect(
+      (await db.query<{ sent: boolean }>('select private.send_application_reminders() as sent')).rows,
+    ).toEqual([{ sent: false }]);
+
+    await db.query(
+      `insert into public.teacher_applications (full_name, phone, created_at)
+       values ('Kutayotgan Ustoz', '+998 94 000 00 01', now() - interval '2 days'),
+              ('Yangi Ustoz', '+998 94 000 00 02', now() - interval '2 hours')`,
+    );
+    await db.exec('delete from private.sent_notifications');
+
+    expect(
+      (await db.query<{ sent: boolean }>('select private.send_application_reminders() as sent')).rows,
+    ).toEqual([{ sent: true }]);
+    const messages = await told();
+    expect(messages.map((n) => n.profile_id)).toEqual([ADMIN]);
+    expect(messages[0].text).toContain('⏰ <b>1 ta ariza javobsiz turibdi</b>');
+    expect(messages[0].text).toContain('Kutayotgan Ustoz');
+    expect(messages[0].text).not.toContain('Yangi Ustoz');
+
+    expect(
+      (await db.query<{ sent: boolean }>('select private.send_application_reminders() as sent')).rows,
+    ).toEqual([{ sent: false }]);
+    await expect(as('authenticated', ADMIN, 'select private.send_application_reminders()')).rejects.toThrow(
+      /permission denied/,
+    );
+  });
+});

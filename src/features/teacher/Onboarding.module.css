@@ -1,0 +1,139 @@
+/* The first-steps card on a new teacher's home page. */
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-card);
+  border: 1px solid var(--brand-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+}
+
+/* The track is a lighter step of the fill's own hue. */
+.meter {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary);
+  transition: width var(--motion-slow) var(--ease-standard);
+}
+
+.steps {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) 0;
+}
+
+.step + .step {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--brand-on-primary);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.step[data-done='true'] .mark {
+  border-color: var(--success);
+  background: var(--success);
+}
+
+.body {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepTitle {
+  font: var(--text-body-lg);
+  font-weight: 700;
+  color: var(--content-primary);
+}
+
+.step[data-done='true'] .stepTitle {
+  font: var(--text-body);
+  color: var(--content-tertiary);
+  text-decoration: line-through;
+}
+
+.stepText {
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.go {
+  flex: none;
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+  font: var(--text-caption);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.go:hover {
+  filter: brightness(0.97);
+}
+
+.go:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .card {
+    padding: var(--space-4);
+  }
+}

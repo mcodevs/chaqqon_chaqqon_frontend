@@ -47,6 +47,7 @@ export function TariffForm({ tariff, onDone }: { tariff: Tariff | null; onDone: 
   const [maxStudents, setMaxStudents] = useState(String(tariff?.maxStudents ?? 30));
   const [features, setFeatures] = useState<Feature[]>(tariff?.features ?? []);
   const [isPublic, setIsPublic] = useState(tariff?.isPublic ?? true);
+  const [isFeatured, setIsFeatured] = useState(tariff?.isFeatured ?? false);
   const [sortOrder, setSortOrder] = useState(String(tariff?.sortOrder ?? 0));
   const [archived, setArchived] = useState(tariff ? tariff.archivedAt !== null : false);
 
@@ -70,6 +71,8 @@ export function TariffForm({ tariff, onDone }: { tariff: Tariff | null; onDone: 
       maxStudents: limited ? wholeNumber(maxStudents) : null,
       features,
       isPublic,
+      // Only a tariff guests can see, and that is still offered, is worth recommending.
+      isFeatured: isPublic && !archived && isFeatured,
       sortOrder: Math.round(Number(sortOrder) || 0),
       archived,
     };
@@ -177,6 +180,14 @@ export function TariffForm({ tariff, onDone }: { tariff: Tariff | null; onDone: 
               title="Landing sahifada ko'rsatilsin"
               description="Mehmonlar tarifni ko'radi va aynan shu tarifga ariza qoldira oladi."
             />
+            {isPublic && (
+              <OptionRow
+                checked={isFeatured}
+                onChange={setIsFeatured}
+                title="⭐ Tavsiya etiladi"
+                description="Landing'da ajratib ko'rsatiladi: ikkilanayotgan ustoz ko'pincha shuni tanlaydi. Faqat bitta tarifda bo'ladi — boshqasidan olib tashlanadi."
+              />
+            )}
             {tariff && (
               <OptionRow
                 checked={archived}
@@ -192,7 +203,7 @@ export function TariffForm({ tariff, onDone }: { tariff: Tariff | null; onDone: 
                 inputMode="numeric"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                hint="Kichik raqamli tarif ro'yxatda oldinroq turadi"
+                hint="Kichik raqam oldinroq turadi. Qimmat tarifni birinchi qo'ysangiz, keyingilari arzonroq ko'rinadi."
               />
             </div>
           </FormSection>

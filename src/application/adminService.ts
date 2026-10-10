@@ -5,6 +5,7 @@ import { type LedgerKind, MAX_LEDGER_AMOUNT, isFeature, isValidLedgerAmount } fr
 import { MIN_TEACHER_PASSWORD_LENGTH, isValidUsername, normalizeUsername } from '@/domain/users';
 import { isValidTeacherProfile } from './accountService';
 import { AppError } from './errors';
+import { MAX_OFFER_DAYS } from './platformService';
 import type {
   AdminRepository,
   ChangeListener,
@@ -108,6 +109,15 @@ export function createAdminService({ admin, tariffs, settings, random }: AdminDe
       await admin.recordLedgerEntry(teacherId, kind, amount, note.trim().slice(0, MAX_NOTE_LENGTH));
     },
 
+    /**
+     * The teacher who recommended a new colleague gets a free month of their own tariff, noted with
+     * who joined. The new teacher gets nothing for being invited: they earn a month by inviting someone.
+     */
+    async rewardReferral(referrerId: string, amount: number, joinedUsername: string): Promise<void> {
+      if (!isValidLedgerAmount(amount, 'bonus')) throw new AppError('INVALID_AMOUNT');
+      await admin.recordLedgerEntry(referrerId, 'bonus', amount, `Taklif uchun bonus: @${joinedUsername}`);
+    },
+
     async saveTariff(id: string | null, input: TariffInput): Promise<void> {
       const name = input.name.trim();
       const valid =
@@ -126,9 +136,15 @@ export function createAdminService({ admin, tariffs, settings, random }: AdminDe
     },
 
     async saveSettings(next: PlatformSettings): Promise<void> {
-      const contactPhone = next.contactPhone.trim().slice(0, 30);
-      const contactTelegram = next.contactTelegram.trim().slice(0, 40);
-      await settings.save({ contactPhone, contactTelegram });
+      const isDays = (days: number) => Number.isInteger(days) && days >= 0 && days <= MAX_OFFER_DAYS;
+      if (!isDays(next.trialDays) || !isDays(next.moneyBackDays)) throw new AppError('OFFER_DAYS_INVALID');
+      await settings.save({
+        contactPhone: next.contactPhone.trim().slice(0, 30),
+        contactTelegram: next.contactTelegram.trim().slice(0, 40),
+        trialDays: next.trialDays,
+        moneyBackDays: next.moneyBackDays,
+        referralEnabled: next.referralEnabled,
+      });
     },
   };
 }

@@ -181,6 +181,7 @@ export function toTariff(row: Tables['tariffs']['Row']): Tariff {
     features: row.features.filter(isFeature),
     description: row.description,
     isPublic: row.is_public,
+    isFeatured: row.is_featured,
     sortOrder: row.sort_order,
     archivedAt: row.archived_at,
   };
@@ -194,6 +195,7 @@ export function toTariffRow(input: TariffInput) {
     features: input.features,
     description: input.description,
     is_public: input.isPublic,
+    is_featured: input.isFeatured,
     sort_order: input.sortOrder,
   };
 }
@@ -248,6 +250,7 @@ export function toTeacherApplication(row: Tables['teacher_applications']['Row'])
     heardFrom: row.heard_from,
     tariffId: row.tariff_id,
     note: row.note,
+    referrerUsername: row.referrer_username,
     status: row.status,
     teacherId: row.teacher_id,
     adminNote: row.admin_note,

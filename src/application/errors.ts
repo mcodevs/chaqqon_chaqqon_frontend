@@ -35,7 +35,8 @@ export type AppErrorCode =
   | 'INVALID_AMOUNT'
   | 'INVALID_DATE'
   | 'INVALID_APPLICATION'
-  | 'TOO_MANY_APPLICATIONS';
+  | 'TOO_MANY_APPLICATIONS'
+  | 'OFFER_DAYS_INVALID';
 
 /** Expected, user-facing failure of a use case. Presentation maps `code` to a message. */
 export class AppError extends Error {

@@ -1,4 +1,5 @@
 import { AppError } from '@/application/errors';
+import { DEFAULT_PLATFORM_SETTINGS } from '@/application/platformService';
 import type { ChangeListener, Clock, IdGenerator, PlatformSettings, Unsubscribe } from '@/application/ports';
 import type { Session } from '@/application/session';
 import { schoolDate } from '@/domain/billing';
@@ -68,7 +69,12 @@ interface Dependencies {
 export function createLocalPlatform({ store, records, sessions, clock, generateId }: Dependencies) {
   const getAdmin = () => store.get<AdminRecord>(PLATFORM_KEYS.admin);
   const listTeachers = async () => (await store.get<TeacherRecord[]>(PLATFORM_KEYS.teachers)) ?? [];
-  const listTariffs = async () => (await store.get<Tariff[]>(PLATFORM_KEYS.tariffs)) ?? [];
+  // Tariffs saved before the recommended mark existed read as not recommended.
+  const listTariffs = async () =>
+    ((await store.get<Tariff[]>(PLATFORM_KEYS.tariffs)) ?? []).map((t) => ({
+      ...t,
+      isFeatured: t.isFeatured ?? false,
+    }));
   const storedLedger = async () => (await store.get<LedgerEntry[]>(PLATFORM_KEYS.ledger)) ?? [];
   const today = () => schoolDate(clock.now());
 
@@ -88,6 +94,7 @@ export function createLocalPlatform({ store, records, sessions, clock, generateI
         features: [...FEATURES],
         description: 'Platformadan oldingi ustoz uchun',
         isPublic: false,
+        isFeatured: false,
         sortOrder: 999,
         archivedAt: null,
       };
@@ -228,12 +235,11 @@ export function createLocalPlatform({ store, records, sessions, clock, generateI
     },
 
     async getSettings(): Promise<PlatformSettings> {
-      return (
-        (await store.get<PlatformSettings>(PLATFORM_KEYS.settings)) ?? {
-          contactPhone: '',
-          contactTelegram: '',
-        }
-      );
+      // Settings saved before the offer existed get its defaults.
+      return {
+        ...DEFAULT_PLATFORM_SETTINGS,
+        ...(await store.get<Partial<PlatformSettings>>(PLATFORM_KEYS.settings)),
+      };
     },
     saveSettings: (settings: PlatformSettings) => store.set(PLATFORM_KEYS.settings, settings),
 

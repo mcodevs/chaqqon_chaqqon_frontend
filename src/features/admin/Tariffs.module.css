@@ -78,6 +78,20 @@
   overflow-wrap: anywhere;
 }
 
+.featuredMark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  font: var(--text-caption);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .status {
   display: inline-flex;
   align-items: center;

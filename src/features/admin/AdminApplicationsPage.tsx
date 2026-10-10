@@ -6,12 +6,19 @@ import {
   type TeacherApplication,
   telegramLink,
 } from '@/domain/applications';
-import { schoolDate } from '@/domain/billing';
+import { addDays, schoolDate } from '@/domain/billing';
+import { teacherName } from '@/domain/platformStats';
 import { CredentialsNotice } from '@/features/teacher/CredentialsNotice';
 import { formatCalendarDate } from '@/shared/format';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useServices } from '@/shared/services/ServicesContext';
-import { useAdminTariffs, useApplications } from '@/shared/services/queries';
+import {
+  useAdminTariffs,
+  useAdminTeachers,
+  useApplications,
+  usePlatformSettings,
+  useSchoolToday,
+} from '@/shared/services/queries';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
@@ -19,7 +26,7 @@ import { MenuButton } from '@/shared/ui/MenuButton';
 import { EmptyState, ErrorMessage } from '@/shared/ui/Notice';
 import styles from './Admin.module.css';
 import { FilterPills } from './FilterPills';
-import { NewTeacherForm } from './NewTeacherForm';
+import { NewTeacherForm, type Referral } from './NewTeacherForm';
 
 type Filter = ApplicationStatus | 'all';
 
@@ -40,6 +47,11 @@ function splitName(fullName: string) {
 export function AdminApplicationsPage() {
   const applications = useApplications();
   const tariffs = useAdminTariffs();
+  const settings = usePlatformSettings();
+  const today = useSchoolToday();
+  const range = useMemo(() => ({ from: addDays(today, -29), to: today }), [today]);
+  const teachers = useAdminTeachers(range);
+  const [referralMissed, setReferralMissed] = useState(false);
   const { applications: service } = useServices();
   const setStatus = useAsyncAction(service.setStatus);
   const [filter, setFilter] = useState<Filter>('new');
@@ -55,7 +67,7 @@ export function AdminApplicationsPage() {
     return result;
   }, [applications]);
 
-  if (!applications || !tariffs) {
+  if (!applications || !tariffs || !settings) {
     return (
       <Card>
         <SkeletonList rows={4} />
@@ -64,6 +76,18 @@ export function AdminApplicationsPage() {
   }
 
   const shown = applications.filter((a) => filter === 'all' || a.status === filter);
+
+  /** The teacher an application names as its referrer, when that login belongs to one. */
+  const referrerOf = (application: TeacherApplication): Referral | null => {
+    const teacher = teachers?.find((t) => t.username === application.referrerUsername);
+    if (!application.referrerUsername || !teacher) return null;
+    return {
+      teacherId: teacher.id,
+      username: teacher.username,
+      name: teacherName(teacher),
+      reward: tariffs.find((t) => t.id === teacher.tariffId)?.monthlyPrice ?? 0,
+    };
+  };
   const options = (['new', 'contacted', 'approved', 'rejected', 'all'] as const).map((value) => ({
     value,
     label: `${value === 'all' ? 'Hammasi' : APPLICATION_STATUS_LABEL[value]} (${counts[value]})`,
@@ -79,17 +103,27 @@ export function AdminApplicationsPage() {
         />
       )}
 
+      {referralMissed && (
+        <ErrorMessage>
+          Ustoz yaratildi, lekin tavsiya qilgan ustozga bonus yozilmadi. Uni ustoz sahifasidan qo'lda yozing.
+        </ErrorMessage>
+      )}
+
       {creatingFrom && (
         <NewTeacherForm
+          key={creatingFrom.id}
           tariffs={tariffs}
+          trialDays={settings.trialDays}
+          referral={settings.referralEnabled ? referrerOf(creatingFrom) : null}
           prefill={{
             ...splitName(creatingFrom.fullName),
             phone: creatingFrom.phone,
             centerName: creatingFrom.centerName,
             tariffId: creatingFrom.tariffId,
           }}
-          onCreated={async (teacherId, created) => {
+          onCreated={async (teacherId, created, missed) => {
             setCredentials(created);
+            setReferralMissed(Boolean(missed));
             setCreatingFrom(null);
             await setStatus.run(creatingFrom.id, 'approved', teacherId);
           }}
@@ -136,6 +170,9 @@ export function AdminApplicationsPage() {
                   {tariff && <span>Tarif: {tariff.name}</span>}
                   {application.heardFrom && <span>Manba: {application.heardFrom}</span>}
                 </span>
+                {application.referrerUsername && (
+                  <ReferrerLine username={application.referrerUsername} referral={referrerOf(application)} />
+                )}
                 {application.note && <p className={styles.hint}>“{application.note}”</p>}
                 <span className={styles.tileDetail}>
                   {formatCalendarDate(schoolDate(new Date(application.createdAt)))}
@@ -181,5 +218,15 @@ export function AdminApplicationsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Who recommended the platform, and whether that login is one of our teachers. */
+function ReferrerLine({ username, referral }: { username: string; referral: Referral | null }) {
+  return (
+    <span className={styles.referrer}>
+      🤝 Tavsiya: @{username}
+      {referral ? ` — ${referral.name}` : ' — bunday ustoz topilmadi'}
+    </span>
   );
 }

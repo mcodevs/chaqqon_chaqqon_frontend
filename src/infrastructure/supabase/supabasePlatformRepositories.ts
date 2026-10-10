@@ -4,9 +4,11 @@ import type {
   AdminRepository,
   ApplicationRepository,
   PlatformSettingsRepository,
+  PublicStats,
   TariffRepository,
   TeacherCard,
 } from '@/application/ports';
+import { DEFAULT_PLATFORM_SETTINGS } from '@/application/platformService';
 import { isFeature } from '@/domain/teacherBilling';
 import type { AppSupabaseClient } from './client';
 import type { Database } from './database.types';
@@ -203,10 +205,17 @@ export function createSupabasePlatformSettingsRepository(
     async get() {
       const { data, error } = await client
         .from('platform_settings')
-        .select('contact_phone, contact_telegram')
+        .select('contact_phone, contact_telegram, trial_days, money_back_days, referral_enabled')
         .maybeSingle();
       if (error) throw error;
-      return { contactPhone: data?.contact_phone ?? '', contactTelegram: data?.contact_telegram ?? '' };
+      if (!data) return DEFAULT_PLATFORM_SETTINGS;
+      return {
+        contactPhone: data.contact_phone,
+        contactTelegram: data.contact_telegram,
+        trialDays: data.trial_days,
+        moneyBackDays: data.money_back_days,
+        referralEnabled: data.referral_enabled,
+      };
     },
 
     async save(settings) {
@@ -215,6 +224,9 @@ export function createSupabasePlatformSettingsRepository(
         .update({
           contact_phone: settings.contactPhone,
           contact_telegram: settings.contactTelegram,
+          trial_days: settings.trialDays,
+          money_back_days: settings.moneyBackDays,
+          referral_enabled: settings.referralEnabled,
           updated_at: new Date().toISOString(),
         })
         .eq('id', true)
@@ -222,6 +234,12 @@ export function createSupabasePlatformSettingsRepository(
       if (error) throw error;
       if (!data.length) throw new AppError('FORBIDDEN');
       live.notify();
+    },
+
+    async publicStats() {
+      const { data, error } = await client.rpc('platform_public_stats');
+      if (error) throw error;
+      return data as unknown as PublicStats;
     },
 
     subscribe: live.subscribe,
@@ -243,6 +261,7 @@ export function createSupabaseApplicationRepository(client: AppSupabaseClient): 
         p_heard_from: application.heardFrom,
         p_tariff_id: application.tariffId,
         p_note: application.note,
+        p_referrer_username: application.referrerUsername,
       });
       if (error) throw raisedAppError(error, ['TOO_MANY_APPLICATIONS', 'INVALID_APPLICATION']);
     },

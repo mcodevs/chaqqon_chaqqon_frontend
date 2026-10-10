@@ -29,7 +29,14 @@ export function TariffCard({
   return (
     <article className={styles.card} data-archived={tariff.archivedAt !== null}>
       <header className={styles.cardHead}>
-        <h3 className={styles.cardName}>{tariff.name}</h3>
+        <h3 className={styles.cardName}>
+          {tariff.name}
+          {tariff.isFeatured && !tariff.archivedAt && (
+            <span className={styles.featuredMark}>
+              <span aria-hidden="true">⭐</span> Tavsiya
+            </span>
+          )}
+        </h3>
         <span className={styles.status}>
           <span aria-hidden="true">{status.icon}</span> {status.label}
         </span>

@@ -19,6 +19,7 @@ const EMPTY = {
   otherSource: '',
   tariffId: null as string | null,
   note: '',
+  referrerUsername: '',
   // Left empty by people; bots fill every field they find.
   website: '',
 };
@@ -27,12 +28,18 @@ const EMPTY = {
 export function ApplicationForm({
   tariffs,
   chosenTariffId,
+  referralEnabled,
+  referrer,
 }: {
   tariffs: readonly Tariff[];
   chosenTariffId: string | null;
+  /** The admin rewards a colleague's recommendation, so the form asks who it was. */
+  referralEnabled: boolean;
+  /** The login from a colleague's invite link, already normalized; '' when there was none. */
+  referrer: string;
 }) {
   const { applications } = useServices();
-  const [form, setForm] = useState({ ...EMPTY, tariffId: chosenTariffId });
+  const [form, setForm] = useState({ ...EMPTY, tariffId: chosenTariffId, referrerUsername: referrer });
   const [sent, setSent] = useState(false);
   const submit = useAsyncAction(async () => {
     if (form.website) return true;
@@ -46,6 +53,7 @@ export function ApplicationForm({
       heardFrom: form.heardFrom === 'Boshqa' ? form.otherSource : form.heardFrom,
       tariffId: form.tariffId,
       note: form.note,
+      referrerUsername: form.referrerUsername,
     });
     return true;
   });
@@ -166,6 +174,25 @@ export function ApplicationForm({
               Hali bilmayman
             </button>
           </div>
+        </div>
+      )}
+
+      {(referralEnabled || referrer) && (
+        <div className={styles.choiceBlock}>
+          {referrer && (
+            <p className={styles.referralNote}>
+              🤝 Sizni <strong>@{referrer}</strong> taklif qildi.
+            </p>
+          )}
+          <TextField
+            label="Sizni kim taklif qildi? (ustozning logini)"
+            placeholder="Masalan: @mohira"
+            autoCapitalize="none"
+            autoComplete="off"
+            value={form.referrerUsername}
+            onChange={(e) => set('referrerUsername', e.target.value)}
+            hint="Ixtiyoriy. Akkauntingiz ochilsa, sizni taklif qilgan ustoz 1 oy bepul oladi."
+          />
         </div>
       )}
 

@@ -1,68 +1,99 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FEATURE_META } from '@/domain/teacherBilling';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import type { PlatformSettings, PublicStats } from '@/application/ports';
+import { REFERRAL_PARAM, normalizeReferrer } from '@/domain/applications';
+import { FEATURE_META, dailyPrice } from '@/domain/teacherBilling';
 import { contactLine } from '@/features/teacher/subscription/subscriptionText';
-import { formatSom } from '@/shared/format';
-import { useOfferedTariffs, usePlatformSettings } from '@/shared/services/queries';
+import { formatCount, formatSom } from '@/shared/format';
+import { useOfferedTariffs, usePlatformSettings, usePublicStats } from '@/shared/services/queries';
 import { ThemeToggle } from '@/shared/theme/ThemeToggle';
 import styles from './Landing.module.css';
 import { ApplicationForm } from './ApplicationForm';
 
+/** Each section told as what the teacher and the child get out of it, not as a feature list. */
 const FEATURES = [
   {
     icon: '⚡',
-    title: 'Flesh-anzan mashqlari',
-    text: "109 mavzu: formulasizdan miksgacha. Vaqt, qator va xona sonini o'zingiz belgilaysiz.",
+    title: "Bola har kuni o'z darajasida mashq qiladi",
+    text: 'Flesh-anzanda 109 mavzu: formulasizdan miksgacha. Tezlik va qiyinlikni siz belgilaysiz — bola zerikmaydi ham, qiynalmaydi ham.',
   },
   {
     icon: '🧮',
-    title: 'Interaktiv abakus',
-    text: "Soroban ekranda: formulalarni qadam-baqadam ko'rsatadi, bola o'zi ham mashq qiladi.",
+    title: 'Formulani ko‘z bilan tushunadi',
+    text: "Ekrandagi soroban har bir qadamni ko'rsatadi: uyda ham bola darsdagi usulda ishlaydi.",
   },
   {
     icon: '📝',
-    title: 'Uy vazifasi',
-    text: "Har bir o'quvchiga o'z darajasiga mos vazifa. Natija va xatolar sizga darhol ko'rinadi.",
+    title: 'Uy vazifasini tekshirishga vaqt ketmaydi',
+    text: "Har bir o'quvchiga o'z vazifasi. Kim bajardi, qayerda adashdi — darhol ko'rasiz.",
   },
   {
     icon: '🏫',
-    title: 'Sinf musobaqasi',
-    text: "Proyektor yoki doskada 2–4 o'quvchi bir vaqtda bellashadi. Dars qiziqarli o'tadi.",
+    title: "Dars o'yinga aylanadi",
+    text: "Proyektorda 2–4 o'quvchi bellashadi. Bolalar keyingi darsni kutib qoladi.",
   },
   {
     icon: '🏆',
-    title: "Reyting va yulduzcha do'koni",
-    text: "Xatosiz uy vazifasi — yulduzcha. Yulduzchalarga siz qo'ygan sovg'alar olinadi.",
+    title: 'Bola o‘zi mashq qilgisi keladi',
+    text: "Xatosiz vazifa — yulduzcha, yulduzchaga — siz qo'ygan sovg'a. Sinf reytingi esa raqobat ruhini beradi.",
   },
   {
     icon: '🖨️',
-    title: 'Yozma vazifa varaqlari',
-    text: "Mavzu bo'yicha A4 misollar varag'i bir bosishda tayyor, javoblari bilan.",
+    title: 'Varaq tayyorlash bir daqiqa',
+    text: "Mavzu bo'yicha A4 misollar varag'i javoblari bilan bir bosishda tayyor.",
   },
   {
     icon: '💳',
-    title: "To'lovlar nazorati",
-    text: "Kim qachongacha to'lagani ko'rinib turadi. Muddati o'tgan o'quvchi profili o'zi yopiladi.",
+    title: "Kim to'lamagani esdan chiqmaydi",
+    text: "Har bir o'quvchi qachongacha to'lagani ko'rinib turadi; muddati o'tsa, profil o'zi yopiladi.",
   },
   {
     icon: '📱',
-    title: 'Telegram bot',
-    text: "Vazifa, natija va sovg'alar haqida ota-ona va ustozga bildirishnoma boradi.",
+    title: 'Ota-ona ham xabardor',
+    text: "Vazifa, natija va sovg'alar haqida ota-onaga ham, sizga ham Telegram'da xabar boradi.",
   },
 ];
 
-const STEPS = [
-  { title: 'Ariza qoldirasiz', text: 'Ism va telefon raqamingiz kifoya.' },
-  { title: "Biz bog'lanamiz", text: 'Tarifni tanlab, akkauntingizni ochib beramiz.' },
-  { title: "O'quvchilarni qo'shasiz", text: 'Har biriga login beriladi — mashq shu kuniyoq boshlanadi.' },
-];
+function steps(trialDays: number) {
+  return [
+    { title: 'Ariza qoldirasiz', text: 'Ism va telefon raqamingiz kifoya.' },
+    { title: 'Akkauntni ochib beramiz', text: "Bog'lanamiz va tarif tanlashga yordam beramiz." },
+    trialDays > 0
+      ? {
+          title: `${trialDays} kun bepul ishlaysiz`,
+          text: "O'quvchilarni qo'shib, hammasini darsda sinab ko'rasiz. Birinchi to'lov sinovdan keyin.",
+        }
+      : {
+          title: "O'quvchilarni qo'shasiz",
+          text: 'Har biriga login beriladi — mashq shu kuniyoq boshlanadi.',
+        },
+  ];
+}
 
-/** The platform's front door for teachers: what it does, what it costs, and the application form. */
+/** The platform's front door for teachers: what it changes, what it costs, and the application form. */
 export function LandingPage() {
   const tariffs = useOfferedTariffs();
   const settings = usePlatformSettings();
+  const stats = usePublicStats();
   const contact = contactLine(settings);
   const [chosenTariff, setChosenTariff] = useState<string | null>(null);
+  // A colleague's invite link names them; the form keeps it for the admin.
+  const [searchParams] = useSearchParams();
+  const referrer = normalizeReferrer(searchParams.get(REFERRAL_PARAM) ?? '');
+
+  const trialDays = settings?.trialDays ?? 0;
+  const moneyBackDays = settings?.moneyBackDays ?? 0;
+  const referralEnabled = settings?.referralEnabled ?? false;
+
+  // An invite link ends in #ariza, but the tariffs above the form load later and push it down, so
+  // the jump waits for them, and happens once.
+  const loaded = tariffs !== undefined && settings !== undefined;
+  const jumped = useRef(false);
+  useEffect(() => {
+    if (!loaded || jumped.current || window.location.hash !== '#ariza') return;
+    jumped.current = true;
+    document.getElementById('ariza')?.scrollIntoView();
+  }, [loaded]);
 
   const apply = (tariffId: string | null) => {
     setChosenTariff(tariffId);
@@ -95,36 +126,28 @@ export function LandingPage() {
           <div className={styles.heroInner}>
             <p className={styles.eyebrow}>Mental arifmetika ustozlari uchun</p>
             <h1 className={styles.heroTitle}>
-              O'quvchilaringiz har kuni mashq qiladi — siz natijani ko'rib turasiz
+              O'quvchilaringiz uyda ham mashq qiladi — siz har birining o'sishini ko'rib turasiz
             </h1>
             <p className={styles.heroText}>
-              Flesh-anzan mashqlari, abakus, uy vazifalari, sinf musobaqasi va to'lovlar nazorati — bitta
-              ilovada. Telefon, planshet, kompyuter va Telegram'da ishlaydi.
+              Uy vazifasini tekshirish, to'lovlarni eslab yurish va darsni qiziqarli o'tkazish — endi bitta
+              ilovada. Siz dars berasiz, qolganini Chaqqon-chaqqon qiladi. Telefon, planshet, kompyuter va
+              Telegram'da ishlaydi.
             </p>
             <div className={styles.heroActions}>
               <button type="button" className={styles.ctaSecondary} onClick={() => apply(chosenTariff)}>
-                Ariza qoldirish
+                {trialDays > 0 ? `${trialDays} kun bepul sinab ko'rish` : 'Ariza qoldirish'}
               </button>
               <Link to="/login" className={styles.ctaGhost}>
                 Akkauntim bor — kirish
               </Link>
             </div>
-            <ul className={styles.heroFacts}>
-              <li>
-                <strong>109</strong> mavzu
-              </li>
-              <li>
-                <strong>3</strong> xil mashq
-              </li>
-              <li>
-                <strong>Telegram</strong> bildirishnomalari
-              </li>
-            </ul>
+            <OfferNote trialDays={trialDays} moneyBackDays={moneyBackDays} />
+            <HeroFacts stats={stats} />
           </div>
         </section>
 
         <section id="imkoniyatlar" className={styles.section}>
-          <h2 className={styles.sectionTitle}>Darsdan tashqarida ham sinf bilan</h2>
+          <h2 className={styles.sectionTitle}>Ustoz va bola nimaga ega bo'ladi</h2>
           <div className={styles.features}>
             {FEATURES.map((feature) => (
               <article key={feature.title} className={styles.feature}>
@@ -141,7 +164,7 @@ export function LandingPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Qanday boshlanadi</h2>
           <ol className={styles.steps}>
-            {STEPS.map((step, index) => (
+            {steps(trialDays).map((step, index) => (
               <li key={step.title} className={styles.step}>
                 <span className={styles.stepNumber}>{index + 1}</span>
                 <div>
@@ -158,12 +181,25 @@ export function LandingPage() {
           {tariffs && tariffs.length > 0 ? (
             <div className={styles.tariffs}>
               {tariffs.map((tariff) => (
-                <article key={tariff.id} className={styles.tariff}>
+                <article
+                  key={tariff.id}
+                  className={`${styles.tariff} ${tariff.isFeatured ? styles.tariffFeatured : ''}`}
+                >
+                  {tariff.isFeatured && (
+                    <span className={styles.tariffBadge}>
+                      <span aria-hidden="true">⭐</span> Tavsiya etamiz
+                    </span>
+                  )}
                   <h3 className={styles.tariffName}>{tariff.name}</h3>
                   <p className={styles.tariffPrice}>
                     {formatSom(tariff.monthlyPrice)}
                     <span> / oy</span>
                   </p>
+                  {tariff.monthlyPrice > 0 && (
+                    <p className={styles.tariffDaily}>
+                      kuniga taxminan {formatSom(dailyPrice(tariff.monthlyPrice))}
+                    </p>
+                  )}
                   <p className={styles.tariffLimit}>
                     {tariff.maxStudents
                       ? `${tariff.maxStudents} tagacha o'quvchi`
@@ -185,7 +221,11 @@ export function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <button type="button" className={styles.tariffButton} onClick={() => apply(tariff.id)}>
+                  <button
+                    type="button"
+                    className={`${styles.tariffButton} ${tariff.isFeatured ? styles.tariffButtonFeatured : ''}`}
+                    onClick={() => apply(tariff.id)}
+                  >
                     Shu tarifga ariza
                   </button>
                 </article>
@@ -196,15 +236,22 @@ export function LandingPage() {
               Tariflar haqida ariza qoldirganingizdan keyin batafsil aytib beramiz.
             </p>
           )}
+          <Assurances settings={settings} />
         </section>
 
         <section id="ariza" className={styles.section}>
           <div className={styles.applyCard}>
             <h2 className={styles.sectionTitle}>Ariza qoldiring</h2>
             <p className={styles.muted}>
-              Ma'lumotlaringizni qoldiring — biz bog'lanib, akkauntingizni ochib beramiz.
+              Ma'lumotlaringizni qoldiring — biz bog'lanib, akkauntingizni ochib beramiz
+              {trialDays > 0 ? `. Birinchi ${trialDays} kun bepul.` : '.'}
             </p>
-            <ApplicationForm tariffs={tariffs ?? []} chosenTariffId={chosenTariff} />
+            <ApplicationForm
+              tariffs={tariffs ?? []}
+              chosenTariffId={chosenTariff}
+              referralEnabled={referralEnabled}
+              referrer={referrer}
+            />
           </div>
         </section>
       </main>
@@ -217,5 +264,86 @@ export function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+/** One quiet line under the call to action that takes the risk out of trying. */
+function OfferNote({ trialDays, moneyBackDays }: { trialDays: number; moneyBackDays: number }) {
+  const parts = [
+    trialDays > 0 && `${trialDays} kun bepul`,
+    'karta talab qilinmaydi',
+    moneyBackDays > 0 && `${moneyBackDays} kun ichida pulni qaytarish kafolati`,
+  ].filter(Boolean);
+  return <p className={styles.heroNote}>{parts.join(' · ')}</p>;
+}
+
+/**
+ * The platform in real numbers. A count shows only once it is big enough to reassure: "1 ustoz"
+ * would say the opposite of what social proof is for. Each one appears by itself as the platform grows.
+ */
+const SHOW_FROM = { teachers: 10, students: 50, correctAnswers: 1000 } as const;
+
+function HeroFacts({ stats }: { stats: PublicStats | undefined }) {
+  const facts = stats
+    ? [
+        { value: stats.teachers, min: SHOW_FROM.teachers, label: 'ustoz' },
+        { value: stats.students, min: SHOW_FROM.students, label: "o'quvchi" },
+        { value: stats.correctAnswers, min: SHOW_FROM.correctAnswers, label: "to'g'ri javob" },
+      ].filter((fact) => fact.value >= fact.min)
+    : [];
+
+  return (
+    <ul className={styles.heroFacts}>
+      {facts.map((fact) => (
+        <li key={fact.label}>
+          <strong>{formatCount(fact.value)}</strong> {fact.label}
+        </li>
+      ))}
+      <li>
+        <strong>109</strong> mavzu
+      </li>
+      <li>
+        <strong>3</strong> xil mashq
+      </li>
+    </ul>
+  );
+}
+
+/** Trial, money back and the referral reward: whichever the admin offers. */
+function Assurances({ settings }: { settings: PlatformSettings | undefined }) {
+  if (!settings) return null;
+  const items = [
+    settings.trialDays > 0 && {
+      icon: '🎁',
+      title: `${settings.trialDays} kun bepul`,
+      text: 'Birinchi oylik to‘lov sinov tugagach yechiladi.',
+    },
+    settings.moneyBackDays > 0 && {
+      icon: '🛡️',
+      title: `${settings.moneyBackDays} kunlik kafolat`,
+      text: "Shu muddatda yoqmasa, to'lagan pulingizni to'liq qaytaramiz.",
+    },
+    settings.referralEnabled && {
+      icon: '🤝',
+      title: 'Hamkasbingizni olib keling',
+      text: 'Akkaunt ochgan har bir hamkasbingiz uchun sizga 1 oy bepul — soni cheklanmagan.',
+    },
+  ].filter((item) => item !== false);
+
+  if (items.length === 0) return null;
+  return (
+    <ul className={styles.assurances}>
+      {items.map((item) => (
+        <li key={item.title} className={styles.assurance}>
+          <span className={styles.assuranceIcon} aria-hidden="true">
+            {item.icon}
+          </span>
+          <span>
+            <strong className={styles.assuranceTitle}>{item.title}</strong>
+            <span className={styles.assuranceText}>{item.text}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }

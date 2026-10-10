@@ -112,9 +112,19 @@ export interface Tariff {
   description: string;
   /** Shown on the landing page. */
   isPublic: boolean;
+  /** The one the landing page recommends; at most one tariff has it. */
+  isFeatured: boolean;
   sortOrder: number;
   /** Archived tariffs keep their teachers but are no longer offered. */
   archivedAt: string | null;
+}
+
+/**
+ * What a month comes to per day, rounded up to the next 100 so'm (150 000 → 5 000): a small daily
+ * figure reads lighter than the monthly one. 0 for a free tariff.
+ */
+export function dailyPrice(monthlyPrice: number): number {
+  return monthlyPrice > 0 ? Math.ceil(monthlyPrice / 30 / 100) * 100 : 0;
 }
 
 export type LedgerKind = 'payment' | 'bonus' | 'adjustment' | 'charge';

@@ -1,6 +1,8 @@
 import { type FormEvent, useState } from 'react';
 import type { Credentials } from '@/application/adminService';
+import { addDays } from '@/domain/billing';
 import type { Tariff } from '@/domain/teacherBilling';
+import { formatSom } from '@/shared/format';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useServices } from '@/shared/services/ServicesContext';
 import { useSchoolToday } from '@/shared/services/queries';
@@ -19,34 +21,71 @@ export interface NewTeacherPrefill {
   tariffId?: string | null;
 }
 
+/** The teacher who recommended the new one, matched from the application. */
+export interface Referral {
+  teacherId: string;
+  username: string;
+  name: string;
+  /** What a month of the referrer's own tariff costs: their reward. */
+  reward: number;
+}
+
 interface NewTeacherFormProps {
   tariffs: readonly Tariff[];
+  /** The free trial on offer: the first fee falls due this many days after today. */
+  trialDays: number;
   prefill?: NewTeacherPrefill;
-  onCreated: (teacherId: string, credentials: Credentials) => void;
+  /** When set, the teacher who recommended this one can get their free month in the same step. */
+  referral?: Referral | null;
+  /** `referralMissed`: the account exists, but the referrer's bonus could not be recorded. */
+  onCreated: (teacherId: string, credentials: Credentials, referralMissed?: boolean) => void;
   onCancel: () => void;
 }
 
 /** The admin creates a teacher's sign-in, tariff and first billing day in one go. */
-export function NewTeacherForm({ tariffs, prefill, onCreated, onCancel }: NewTeacherFormProps) {
+export function NewTeacherForm({
+  tariffs,
+  trialDays,
+  prefill,
+  referral,
+  onCreated,
+  onCancel,
+}: NewTeacherFormProps) {
   const { admin } = useServices();
   const today = useSchoolToday();
   const offered = tariffs.filter((t) => !t.archivedAt);
   const [form, setForm] = useState(() => {
     const firstName = prefill?.firstName ?? '';
+    const tariffId = prefill?.tariffId ?? offered[0]?.id ?? '';
     return {
       firstName,
       lastName: prefill?.lastName ?? '',
       phone: prefill?.phone ?? '',
       centerName: prefill?.centerName ?? '',
       ...admin.suggestCredentials(firstName),
-      tariffId: prefill?.tariffId ?? offered[0]?.id ?? '',
+      tariffId,
       billed: true,
-      billingStartsOn: today,
+      billingStartsOn: addDays(today, trialDays),
+      // Only the referrer is rewarded: the newcomer earns theirs by bringing someone in turn.
       bonus: '0',
     };
   });
   const [loginTouched, setLoginTouched] = useState(false);
-  const create = useAsyncAction(admin.createTeacher);
+  const [rewardReferrer, setRewardReferrer] = useState(referral !== null && referral !== undefined);
+  const create = useAsyncAction(async (...args: Parameters<typeof admin.createTeacher>) => {
+    const created = await admin.createTeacher(...args);
+    let referralMissed = false;
+    if (referral && rewardReferrer && referral.reward > 0) {
+      // The account exists by now: a failed bonus must not hide that, the admin can add it by hand.
+      try {
+        await admin.rewardReferral(referral.teacherId, referral.reward, created.credentials.username);
+      } catch (error) {
+        console.error(error);
+        referralMissed = true;
+      }
+    }
+    return { ...created, referralMissed };
+  });
   const tariff = tariffs.find((t) => t.id === form.tariffId);
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
@@ -65,7 +104,7 @@ export function NewTeacherForm({ tariffs, prefill, onCreated, onCancel }: NewTea
       billingStartsOn: form.billed ? form.billingStartsOn : null,
       bonus: Number(form.bonus) || 0,
     });
-    if (created) onCreated(created.id, created.credentials);
+    if (created) onCreated(created.id, created.credentials, created.referralMissed);
   };
 
   return (
@@ -157,9 +196,24 @@ export function NewTeacherForm({ tariffs, prefill, onCreated, onCancel }: NewTea
           </div>
         )}
         <p className={styles.hint}>
-          Birinchi oylik shu kuni balansdan yechiladi. Bonus (masalan, sinov oyi) balansga oldindan
-          qo'shiladi.
+          Birinchi oylik shu kuni balansdan yechiladi
+          {trialDays > 0 ? ` (bepul sinov: ${trialDays} kun)` : ''}. Bonus (masalan, 1 oy bepul) balansga
+          oldindan qo'shiladi.
         </p>
+
+        {referral && (
+          <label className={styles.check}>
+            <input
+              type="checkbox"
+              checked={rewardReferrer}
+              onChange={(e) => setRewardReferrer(e.target.checked)}
+            />
+            <span>
+              🤝 <strong>{referral.name}</strong> (@{referral.username}) tavsiya qilgan — unga
+              {referral.reward > 0 ? ` ${formatSom(referral.reward)}` : ''} bonus yozilsin
+            </span>
+          </label>
+        )}
 
         <ErrorMessage>{create.error}</ErrorMessage>
         <div className={styles.formActions}>

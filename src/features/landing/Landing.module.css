@@ -172,6 +172,12 @@
   color: var(--content-primary);
 }
 
+.heroNote {
+  margin: var(--space-3) 0 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
 .heroFacts {
   display: flex;
   flex-wrap: wrap;
@@ -193,6 +199,8 @@
   max-width: 1080px;
   margin: 0 auto;
   padding: var(--space-7) var(--space-4) 0;
+  /* The menu links and an invite's #ariza land below the sticky header, not under it. */
+  scroll-margin-top: calc(var(--space-8) + var(--space-2));
 }
 
 .sectionTitle {
@@ -301,6 +309,27 @@
   box-shadow: var(--elevation-1);
 }
 
+.tariffFeatured {
+  position: relative;
+  border: 2px solid var(--brand-primary);
+  box-shadow: var(--elevation-2);
+}
+
+/* Hangs on the card's top edge, so the recommended card's name lines up with its neighbours'. */
+.tariffBadge {
+  position: absolute;
+  top: -12px;
+  left: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary);
+  color: var(--brand-on-primary);
+  font: var(--text-caption);
+}
+
 .tariffName {
   margin: 0;
   font: var(--text-h2);
@@ -317,6 +346,12 @@
 .tariffPrice span {
   font: var(--text-body);
   color: var(--content-secondary);
+}
+
+.tariffDaily {
+  margin: calc(var(--space-1) * -1) 0 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
 }
 
 .tariffLimit {
@@ -357,6 +392,51 @@
   font: var(--text-body);
   font-weight: 700;
   cursor: pointer;
+}
+
+.tariffButtonFeatured {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+  color: var(--brand-on-primary);
+}
+
+/* Trial, money back, referral: the risk taken out of trying, right under the prices. */
+.assurances {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assurance {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+.assuranceIcon {
+  flex: none;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.assuranceTitle {
+  display: block;
+  font: var(--text-body-lg);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.assuranceText {
+  display: block;
+  font: var(--text-body);
+  color: var(--content-secondary);
 }
 
 /* Application */
@@ -422,6 +502,15 @@
   border-color: var(--brand-primary);
   background: var(--brand-primary-soft);
   font-weight: 600;
+}
+
+.referralNote {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font: var(--text-body);
 }
 
 .honeypot {
