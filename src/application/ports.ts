@@ -133,6 +133,8 @@ export interface TelegramGateway {
   link(): Promise<void>;
   /** Unlinks this device's Telegram chat from the account. Call before signing out. */
   unlink(): Promise<void>;
+  /** Has the bot send a file (e.g. a worksheet PDF) to this Telegram chat. */
+  sendDocument(file: Uint8Array, filename: string, caption: string): Promise<void>;
 }
 
 /** The signed-in teacher's own account as the platform keeps it. */

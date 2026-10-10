@@ -18,6 +18,10 @@ verify_jwt = false
 # Same as telegram-link: checks the caller and the initData signature itself.
 verify_jwt = false
 
+[functions.telegram-send-document]
+# Same as telegram-link: checks the caller, their teacher role and the initData signature itself.
+verify_jwt = false
+
 [functions.telegram-notify]
 # Called by Postgres triggers (pg_net), not a signed-in user; guarded by a shared secret header.
 verify_jwt = false

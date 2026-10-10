@@ -1,8 +1,14 @@
 ---
 name: yozma-vazifa-chop-etish
-description: "Ustoz uchun yozma uy vazifasi varaqlari: ikki shablon, A4 ga sig'dirish hisobi, bosib chiqarish <body> portali orqali"
+description: "Ustoz uchun yozma uy vazifasi varaqlari: ikki shablon, A4 ga
+  sig'dirish hisobi, bosib chiqarish <body> portali orqali"
 metadata:
   type: project
+telegram_print_gap: "2026-10-11 qaror: Telegram Mini App ichida tugma «📩 PDF ni
+  Telegramga yuborish» — worksheetPdf.ts (qo'lda yozilgan PDF,
+  Helvetica/WinAnsi, kirill yo'q) → edge `telegram-send-document` (teacher roli
+  + initData; faqat o'z chatiga sendDocument, ≤5MB, %PDF). Brauzerda
+  window.print o'zgarmagan. 2026-10-11 deploy (v1) va push qilindi."
 ---
 
 # Yozma vazifa (chop etish)

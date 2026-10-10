@@ -23,5 +23,20 @@ export function createSupabaseTelegramGateway(client: AppSupabaseClient, win: Wi
       if (!initData) return;
       await invokeFunction(client, 'telegram-unlink', { initData });
     },
+
+    async sendDocument(file, filename, caption) {
+      const initData = getTelegramInitData(win);
+      if (!initData) return;
+      let binary = '';
+      for (let i = 0; i < file.length; i += 0x8000) {
+        binary += String.fromCharCode(...file.subarray(i, i + 0x8000));
+      }
+      await invokeFunction(client, 'telegram-send-document', {
+        initData,
+        filename,
+        caption,
+        fileBase64: btoa(binary),
+      });
+    },
   };
 }

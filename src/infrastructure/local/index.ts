@@ -45,6 +45,7 @@ function createNoopTelegramGateway(): TelegramGateway {
     isAvailable: () => false,
     link: () => Promise.resolve(),
     unlink: () => Promise.resolve(),
+    sendDocument: () => Promise.resolve(),
   };
 }
 

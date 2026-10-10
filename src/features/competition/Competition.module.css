@@ -224,3 +224,19 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* Level filter above the picker: one row that scrolls in its own box rather than wrapping. */
+.levelFilter {
+  max-width: 100%;
+  margin-bottom: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.levelFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.levelFilter > * {
+  width: max-content;
+}

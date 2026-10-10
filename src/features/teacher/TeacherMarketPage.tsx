@@ -18,7 +18,9 @@ export function TeacherMarketPage() {
   // Form state
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [costStars, setCostStars] = useState(10);
+  // Kept as typed text so the field can be cleared while editing; parsed on submit.
+  const [costText, setCostText] = useState('10');
+  const costStars = parseInt(costText, 10) || 0;
   const [imageUrl, setImageUrl] = useState('🎁');
   const [stock, setStock] = useState<string>(''); // empty string means unlimited
 
@@ -50,7 +52,7 @@ export function TeacherMarketPage() {
   const resetForm = () => {
     setIsEditing(null);
     setTitle('');
-    setCostStars(10);
+    setCostText('10');
     setImageUrl('🎁');
     setStock('');
   };
@@ -58,7 +60,7 @@ export function TeacherMarketPage() {
   const handleEditItem = (item: MarketItem) => {
     setIsEditing(item.id);
     setTitle(item.title);
-    setCostStars(item.costStars);
+    setCostText(String(item.costStars));
     setImageUrl(item.imageUrl || '🎁');
     setStock(item.stock === null ? '' : String(item.stock));
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -187,8 +189,8 @@ export function TeacherMarketPage() {
                 <input
                   type="number"
                   min="1"
-                  value={costStars}
-                  onChange={(e) => setCostStars(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  value={costText}
+                  onChange={(e) => setCostText(e.target.value)}
                   className={styles.input}
                   required
                 />

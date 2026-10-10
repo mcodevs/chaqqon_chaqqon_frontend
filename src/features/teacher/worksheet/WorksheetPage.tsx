@@ -10,7 +10,9 @@ import {
   normalizeWorksheetConfig,
   worksheetBrandFor,
 } from '@/domain/practice/worksheet';
+import { toErrorMessage } from '@/shared/i18n/errorMessages';
 import { useTeacherAccount } from '@/shared/services/queries';
+import { useServices } from '@/shared/services/ServicesContext';
 import { useSession } from '@/shared/session/SessionContext';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -19,6 +21,7 @@ import { plannedTables, sheetOverflows } from './sheetLayout';
 import { SHEET_WIDTH_PX, useFitScale } from './useFitScale';
 import { WorksheetAnswerSheet, WorksheetSheetView } from './WorksheetSheetView';
 import { WorksheetForm } from './WorksheetForm';
+import { worksheetPdf } from './worksheetPdf';
 import styles from './Worksheet.module.css';
 
 /*
@@ -96,6 +99,29 @@ function WorksheetBuilder({ teacherId, firstBrand }: { teacherId: string; firstB
 
   const generate = () => setDraw({ config, seed: Date.now() });
 
+  // Inside Telegram the print dialog does not open, so the bot sends the sheets as a PDF instead.
+  const { telegram } = useServices();
+  const inTelegram = telegram.isAvailable();
+  const [sending, setSending] = useState(false);
+  const [sendNote, setSendNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const sendPdf = async () => {
+    if (!worksheet) return;
+    setSending(true);
+    setSendNote(null);
+    try {
+      await telegram.sendDocument(
+        worksheetPdf(worksheet, brand),
+        'yozma-vazifa.pdf',
+        `Yozma vazifa: ${worksheet.sheets.length} varaq`,
+      );
+      setSendNote({ ok: true, text: 'PDF bot orqali Telegram chatingizga yuborildi.' });
+    } catch (error) {
+      setSendNote({ ok: false, text: toErrorMessage(error) });
+    } finally {
+      setSending(false);
+    }
+  };
+
   // Too many tables, or too long ones, spill onto a second sheet however small the grid is drawn.
   const overflows = sheetOverflows(plannedTables(config), config.layout);
 
@@ -148,16 +174,30 @@ function WorksheetBuilder({ teacherId, firstBrand }: { teacherId: string; firstB
                   <Button variant="outline" size="sm" onClick={generate}>
                     🔀 Boshqa misollar
                   </Button>
-                  <Button size="sm" onClick={() => window.print()}>
-                    🖨️ Chop etish
-                  </Button>
+                  {inTelegram ? (
+                    <Button size="sm" disabled={sending} onClick={() => void sendPdf()}>
+                      {sending ? 'Yuborilmoqda…' : '📩 PDF ni Telegramga yuborish'}
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={() => window.print()}>
+                      🖨️ Chop etish
+                    </Button>
+                  )}
                 </div>
               </div>
 
-              <p className={styles.printTip}>
-                Chop etish oynasida qog‘oz A4, chekkalar (margins) «Default» bo‘lsin va «Headers and footers»
-                o‘chirilsin. «Save as PDF» ni tanlasangiz, fayl bo‘lib saqlanadi.
-              </p>
+              {sendNote && (
+                <p className={sendNote.ok ? styles.printTip : styles.warning} role="status">
+                  {sendNote.text}
+                </p>
+              )}
+
+              {!inTelegram && (
+                <p className={styles.printTip}>
+                  Chop etish oynasida qog‘oz A4, chekkalar (margins) «Default» bo‘lsin va «Headers and
+                  footers» o‘chirilsin. «Save as PDF» ni tanlasangiz, fayl bo‘lib saqlanadi.
+                </p>
+              )}
 
               <div className={styles.previewScroll} ref={previewRef}>
                 <div className={styles.previewStack} style={{ zoom: previewScale } as CSSProperties}>
