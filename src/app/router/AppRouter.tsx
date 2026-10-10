@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AbacusPage } from '@/features/abacus/AbacusPage';
 import { AdminApplicationsPage } from '@/features/admin/AdminApplicationsPage';
@@ -9,7 +10,6 @@ import { AdminTariffsPage } from '@/features/admin/AdminTariffsPage';
 import { AdminTeacherPage } from '@/features/admin/AdminTeacherPage';
 import { AdminTeachersPage } from '@/features/admin/AdminTeachersPage';
 import { LoginPage } from '@/features/auth/LoginPage';
-import { LandingPage } from '@/features/landing/LandingPage';
 import { ClassroomPage } from '@/features/competition/classroom/ClassroomPage';
 import { StudentCompetitionPage } from '@/features/competition/StudentCompetitionPage';
 import { TeacherCompetitionPage } from '@/features/competition/TeacherCompetitionPage';
@@ -25,7 +25,19 @@ import { TeacherMarketPage } from '@/features/teacher/TeacherMarketPage';
 import { TeacherProfilePage } from '@/features/teacher/TeacherProfilePage';
 import { TeacherStatsPage } from '@/features/teacher/TeacherStatsPage';
 import { WorksheetPage } from '@/features/teacher/worksheet/WorksheetPage';
+import { isTelegramMiniApp } from '@/infrastructure/telegram/telegramWebApp';
 import { GuestOnly, HomeRedirect, LandingOrHome, RequireFeature, RequireRole } from './routeGuards';
+
+/*
+ * The landing is its own chunk: every signed-in user and every Telegram Mini App user is sent away
+ * from '/', so they should not download and parse it on each launch.
+ */
+let landingModule: Promise<typeof import('@/features/landing/LandingPage')> | undefined;
+const loadLanding = () => (landingModule ??= import('@/features/landing/LandingPage'));
+const LandingPage = lazy(() => loadLanding().then((m) => ({ default: m.LandingPage })));
+// A guest's root: fetch it beside main.tsx's services chunk, not one request after it.
+// telegram-web-app.js loads synchronously in the head, so initData is already there.
+if (window.location.pathname === '/' && !isTelegramMiniApp(window)) void loadLanding();
 
 export function AppRouter() {
   return (
@@ -34,7 +46,9 @@ export function AppRouter() {
         path="/"
         element={
           <LandingOrHome>
-            <LandingPage />
+            <Suspense fallback={null}>
+              <LandingPage />
+            </Suspense>
           </LandingOrHome>
         }
       />

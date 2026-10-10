@@ -1,0 +1,695 @@
+/*
+ * The small pictures inside the feature cards. Each one is a mock: it says "Namuna" and uses
+ * mascots, never a real child's name or score. The rules they share:
+ *   - the picture box is sized by its content with a floor (`--min-h`), not by an aspect ratio,
+ *     which left wide cards mostly empty; it never clips, and its height never changes during
+ *     play, so nothing below it moves;
+ *   - it plays once, when 40% of it is on screen (`data-play`: wait → go), and the race and the
+ *     stars then offer "Yana ko'rish"; nothing loops;
+ *   - every keyframe lives inside `prefers-reduced-motion: no-preference` and only runs *from* the
+ *     empty frame, so the natural state of every element is the final frame: that is what shows under
+ *     reduced motion, in print, and once a play has ended;
+ *   - only transform and opacity move.
+ */
+
+/* ---------- Frame ---------- */
+
+/* When the card gives it more height than it needs, the picture box takes it, never the foot. */
+.vignette {
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: var(--min-h, 168px);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+/* Under the picture: what it is ("Namuna") and, once it has played, the replay. */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.foot[data-replay] {
+  min-height: var(--touch-target);
+}
+
+.caption {
+  flex: 1 1 14ch;
+  min-width: 0;
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-wrap: pretty;
+}
+
+/* A mock's label: dashed, like a sticker on a sample. */
+.namuna {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--content-secondary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+/*
+ * Kept in the layout from the start, so it appears without pushing anything. Hidden (and so out of
+ * the tab order) until the first play ends; from then on it stays, so a replay never drops focus.
+ * The slot fades, not the button, whose own transitions stay as Button set them.
+ */
+.replaySlot {
+  display: inline-flex;
+  flex: none;
+  margin-inline-end: calc(var(--space-2) * -1);
+}
+
+.replaySlot:not([data-ready]) {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.replayIcon {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .replaySlot {
+    transition:
+      opacity var(--motion-base) var(--ease-standard),
+      visibility var(--motion-base) step-start;
+  }
+
+  .replayIcon {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .replaySlot:hover .replayIcon {
+    transform: rotate(-90deg);
+  }
+}
+
+/* ---------- ClassroomRace ---------- */
+
+.lanes {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* `--reach` (0…1), `--dur` and `--medal-delay` come inline from ClassroomRace; the colour is the lane's. */
+.lane {
+  --lane: var(--data-1);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.lane[data-lane='2'] {
+  --lane: var(--data-2);
+}
+
+.lane[data-lane='3'] {
+  --lane: var(--data-3);
+}
+
+.laneLabel {
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A size container, so the runner can travel a share of the track's width (cqi) from its own box. */
+.track {
+  position: relative;
+  height: 36px;
+  container-type: inline-size;
+}
+
+.rail {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 10px;
+  margin-top: -5px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+/* Square at its tip, which hides under the mascot; the rail rounds the start. */
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--lane);
+  transform: scaleX(var(--reach));
+  transform-origin: left center;
+}
+
+/*
+ * The mascot rides the tip of its bar. The runner is one mascot wide and travels `--reach` of the
+ * track less its own width, so neither the mascot nor its box ever passes the end of the track.
+ */
+.runner {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 32px;
+  transform: translateX(calc(var(--reach) * (100cqi - 32px)));
+}
+
+/* Its own element, because the runner's transform would replace a hop on the same one. */
+.hopper {
+  display: block;
+  width: 32px;
+  margin-top: 2px;
+}
+
+.medal {
+  --medal: var(--medal-gold);
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--medal);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font: var(--text-caption);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.medal[data-place='2'] {
+  --medal: var(--medal-silver);
+}
+
+.medal[data-place='3'] {
+  --medal: var(--medal-bronze);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage[data-play='wait'] .fill {
+    transform: scaleX(0);
+  }
+
+  .stage[data-play='wait'] .runner {
+    transform: translateX(0);
+  }
+
+  .stage[data-play='wait'] .medal {
+    opacity: 0;
+  }
+
+  /*
+   * Every lane for the same time (the match counts answers, not speed); the mascots cheer when
+   * they stop, then the medals land bronze to gold.
+   */
+  .stage[data-play='go'] .fill {
+    animation: fillGrow var(--dur) var(--ease-standard) backwards;
+  }
+
+  .stage[data-play='go'] .runner {
+    animation: runnerGo var(--dur) var(--ease-standard) backwards;
+  }
+
+  .stage[data-play='go'] .hopper {
+    animation: hop calc(var(--motion-slow) * 1.25) var(--ease-standard) var(--dur);
+  }
+
+  .stage[data-play='go'] .medal {
+    animation: popIn var(--motion-slow) var(--lp-overshoot, ease-out)
+      calc(var(--dur) + 80ms + var(--medal-delay, 0ms)) backwards;
+  }
+}
+
+/* ---------- HomeworkStars ---------- */
+
+.stage[data-kind='stars'] {
+  --min-h: 144px;
+  --step: 90ms;
+}
+
+.starsBody {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.starsHead {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.dots {
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 22px));
+  justify-content: center;
+  gap: var(--space-1);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dot {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  box-shadow: inset 0 0 0 2px var(--border-strong);
+}
+
+/* A solved example: the fill sits on its own layer so only its scale and opacity animate. */
+.dotFill {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: var(--success);
+  color: var(--surface-card);
+  font: var(--text-caption);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.verdictRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+}
+
+/* The same chip the app gives stars (StarsBadge): a reward, in warm yellow. */
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  font: var(--text-body);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Its own stacking context, so the glow sits behind the emoji but in front of the chip. */
+.star {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+
+/* The ⭐ glow, the one place this picture uses the accent colour. It rests faintly lit. */
+.star::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border-radius: var(--radius-full);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand-accent) 45%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage[data-play='wait'] .dotFill,
+  .stage[data-play='wait'] .verdict {
+    opacity: 0;
+  }
+
+  /* One example a beat: `--dot` is the position, `--count` the size of the homework. */
+  .stage[data-play='go'] .dotFill {
+    animation: popIn var(--motion-base) var(--lp-overshoot, ease-out) calc(var(--dot) * var(--step)) backwards;
+  }
+
+  .stage[data-play='go'] .verdict {
+    animation: popIn var(--motion-slow) var(--lp-overshoot, ease-out)
+      calc(var(--count) * var(--step) + var(--motion-base)) backwards;
+  }
+
+  .stage[data-play='go'] .star::before {
+    animation: glow calc(var(--motion-slow) * 2) var(--ease-standard)
+      calc(var(--count) * var(--step) + var(--motion-slow)) backwards;
+  }
+
+  .stage[data-play='go'] .avatarHop {
+    animation: hop calc(var(--motion-slow) * 1.25) var(--ease-standard)
+      calc(var(--count) * var(--step) + var(--motion-base));
+  }
+}
+
+.avatarHop {
+  display: inline-flex;
+}
+
+/* ---------- PaymentsDemo ---------- */
+
+/* Its controls fill the box on their own, so it needs no floor. */
+.stage[data-kind='payments'] {
+  --min-h: 0px;
+}
+
+.payLabel {
+  margin: 0;
+  font: var(--text-body);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+/* The FilterPills pattern: past the edge the options scroll inside this box, never the page. */
+.payScroller {
+  /* As wide as the picture plus the ring's room on both sides, so the options end where the track does. */
+  max-width: calc(100% + var(--space-2));
+  /* Room for the focus ring, which the scroll box would otherwise cut off. */
+  margin: calc(var(--space-1) * -1);
+  padding: var(--space-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.payScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.payScroller > [role='radiogroup'] {
+  width: max-content;
+  min-width: 100%;
+}
+
+.payScroller > [role='radiogroup'] > [role='radio'] {
+  flex: 1 0 auto;
+  min-height: var(--touch-target);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* One segment a month; `--max` and each `--seg` come inline. */
+.payTrack {
+  display: grid;
+  grid-template-columns: repeat(var(--max), minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.paySeg {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.paySegFill {
+  position: absolute;
+  inset: 0;
+  background: var(--success);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.paySeg[data-on] .paySegFill {
+  transform: none;
+}
+
+.payResult {
+  display: flex;
+  margin: 0;
+}
+
+.payUntil {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font: var(--text-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Months fill left to right and empty right to left, one beat apart. */
+  .paySegFill {
+    transition: transform var(--motion-base) var(--ease-standard);
+    transition-delay: calc((var(--max) - 1 - var(--seg)) * 50ms);
+  }
+
+  .paySeg[data-on] .paySegFill {
+    transition-delay: calc(var(--seg) * 50ms);
+  }
+
+  /* Empty until the picture is on screen, so the first month fills while the visitor watches. */
+  .stage[data-play='wait'] .paySeg[data-on] .paySegFill {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------- SharePreview ---------- */
+
+/* The pile behind the card is 70% of the box's height, so the box keeps enough of it to show. */
+.stage[data-kind='share'] {
+  --min-h: 184px;
+  place-items: center;
+}
+
+/* A second picture under the first, so it reads as a photo to send, not a screen. */
+.shareBack {
+  position: absolute;
+  inset: 0;
+  width: min(176px, 70%);
+  height: 70%;
+  margin: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  transform: translate(14px, 4px) rotate(5deg);
+}
+
+.shareCard {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+  width: min(196px, 78%);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-2);
+  /* The same functions in every state, so the landing and the hover tween each one smoothly. */
+  transform: translateY(0) rotate(-3deg) scale(1);
+}
+
+/* Stuck on the top edge like a sticker, clear of the brand line under it. */
+.shareTag {
+  position: absolute;
+  top: 0;
+  right: var(--space-3);
+  translate: 0 -50%;
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 var(--space-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-tertiary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+.shareBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--text-caption);
+  font-weight: 800;
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+.shareTitle {
+  margin-top: var(--space-1);
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+.shareScore {
+  font: var(--text-h2);
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.shareTick {
+  color: var(--success-content);
+}
+
+.shareStar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--warning-soft);
+  color: var(--warning-content);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+.shareMascot {
+  position: absolute;
+  right: calc(var(--space-3) * -1);
+  bottom: calc(var(--space-3) * -1);
+  display: inline-flex;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage[data-kind='share'][data-play='wait'] .shareCard,
+  .stage[data-kind='share'][data-play='wait'] .shareStar {
+    opacity: 0;
+  }
+
+  /* The picture lands on the pile, then its star pops. */
+  .stage[data-kind='share'][data-play='go'] .shareCard {
+    animation: shareLand var(--lp-reveal, 480ms) var(--lp-overshoot, ease-out) backwards;
+  }
+
+  .stage[data-kind='share'][data-play='go'] .shareStar {
+    animation: popIn var(--motion-slow) var(--lp-overshoot, ease-out) var(--lp-reveal, 480ms) backwards;
+  }
+
+  .shareCard {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+}
+
+/* Pointed at, the picture straightens up to be looked at. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .stage[data-kind='share']:hover .shareCard {
+    transform: translateY(-2px) rotate(0deg) scale(1.03);
+  }
+}
+
+/* ---------- Print: always the final frame ---------- */
+
+@media print {
+  .fill,
+  .runner,
+  .medal,
+  .dotFill,
+  .verdict,
+  .paySegFill,
+  .shareCard,
+  .shareStar {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .stage[data-play] .fill {
+    transform: scaleX(var(--reach)) !important;
+  }
+
+  .stage[data-play] .runner {
+    transform: translateX(calc(var(--reach) * (100cqi - 32px))) !important;
+  }
+
+  .paySeg[data-on] .paySegFill {
+    transform: none !important;
+  }
+}
+
+/* ---------- Keyframes (each played only inside a no-preference block above) ---------- */
+
+@keyframes fillGrow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes runnerGo {
+  from {
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes hop {
+  40% {
+    transform: translateY(-6px);
+  }
+}
+
+/* The star lights up past its resting glow, then settles back to it. */
+@keyframes glow {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  45% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes shareLand {
+  from {
+    opacity: 0;
+    transform: translateY(12px) rotate(0deg) scale(0.94);
+  }
+}

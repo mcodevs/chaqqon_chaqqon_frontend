@@ -2,6 +2,7 @@ import { type FormEvent, useId, useState } from 'react';
 import {
   type CalendarDate,
   MAX_PREPAID_MONTHS,
+  PAYMENT_QUICK_MONTHS,
   type StudentAccess,
   addDays,
   addMonths,
@@ -11,9 +12,6 @@ import {
 import { formatCalendarDate } from '@/shared/format';
 import { Button } from '@/shared/ui/Button';
 import styles from './Teacher.module.css';
-
-/** Students often pay a few months ahead. */
-const QUICK_MONTHS = [1, 2, 3, 4] as const;
 
 interface PaymentFormProps {
   firstName: string;
@@ -41,7 +39,7 @@ export function PaymentForm({ firstName, access, today, pending, onSave, onCance
         {firstName} qaysi sanagacha ochiq bo'lsin?
       </label>
       <div className={styles.monthChoices} role="group" aria-label="Necha oyga to'landi">
-        {QUICK_MONTHS.map((months) => {
+        {PAYMENT_QUICK_MONTHS.map((months) => {
           const date = suggestPaidUntil(access.paidUntil, today, months);
           return (
             <button

@@ -127,6 +127,14 @@ export function dailyPrice(monthlyPrice: number): number {
   return monthlyPrice > 0 ? Math.ceil(monthlyPrice / 30 / 100) * 100 : 0;
 }
 
+/**
+ * What a month comes to per student for a class of `students`, rounded up to the next 100 so'm
+ * like the daily figure (150 000 for 20 → 7 500). 0 for a free tariff or an empty class.
+ */
+export function pricePerStudent(monthlyPrice: number, students: number): number {
+  return monthlyPrice > 0 && students > 0 ? Math.ceil(monthlyPrice / students / 100) * 100 : 0;
+}
+
 export type LedgerKind = 'payment' | 'bonus' | 'adjustment' | 'charge';
 
 export interface LedgerEntry {

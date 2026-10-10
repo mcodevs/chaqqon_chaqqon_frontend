@@ -29,6 +29,9 @@ export function DigitCharacter({ digit, size = 54, animated = false }: DigitChar
     '--size': `${size}px`,
     '--light': light,
     '--dark': dark,
+    // The body colours never change with the theme, so neither may the digit on them: a theme
+    // token here turns dark on a dark theme and drops to about 2.4:1 on the violet 5.
+    '--ink': '#fff',
   } as CSSProperties;
 
   return (

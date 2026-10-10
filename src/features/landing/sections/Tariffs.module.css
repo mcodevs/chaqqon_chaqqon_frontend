@@ -1,0 +1,982 @@
+/*
+ * #tariflar on the soft band, centred like its heading. Brand violet appears here only as the
+ * featured card's ring, badge and button; a fitting cheapest card earns a green fact chip, never a
+ * second ring. Motion is limited to transform and opacity: the cards rise (Reveal), the featured
+ * ring glows once, a changed price bumps.
+ */
+
+/* ---------- "Har bir tarifda:" ---------- */
+
+.included {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+}
+
+.includedLabel {
+  margin: 0;
+  font: var(--text-body);
+  font-weight: 700;
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+.includedList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Facts, not buttons: smaller than a touch target, and flat. */
+.includedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: 36px;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  font: var(--text-body);
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+/*
+ * Too narrow for the three chips in one row (they need about 640px): a column of equal pills, their
+ * ticks lined up, instead of a ragged pyramid or a chip left alone on a second row.
+ */
+@media (max-width: 699.98px) {
+  .included {
+    flex-direction: column;
+  }
+
+  .includedList {
+    display: grid;
+    width: max-content;
+    max-width: 100%;
+  }
+}
+
+/* Below the 360px phone the longest chip would outgrow the row; a size smaller keeps it whole. */
+@media (max-width: 359px) {
+  .includedChip {
+    font: var(--text-caption);
+  }
+}
+
+/* ---------- Class-size chooser ---------- */
+
+/*
+ * Full width on a phone, its chips sharing one row; from 600px a compact card as wide as its
+ * content, centred under the heading.
+ */
+.chooser {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  max-width: 100%;
+  margin: 0 auto var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+}
+
+@media (min-width: 600px) {
+  .chooser {
+    width: fit-content;
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
+.chooserLabel {
+  margin: 0;
+  font: var(--text-body-lg);
+  font-weight: 700;
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+/* The FilterPills pattern: past the edge the row scrolls inside itself, the page never does. */
+.chipScroller {
+  flex: 1 1 auto;
+  max-width: 100%;
+  /* Room for the focus ring, which the scroll box would otherwise cut off. */
+  margin: calc(var(--space-1) * -1);
+  padding: var(--space-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chipScroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* At least as wide as the box, so on a phone the four chips share the row evenly. */
+.chips {
+  display: flex;
+  gap: var(--space-2);
+  width: max-content;
+  min-width: 100%;
+}
+
+/*
+ * The number stays centred; the chosen chip's tick sits in the left padding, so picking a chip
+ * never changes its width or nudges its neighbours.
+ */
+.chip {
+  position: relative;
+  display: inline-flex;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: var(--touch-target);
+  /* 20px a side: four chips fit the 360px phone's row without scrolling. */
+  padding: 0 calc(var(--space-4) + var(--space-1));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-secondary);
+  font: var(--text-body-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Sized to their content from 600px: wide enough that the chosen chip's tick clears its number. */
+@media (min-width: 600px) {
+  .chip {
+    flex: none;
+    min-width: 72px;
+  }
+}
+
+/* Below the 360px phone, slimmer chips: all four still share the row instead of scrolling. */
+@media (max-width: 359px) {
+  .chip {
+    min-width: 0;
+    padding-inline: var(--space-4);
+  }
+}
+
+.chipTick {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--space-2) + 1px);
+  /* Centred by `translate`, which the scale below adds to rather than replaces. */
+  translate: 0 -50%;
+  font: var(--text-caption);
+  font-weight: 800;
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.chip[aria-pressed='true'] .chipTick {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chipTick {
+    transition:
+      opacity var(--motion-base) var(--ease-standard),
+      transform var(--motion-base) var(--lp-overshoot, var(--ease-standard));
+  }
+}
+
+/* Hover only where there is a pointer: on a phone it would stick to the chip just tapped. */
+@media (hover: hover) {
+  .chip:hover {
+    background: var(--surface-hover);
+    color: var(--content-primary);
+  }
+}
+
+.chip[aria-pressed='true'] {
+  border-color: color-mix(in srgb, var(--brand-primary) 45%, var(--border-strong));
+  background: var(--brand-primary-soft);
+  color: var(--content-primary);
+}
+
+/* Inline-block, so the bump's scale applies to it. */
+.chipLabel {
+  display: inline-block;
+}
+
+/* ---------- Card grid ---------- */
+
+/*
+ * Laid out by how many cards there are, so none is left alone under a pair and none hides a hole:
+ * - phone: one card on its own; two or more in a row that scrolls sideways (below);
+ * - tablet, any count, and desktop with any count but three: full-width cards stacked, each in the
+ *   wide layout (summary left, list right), as wide as the promise strip under them;
+ * - desktop, three: one row, the price blocks, buttons and lists lined up across the cards.
+ * The loading skeleton (no data-count) keeps the default: two cards side by side, 400px at most.
+ */
+.grid {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-6) var(--space-5);
+  margin: 0;
+  /* The featured badge hangs above its card's top edge. */
+  padding: var(--space-3) 0 0;
+  list-style: none;
+}
+
+.cell,
+.grid > .skeleton {
+  flex: 1 1 280px;
+  max-width: 400px;
+  min-width: 0;
+}
+
+/* Each card lays itself out by the room it gets (the wide card below), not by the screen. */
+.cell {
+  display: flex;
+  container-type: inline-size;
+}
+
+/*
+ * Phone, two or more cards: one row that scrolls sideways inside itself (the page never does),
+ * reaching the screen's edges. Each card is a little narrower than the screen so the next one peeks
+ * in; a swipe settles a card in the middle. Tariffs.tsx starts the row on the recommended card and
+ * keeps a card that keyboard focus reaches in view. Nothing moves by itself.
+ *
+ * Every card is as tall as its own list, so a short one carries no blank block, and the row is as
+ * tall as the card in the middle (--row-height, set by Tariffs.tsx; without it the row fits the
+ * tallest), so no blank band opens under a short card either. A taller neighbour's peeking edge is
+ * cut at the row's foot and fades out over its bottom padding.
+ */
+@media (max-width: 767.98px) {
+  .grid[data-row] {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: var(--space-4);
+    /* Invalid, so no limit at all, until Tariffs.tsx has measured the cards. */
+    max-height: calc(var(--row-height) + var(--space-5) * 2);
+    margin-inline: calc(var(--lp-gutter) * -1);
+    /* Room above for the badge and the glow, below for the shadow and a rising card. */
+    padding: var(--space-5) var(--lp-gutter);
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--lp-gutter);
+    scrollbar-width: none;
+    /* Only the alpha counts in a mask: any opaque token will do. */
+    mask-image: linear-gradient(to bottom, var(--content-primary) calc(100% - var(--space-5)), transparent);
+  }
+
+  .grid[data-row]::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grid[data-row] > .cell {
+    flex: none;
+    width: min(85%, 352px);
+    max-width: none;
+    scroll-snap-align: center;
+  }
+
+  /* The price and its button first, the list after: a long list never hides the way to apply. */
+  .card > .apply {
+    order: 1;
+    margin-top: 0;
+  }
+
+  .card > .features {
+    order: 2;
+  }
+}
+
+/* The smallest phones: a wider card and a smaller figure keep the price on one line. */
+@media (max-width: 359px) {
+  .grid[data-row] > .cell {
+    width: 88%;
+  }
+
+  .card .amount {
+    font: var(--text-h1);
+  }
+}
+
+/*
+ * The row follows the cards' heights with a short glide, so what is under it slides rather than
+ * jumps; under reduced motion it changes at once.
+ */
+@media (max-width: 767.98px) and (prefers-reduced-motion: no-preference) {
+  .grid[data-row] {
+    transition: max-height var(--motion-base) var(--ease-standard);
+  }
+}
+
+/* Where the row is, under it: a dot per card, the middle one darker and wider. Phone only. */
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: calc(var(--space-2) * -1);
+}
+
+@media (min-width: 768px) {
+  .dots {
+    display: none;
+  }
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}
+
+.dot[data-current] {
+  background: var(--content-secondary);
+  transform: scale(1.25);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dot {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+}
+
+/*
+ * From a tablet up: the cards stack, each as wide as the section, so each turns into the wide card
+ * further down. Its list sits beside its price, so a short list leaves no hole above a button.
+ */
+@media (min-width: 768px) {
+  .grid[data-count] {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--space-6);
+  }
+
+  .grid[data-count] > .cell {
+    flex: none;
+    max-width: none;
+  }
+}
+
+/*
+ * Desktop, three cards: one row of equal cards. Rows shared through subgrid line up the price
+ * blocks, then the buttons, then the lists; the button sits under the price as on a phone, so a
+ * shorter list simply ends sooner instead of opening a gap above its button.
+ */
+@media (min-width: 1024px) {
+  .grid[data-count='3'] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 var(--space-5);
+  }
+
+  /* Never 600px wide here, so no container is needed (and one would stop the subgrid). */
+  .grid[data-count='3'] > .cell {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    container-type: normal;
+  }
+
+  .grid[data-count='3'] .card {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    row-gap: var(--space-5);
+  }
+
+  .grid[data-count='3'] .card > .summary {
+    grid-row: 1;
+  }
+
+  .grid[data-count='3'] .card > .apply {
+    grid-row: 2;
+    margin-top: 0;
+  }
+
+  .grid[data-count='3'] .card > .features {
+    grid-row: 3;
+    align-self: start;
+  }
+}
+
+/* ---------- Tariff card ---------- */
+
+.card,
+.skeleton {
+  --card-pad-x: var(--space-5);
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-6) var(--card-pad-x) var(--space-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+}
+
+.card {
+  gap: var(--space-5);
+}
+
+/* The shadow a hovered card lifts into, on its own layer so that only its opacity changes. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: var(--elevation-3);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The hover lift and the fit step-back; instant under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .card::before,
+  .card .amount,
+  .card .check {
+    transition: opacity var(--motion-base) var(--ease-standard);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::before {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* A 2px brand ring without a 2px border, so its content lines up with its neighbours'. */
+.card[data-featured] {
+  border-color: var(--brand-primary);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-primary) 7%, var(--surface-card)) 0,
+    var(--surface-card) 180px
+  );
+  box-shadow:
+    0 0 0 1px var(--brand-primary),
+    var(--elevation-2);
+}
+
+/*
+ * Too small for the class: stepped back by its frame, never by fading its text, which stays at full
+ * contrast because the card can still be read and chosen. Only the display-size price and the
+ * decorative ticks dim; the price stays above 3:1 in both themes. Placed after the featured ring,
+ * so a featured card that does not fit steps back too.
+ */
+.card[data-fit='no'] {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+
+.card[data-fit='no'] .amount,
+.card[data-fit='no'] .check {
+  opacity: 0.6;
+}
+
+.badge {
+  position: absolute;
+  top: 0;
+  left: var(--card-pad-x);
+  /* Centred on the top edge by `translate`, which the pop's `transform` adds to, not replaces. */
+  translate: 0 -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary);
+  box-shadow: var(--elevation-2);
+  color: var(--brand-on-primary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+/* The one-time glow: a halo that lights up and fades out, ending invisible. */
+.glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-lg) + 2px);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--brand-primary) 22%, transparent),
+    0 10px 36px color-mix(in srgb, var(--brand-primary) 28%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * Only with the landing's motion gate on (it is off for an invite's #ariza jump and without
+ * IntersectionObserver), so the badge never hides waiting for a sighting that cannot come.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :global([data-landing-motion='on']) .badge[data-play='wait'] {
+    opacity: 0;
+  }
+
+  :global([data-landing-motion='on']) .badge[data-play='go'] {
+    animation: badgePop var(--motion-slow) var(--lp-overshoot, ease-out) 160ms both;
+  }
+
+  :global([data-landing-motion='on']) .glow[data-play='go'] {
+    animation: glowOnce calc(var(--motion-slow) * 5) var(--ease-standard) 120ms both;
+  }
+}
+
+@media print {
+  .badge {
+    opacity: 1 !important;
+  }
+}
+
+/* Name, price, limit and fit, as one block so a wide card can set it beside the list. */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.cardHead {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.name {
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+  overflow-wrap: anywhere;
+}
+
+.description {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+.price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  margin: 0;
+}
+
+.amount {
+  font: var(--text-display);
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.unit {
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+.daily {
+  margin: var(--space-2) 0 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.limit {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: 32px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--content-primary);
+  font: var(--text-body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* What the chosen class size means for this card. */
+.fit {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+}
+
+.cheapest {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+.perStudent,
+.noFit {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.perAmount {
+  display: inline-block;
+  color: var(--content-primary);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.features {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-5) 0 0;
+  border-top: 1px solid var(--border-subtle);
+  list-style: none;
+}
+
+.feature {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  font: var(--text-body);
+  color: var(--content-primary);
+}
+
+.forStudents {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
+/* Pinned to the bottom, so the buttons of a row line up whatever the lists above them hold. */
+.apply {
+  margin-top: auto;
+}
+
+.check {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  /* Sits on the first line of the 21px-tall body text next to it. */
+  margin-top: 1px;
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font-size: var(--size-caption);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.includedChip .check {
+  margin-top: 0;
+}
+
+/*
+ * The wide card, wherever a card gets 600px or more (the stacked cards from a tablet up): name,
+ * price, limit and button on the left, the feature list on the right, in two columns where they fit.
+ */
+@container (min-width: 600px) {
+  .card {
+    --card-pad-x: var(--space-6);
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+    gap: var(--space-5) var(--space-6);
+    padding: var(--space-6) var(--card-pad-x);
+  }
+
+  .summary {
+    grid-area: 1 / 1;
+  }
+
+  .card > .apply {
+    grid-area: 2 / 1;
+    align-self: start;
+    margin-top: 0;
+  }
+
+  /* Stretched, so the dividing line runs the card's full height even beside a short list. */
+  .card > .features {
+    display: block;
+    grid-area: 1 / 2 / 3 / 3;
+    columns: 14rem 2;
+    column-gap: var(--space-6);
+    padding: 0 0 0 var(--space-6);
+    border-top: none;
+    border-left: 1px solid var(--border-subtle);
+  }
+
+  .feature {
+    break-inside: avoid;
+  }
+
+  .feature + .feature {
+    margin-top: var(--space-3);
+  }
+}
+
+/* ---------- Loading ---------- */
+
+/*
+ * About as tall as the shortest real card (no extra features), so nothing below moves much when
+ * the tariffs arrive. Flat blocks, with a few breaths instead of the shared Skeleton's endless
+ * shimmer.
+ */
+.skeleton {
+  gap: var(--space-3);
+  min-height: 420px;
+}
+
+.bone {
+  display: block;
+  width: 100%;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.bone[data-bone='name'] {
+  width: 42%;
+  height: 22px;
+}
+
+.bone[data-bone='short'] {
+  width: 70%;
+}
+
+.bone[data-bone='price'] {
+  width: 64%;
+  height: 40px;
+  margin-top: var(--space-3);
+}
+
+.bone[data-bone='daily'] {
+  width: 38%;
+}
+
+.bone[data-bone='limit'] {
+  width: 54%;
+  height: 32px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.bone[data-bone='button'] {
+  height: 52px;
+  margin-top: auto;
+  border-radius: var(--radius-lg);
+}
+
+.boneRule {
+  display: block;
+  margin-block: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * An even count of alternating runs ends where it started: fully opaque. Four runs stay under
+   * 5s, the limit for motion that starts by itself; a failed load would otherwise play it all.
+   */
+  .skeleton {
+    animation: breathe calc(var(--motion-slow) * 3.5) var(--ease-standard) 4 alternate both;
+  }
+}
+
+/* ---------- No public tariff ---------- */
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+  max-width: 760px;
+  margin-inline: auto;
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+  text-align: center;
+}
+
+.emptyText {
+  max-width: 44ch;
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+.emptyAction {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .empty {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: start;
+    padding: var(--space-5) var(--space-6);
+    text-align: start;
+  }
+
+  .emptyAction {
+    width: auto;
+  }
+}
+
+/* ---------- Assurances ---------- */
+
+/* One quiet card of promises under the prices: stacked on a phone, side by side from a tablet. */
+.assurances {
+  display: grid;
+  margin: var(--space-7) 0 0;
+  padding: var(--space-1) var(--space-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  list-style: none;
+}
+
+/* Everything sits at the top, so the titles of a row line up whatever the texts under them hold. */
+.assurance {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-content: start;
+  align-items: start;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+}
+
+.assurance + .assurance {
+  border-top: 1px dashed var(--border-strong);
+}
+
+@media (min-width: 768px) {
+  .assurances {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    padding: var(--space-1) 0;
+  }
+
+  .assurance {
+    padding: var(--space-5);
+  }
+
+  .assurance + .assurance {
+    border-top: none;
+    border-left: 1px dashed var(--border-strong);
+  }
+}
+
+/* A tablet's third of the card is too narrow for icon and text side by side: the icon goes on top. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .assurance {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+.assuranceIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--brand-primary-soft);
+  font-size: var(--size-h2);
+  line-height: 1;
+}
+
+.assuranceBody {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.assuranceTitle {
+  font: var(--text-body-lg);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.assuranceText {
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+/* ---------- Keyframes (played only inside the no-preference blocks above) ---------- */
+
+@keyframes badgePop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes glowOnce {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes breathe {
+  to {
+    opacity: 0.55;
+  }
+}

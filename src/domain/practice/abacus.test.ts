@@ -9,6 +9,7 @@ import {
   maxValue,
   moveExpression,
   planMove,
+  problemFrames,
   toDigits,
   toValue,
   toggleEarth,
@@ -173,5 +174,35 @@ describe('planMove', () => {
         expect(direct).toBe(classifyMove(total, value) === 'formulasiz');
       }
     }
+  });
+});
+
+describe('problemFrames', () => {
+  it('opens on the first number, then adds one frame per bead movement', () => {
+    const frames = problemFrames([3, 4], 5);
+    expect(frames).toHaveLength(2);
+    expect(frames[0]).toMatchObject({ value: 3, column: null, row: 0, formula: '' });
+    expect(frames[0].header).toBe('Boshlanish: 3');
+    expect(frames[0].text).toBe("Abakusga 3 ni qo'ying");
+    expect(frames[1]).toMatchObject({
+      value: 7,
+      column: 0,
+      row: 1,
+      header: '3 + 4 = 7',
+      formula: '+4 = +5 − 1',
+    });
+  });
+
+  it('gives a big friend its complement and its carry, both under the same move', () => {
+    const frames = problemFrames([7, 6, -4], 3);
+    expect(frames.map((frame) => frame.row)).toEqual([0, 1, 1, 2, 2]);
+    expect(frames[1].header).toBe('7 + 6 = 13');
+    expect(frames[2]).toMatchObject({ value: 13, column: 1, header: '7 + 6 = 13' });
+    expect(frames.at(-1)).toMatchObject({ value: 9, header: '13 − 4 = 9' });
+  });
+
+  it('ends on the sum', () => {
+    const numbers = [95, 8, -47, 6];
+    expect(problemFrames(numbers, 3).at(-1)?.value).toBe(numbers.reduce((sum, value) => sum + value, 0));
   });
 });

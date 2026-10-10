@@ -11,6 +11,7 @@ yerdan kerakli faylni oching.
 - [Yozma vazifa (chop etish)](references/yozma-vazifa-chop-etish.md) — `/teacher/worksheet`; bosib chiqarish **`<body>` portali + `[data-print-root]`** orqali, `@page` global; A4 ga sig'dirish hisobi CSS bilan juftlashgan
 - [Ko'p ustozli platforma](references/platforma-kop-ustoz.md) — 2026-10-10: tenant=ustoz, superadmin + ariza, tariflar (limit + funksiyalar), ustoz balansi (7 kun muhlat), 4 bosqichli chiqarish; admin Tariflar sahifasi redizayni (auditoriya bo'yicha guruhlangan bo'limlar, solishtiriladigan kartalar); admin ro'yxatlari naqshi (`SearchField`, o'ngga tekis `rowEnd`, bo'linmaydigan `FilterPills`)
 - [O'sish vositalari](references/osish-vositalari.md) — 2026-10-10: tavsiya etilgan tarif, kunlik narx, real raqamlar (chegara bilan), bepul sinov, kafolat, referal (`?taklif=`, bonus faqat taklif qilganga), boshlash ro'yxati, ariza eslatmasi
+- [Landing redizayni](references/landing-redizayn.md) — 2026-10-10/11: "Jonli raund" demo-first + review (49 tuzatish) + responsive (breakpointlar 768/1024/1440, --lp-max, Imkoniyatlar qatorlari, tarif karuseli); 2026-10-11 push qilindi
 - [useAsyncAction void tuzog'i](references/useasyncaction-void-tuzogi.md) — `run()` void amalda ham `undefined` qaytaradi → shoxlanadigan joyda `return true` bilan o'rang; local sinov uchun `verify.localhost:5174` toza origin
 
 ## Eslatma

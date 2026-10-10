@@ -1,0 +1,69 @@
+/*
+ * The landing's one motif: the soroban bead, a flattened bicone. The polygon is the one Soroban
+ * clips its beads with, so the logo, the eyebrow dots and the real abacus are visibly one family.
+ * Beads and wood are illustration colours (--abacus-*), never UI ones.
+ */
+
+/* ---------- BrandMark: a bead on its rod, in a soft disc ---------- */
+
+.brandMark {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--mark-size, 32px);
+  height: var(--mark-size, 32px);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+}
+
+/* The rod the bead sits on: it is what makes the shape read as a bead and not a gem. */
+.brandMark::before {
+  content: '';
+  position: absolute;
+  top: 16%;
+  bottom: 16%;
+  left: 50%;
+  width: max(2px, calc(var(--mark-size, 32px) * 0.06));
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--abacus-bar) 55%, transparent);
+  transform: translateX(-50%);
+}
+
+.brandBead {
+  position: relative;
+  width: 64%;
+  height: 48%;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--abacus-bead-active) 78%, var(--abacus-label)) 0%,
+    var(--abacus-bead-active) 50%,
+    color-mix(in srgb, var(--abacus-bead-active) 78%, var(--abacus-frame-edge)) 100%
+  );
+  clip-path: polygon(50% 0%, 88% 26%, 100% 50%, 88% 74%, 50% 100%, 12% 74%, 0% 50%, 12% 26%);
+}
+
+/* ---------- Bead dot: the 8px bead an eyebrow line starts with ---------- */
+
+.beadDot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: var(--abacus-bead-active);
+  clip-path: polygon(50% 0%, 88% 26%, 100% 50%, 88% 74%, 50% 100%, 12% 74%, 0% 50%, 12% 26%);
+}
+
+/* ---------- RodDivider: the reckoning bar, with a unit mark on every third rod ---------- */
+
+.rodDivider {
+  --rod-step: 24px;
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background:
+    radial-gradient(circle, var(--abacus-label) 0 1.5px, transparent 2px) center / calc(var(--rod-step) * 3)
+      100% repeat-x,
+    var(--abacus-bar);
+}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DEFAULT_RODS, moveExpression, planMove, signedText } from '@/domain/practice/abacus';
+import { DEFAULT_RODS, problemFrames, signedText } from '@/domain/practice/abacus';
 import { SECTION_IDS, type SectionId } from '@/domain/practice/config';
 import { generateProblem } from '@/domain/practice/problem';
 import { SECTION_META } from '@/features/practice/sections';
@@ -12,52 +12,6 @@ import styles from './Abacus.module.css';
 
 const ROW_LIMITS = { min: 2, max: 6, step: 1 } as const;
 const ROW_CHOICES = numberChoices(ROW_LIMITS);
-
-interface Frame {
-  /** The board after this step. */
-  value: number;
-  /** Rod the step moves, lit on the abacus; null for the opening number. */
-  column: number | null;
-  /** Row of the problem this step belongs to — 0 is the number the abacus starts from. */
-  row: number;
-  /** "7 + 6 = 13", the move the step is part of. */
-  header: string;
-  text: string;
-  formula: string;
-}
-
-/** Turns a problem into one frame per bead movement, which is what the child steps through. */
-function buildFrames(numbers: readonly number[], rods: number): Frame[] {
-  const [first, ...moves] = numbers;
-  const frames: Frame[] = [
-    {
-      value: first,
-      column: null,
-      row: 0,
-      header: `Boshlanish: ${first}`,
-      text: `Abakusga ${first} ni qo'ying`,
-      formula: '',
-    },
-  ];
-
-  let total = first;
-  moves.forEach((value, index) => {
-    const header = moveExpression(total, value);
-    for (const step of planMove(total, value, rods)) {
-      frames.push({
-        value: step.value,
-        column: step.column,
-        row: index + 1,
-        header,
-        text: step.text,
-        formula: step.formula,
-      });
-    }
-    total += value;
-  });
-
-  return frames;
-}
 
 const DEFAULT_SECTION: SectionId = 'kichik';
 const DEFAULT_ROW_COUNT = 3;
@@ -72,7 +26,7 @@ export function FormulaTutor() {
   const [problem, setProblem] = useState(() => drawProblem(DEFAULT_SECTION, DEFAULT_ROW_COUNT));
   const [index, setIndex] = useState(0);
 
-  const frames = useMemo(() => buildFrames(problem.numbers, DEFAULT_RODS), [problem]);
+  const frames = useMemo(() => problemFrames(problem.numbers, DEFAULT_RODS), [problem]);
   const frame = frames[Math.min(index, frames.length - 1)];
   const finished = index >= frames.length - 1;
 

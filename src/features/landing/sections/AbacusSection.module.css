@@ -1,0 +1,872 @@
+/*
+ * #abakus: one abacus slot shared by two modes. A phone reads it top to bottom (head, mode switch,
+ * the abacus card, the curriculum rail, the drill chips). From 768px the card puts its words beside
+ * the wood, centred in the card. From 1024px the player takes a column of its own, as tall as the
+ * rail beside it (on a screen shorter than 900px: its own height, sticky, sized to fit the screen),
+ * and the game (which has no rail) takes the full width under the heading. Shared by
+ * AbacusSection, CurriculumPlayer and PlaceNumberGame.
+ */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---------- Mode switch ---------- */
+
+/* A label never breaks in two; a row too wide for the screen scrolls inside itself instead. */
+.mode {
+  max-width: 100%;
+  margin-bottom: var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mode::-webkit-scrollbar {
+  display: none;
+}
+
+.mode > [role='radiogroup'] {
+  width: max-content;
+  border-radius: var(--radius-full);
+}
+
+/* A finger-sized pill on every pointer, not only on a coarse one. */
+.mode [role='radiogroup'] [role='radio'] {
+  flex: none;
+  min-height: var(--touch-target);
+  padding-inline: var(--space-5);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* ---------- The abacus slot ---------- */
+
+.slot {
+  margin-bottom: var(--space-6);
+  /*
+   * A pick in the rail scrolls the card into view with a little air; the page's scroll-padding
+   * already keeps it below the sticky header (Landing.module.css).
+   */
+  scroll-margin-top: var(--space-3);
+  scroll-margin-bottom: var(--space-4);
+}
+
+/* The mode not on show keeps its state but takes no room; `hidden` alone loses to a display rule. */
+.slot[hidden],
+.rail[hidden] {
+  display: none;
+}
+
+/*
+ * The card both modes share: abacus in the middle, words under it, actions last. `--accent` is the
+ * card's colour: the milestone's data colour in the player, the bead's own in the game.
+ */
+.stage {
+  --accent: var(--abacus-bead-active);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'top'
+    'abacus'
+    'caption'
+    'controls';
+  justify-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-2);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .stage {
+    padding: var(--space-6);
+  }
+}
+
+.stageTop {
+  grid-area: top;
+  justify-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* What the card is showing: the milestone, as a dot in its colour and its name. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-card));
+  color: var(--content-primary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+.tagDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+/* One bar per step, filling as the beads move; "Qadam i / n" says the same in words. */
+.segments {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+}
+
+.segment {
+  position: relative;
+  width: 20px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.segment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+.segment[data-done='true']::after {
+  transform: scaleX(1);
+}
+
+/* ---------- The abacus ---------- */
+
+/* A soft glow in the card's colour sits behind the wood, so the eye lands on the beads. */
+.abacus {
+  grid-area: abacus;
+  justify-self: stretch;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  padding-block: var(--space-2);
+}
+
+.abacus::before {
+  content: '';
+  position: absolute;
+  inset: -6% -2%;
+  z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
+  pointer-events: none;
+}
+
+/* The player's beads are a picture, so they can be smaller than a finger. */
+.playerAbacus {
+  --soroban-rod-w: clamp(42px, 12.5vw, 60px);
+}
+
+/* A wider tablet card holds a slightly larger abacus, so the pair fills it rather than floating. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .playerAbacus {
+    --soroban-rod-w: clamp(60px, 6.8vw, 68px);
+  }
+}
+
+/* The game's beads are buttons: a 68px rod makes a 45px bead, and three rods still fit 320px. */
+.gameAbacus {
+  --soroban-rod-w: clamp(68px, 19vw, 84px);
+}
+
+/* A tablet is still a finger (a 48px bead), but the words beside the wood need their room. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .gameAbacus {
+    --soroban-rod-w: 72px;
+  }
+}
+
+/* The game's mascots perch on the frame's top corners. */
+.abacusFrame {
+  position: relative;
+}
+
+.mascot {
+  position: absolute;
+  top: calc(var(--space-5) * -1);
+  pointer-events: none;
+}
+
+.mascot[data-side='start'] {
+  left: calc(var(--space-3) * -1);
+}
+
+.mascot[data-side='end'] {
+  right: calc(var(--space-3) * -1);
+}
+
+/* ---------- Caption ---------- */
+
+.caption {
+  grid-area: caption;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 42ch;
+}
+
+.counter {
+  margin: 0;
+  font: var(--text-caption);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--content-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.expression {
+  margin: 0;
+  font: var(--text-h2);
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Held open when a step has no formula, so the words below never jump. */
+.formulaSlot {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.formula {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-card));
+  color: var(--content-primary);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-body-lg);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * Room held for the longest step (77 characters: three lines on a phone, two once wider), so the
+ * buttons below stay where the thumb left them while the show runs.
+ */
+.stepText {
+  margin: 0;
+  min-height: 4.5em;
+  font: var(--text-body);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+@media (min-width: 480px) {
+  .stepText {
+    min-height: 3em;
+    font: var(--text-body-lg);
+  }
+}
+
+/* ---------- Controls ---------- */
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* Kept focusable at the end of the steps (see the player), just quiet and out of the pointer's way. */
+.controls [aria-disabled='true'] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ---------- The game ---------- */
+
+.game .stageTop {
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.prompt {
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+/* The number to set, big and marked like a highlighter stroke in the bead colour. */
+.target {
+  display: inline-block;
+  margin-inline: var(--space-1);
+  padding-inline: var(--space-1);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-display);
+  line-height: 1.1;
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 -0.22em 0 color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.hint {
+  margin: 0;
+  max-width: 44ch;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-wrap: pretty;
+}
+
+.keyboardHint {
+  display: none;
+}
+
+@media (any-pointer: fine) {
+  .keyboardHint {
+    display: inline;
+  }
+}
+
+/* Held open while unsolved, so "Barakalla" does not push the buttons down. */
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  margin: 0;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font: var(--text-body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (min-width: 400px) {
+  .statusPill {
+    font: var(--text-body-lg);
+    font-weight: 700;
+  }
+}
+
+.tally {
+  flex-basis: 100%;
+  margin: var(--space-1) 0 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tallyCount {
+  display: inline-block;
+  color: var(--content-primary);
+}
+
+/* ---------- Words beside the wood, from a tablet ---------- */
+
+/*
+ * The pair is centred in the card, so a wide card gains even margins instead of a hole on its
+ * right. The words' column is only as wide as its longest line (20rem holds every step and the
+ * game's hint on two lines), so the words reach the column's edge and the pair looks centred, not
+ * just measures so. The empty first and last rows of the words' column centre the words against
+ * the abacus. The game does this wherever it shows from 768px: on a desktop it has the full width
+ * (see below).
+ */
+@media (min-width: 768px) {
+  .stage.game {
+    grid-template-columns: auto minmax(0, 20rem);
+    grid-template-rows: 1fr auto auto auto 1fr;
+    grid-template-areas:
+      'abacus .'
+      'abacus top'
+      'abacus caption'
+      'abacus controls'
+      'abacus .';
+    justify-content: center;
+    column-gap: var(--space-6);
+    row-gap: var(--space-4);
+    justify-items: start;
+    text-align: start;
+  }
+
+  .game .stageTop {
+    align-items: flex-start;
+  }
+
+  .game .caption {
+    justify-items: start;
+  }
+
+  .game .controls,
+  .game .status {
+    justify-content: flex-start;
+  }
+
+  /* The glow needs room of its own once the wood no longer spans the card. */
+  .game .abacus {
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
+/* The player only on a tablet: on a desktop it stands in a column of its own. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .stage.player {
+    grid-template-columns: auto minmax(0, 20rem);
+    grid-template-rows: auto 1fr auto auto 1fr;
+    grid-template-areas:
+      'top top'
+      'abacus .'
+      'abacus caption'
+      'abacus controls'
+      'abacus .';
+    justify-content: center;
+    column-gap: var(--space-7);
+    row-gap: var(--space-4);
+    justify-items: start;
+    text-align: start;
+  }
+
+  /* The tag starts where the wood does (the abacus box pads it for its glow), the bars end with the words. */
+  .player .stageTop {
+    padding-inline-start: var(--space-5);
+  }
+
+  .player .caption {
+    justify-items: start;
+  }
+
+  /* Left-aligned beside the wood, a full first line keeps the words' right edge at the column's. */
+  .player .stepText {
+    text-wrap: pretty;
+  }
+
+  .player .controls {
+    justify-content: flex-start;
+  }
+
+  .player .abacus {
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
+/* ---------- Curriculum rail ---------- */
+
+.rail {
+  margin-bottom: var(--space-6);
+}
+
+.railTitle {
+  margin: 0 0 var(--space-4);
+  font: var(--text-h3);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+.milestones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .milestones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* The button fills its cell, so every card in a row is as tall as the tallest. */
+.milestoneItem {
+  display: flex;
+}
+
+/*
+ * A milestone of the path. Its colour runs along the top edge; the pressed one gains a ring, a
+ * filled step number and a lift, so "on show" never rests on colour alone.
+ */
+.milestone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-top: 4px solid var(--ms-color);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+  color: var(--content-primary);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The hover lift's deeper shadow, faded in on its own layer so only opacity moves. */
+.milestone::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: var(--elevation-2);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.milestone[aria-pressed='true'] {
+  border-color: var(--ms-color);
+  background: color-mix(in srgb, var(--ms-color) 7%, var(--surface-card));
+  box-shadow:
+    0 0 0 1px var(--ms-color),
+    var(--elevation-2);
+}
+
+/* The page's one focus ring, following the card's corners. */
+.milestone:focus-visible {
+  border-radius: var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .milestone {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .milestone::after {
+    transition: opacity var(--motion-base) var(--ease-standard);
+  }
+
+  .milestone:active {
+    transform: translateY(1px);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .milestone:hover {
+    transform: translateY(-2px);
+  }
+
+  .milestone:hover::after {
+    opacity: 1;
+  }
+}
+
+.msTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.msStep {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--ms-color);
+  border-radius: var(--radius-full);
+  font: var(--text-caption);
+  font-weight: 800;
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.milestone[aria-pressed='true'] .msStep {
+  background: color-mix(in srgb, var(--ms-color) 30%, var(--surface-card));
+}
+
+.msCount {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  white-space: nowrap;
+}
+
+/* The milestone's name stays on one line; the clip is only a guard for the narrowest phones. */
+.msLabel {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-body);
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* "To'g'ri (formulasiz)" needs about 130px at 16px: a half-width card has that from 400px. */
+@media (min-width: 400px) {
+  .msLabel {
+    font-size: var(--size-body-lg);
+  }
+}
+
+.msHint {
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+/* Pinned to the card's foot, so the examples of a row line up. */
+.msExample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-1);
+}
+
+.msExampleLabel {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  white-space: nowrap;
+}
+
+.msExpression {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--size-body);
+  line-height: 1.4;
+  color: var(--content-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * Below 360px a half-width card would clip "To'g'ri (formulasiz)" and break the example in two, so
+ * the cards go one a row: the step number stands beside the words like a list marker, the topic
+ * count beside the name.
+ */
+@media (max-width: 359.98px) {
+  .milestones {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .milestone {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'step label count'
+      'step hint hint'
+      'step example example';
+    align-items: baseline;
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .msTop {
+    display: contents;
+  }
+
+  .msStep {
+    grid-area: step;
+    align-self: start;
+  }
+
+  .msCount {
+    grid-area: count;
+  }
+
+  .msLabel {
+    grid-area: label;
+  }
+
+  .msHint {
+    grid-area: hint;
+  }
+
+  .msExample {
+    grid-area: example;
+    margin-top: 0;
+    padding-top: 0;
+  }
+}
+
+/* ---------- Drill chips ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-secondary);
+  font: var(--text-body);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Three chips never fit one phone row; centred, the chip that wraps sits under the pair on purpose. */
+@media (max-width: 767.98px) {
+  .chips {
+    justify-content: center;
+  }
+}
+
+/* ---------- Desktop: the player in a column of its own ---------- */
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* The last, flexible row takes whatever height the card has beyond the left column. */
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas:
+      'head player'
+      'mode player'
+      'rail player'
+      'chips player'
+      '. player';
+    column-gap: var(--space-7);
+  }
+
+  .head {
+    grid-area: head;
+  }
+
+  .mode {
+    grid-area: mode;
+  }
+
+  .rail {
+    grid-area: rail;
+  }
+
+  .chips {
+    grid-area: chips;
+  }
+
+  /*
+   * The card runs the full height of the column beside it, so both columns end on one line. The
+   * slot is a grid only so the card inside stretches with it; `hidden` still wins (see above).
+   */
+  .slot {
+    grid-area: player;
+    display: grid;
+    margin-bottom: 0;
+  }
+
+  /* Any height the rail adds goes around the wood; the words and buttons stay at the card's foot. */
+  .stage.player {
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+  }
+
+  .player .abacus {
+    align-self: center;
+  }
+
+  /* A column this wide holds a larger abacus, which fills the card instead of white space. */
+  .playerAbacus {
+    --soroban-rod-w: 68px;
+  }
+
+  /*
+   * The game has no rail to stand beside, so it takes the full width under the heading, its words
+   * beside the wood (see above). The heading and the switch keep their column, so they do not move
+   * when the mode changes.
+   */
+  .layout[data-mode='free'] {
+    grid-template-rows: none;
+    grid-template-areas:
+      'head .'
+      'mode .'
+      'player player'
+      'chips chips';
+  }
+
+  .layout[data-mode='free'] .slot {
+    margin-bottom: var(--space-6);
+  }
+
+  /*
+   * A card this wide carries a larger prompt and hint, or the words look lost beside the wood; the
+   * column is as wide as the hint's two lines, with more air between it and the wood.
+   */
+  .stage.game {
+    grid-template-columns: auto minmax(0, 24rem);
+    column-gap: var(--space-7);
+  }
+
+  .game .prompt {
+    font: var(--text-h2);
+  }
+
+  .game .hint {
+    font: var(--text-body);
+  }
+}
+
+/*
+ * A desktop screen shorter than 900px (most laptops, a landscape iPad) cannot show a column-tall
+ * card whole: after the header's "Abakus" link the beads showed but the step and its buttons sat
+ * under the fold. There the card keeps its own height and sticks below the header while the rail
+ * scrolls past, its padding tightens, and the abacus is sized from the screen's height, so the
+ * whole card, buttons included, fits between the section's top and the screen's foot. Below 1150px
+ * the heading wraps and the column grows to 855px, so there it takes a screen under 984px.
+ *
+ * The card is about 359px of chrome and words plus 5.6 rod widths of wood; it may be the screen
+ * less 137px (header 57, section padding 64, 16 of air below), so the rod is (100svh - 496px) / 5.6,
+ * kept between 44px (the lowest screens; the beads are a picture here) and the tall screens' 68px.
+ */
+@media (min-width: 1024px) and (max-height: 899.98px),
+  (min-width: 1024px) and (max-width: 1149.98px) and (max-height: 983.98px) {
+  .stage.player {
+    position: sticky;
+    top: calc(var(--lp-header-height) + var(--tg-safe-top, 0px) + var(--space-4));
+    align-self: start;
+    grid-template-rows: none;
+    row-gap: var(--space-4);
+    padding: var(--space-5);
+  }
+
+  .playerAbacus {
+    --soroban-rod-w: clamp(44px, calc((100svh - 496px) / 5.6), 68px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment::after {
+    transition: none;
+  }
+}

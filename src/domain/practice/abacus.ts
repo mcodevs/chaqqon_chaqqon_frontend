@@ -236,3 +236,50 @@ function applyAmount(
 export function moveExpression(total: number, value: number): string {
   return `${total} ${value > 0 ? '+' : MINUS} ${Math.abs(value)} = ${total + value}`;
 }
+
+/** One bead movement of a whole problem, as the child steps through it. */
+export interface MoveFrame {
+  /** The board after this step. */
+  value: number;
+  /** Rod the step moves, lit on the abacus; null for the opening number. */
+  column: number | null;
+  /** Row of the problem this step belongs to — 0 is the number the abacus starts from. */
+  row: number;
+  /** "7 + 6 = 13", the move the step is part of. */
+  header: string;
+  text: string;
+  formula: string;
+}
+
+/** Turns a problem into one frame per bead movement, which is what the child steps through. */
+export function problemFrames(numbers: readonly number[], rods: number): MoveFrame[] {
+  const [first, ...moves] = numbers;
+  const frames: MoveFrame[] = [
+    {
+      value: first,
+      column: null,
+      row: 0,
+      header: `Boshlanish: ${first}`,
+      text: `Abakusga ${first} ni qo'ying`,
+      formula: '',
+    },
+  ];
+
+  let total = first;
+  moves.forEach((value, index) => {
+    const header = moveExpression(total, value);
+    for (const step of planMove(total, value, rods)) {
+      frames.push({
+        value: step.value,
+        column: step.column,
+        row: index + 1,
+        header,
+        text: step.text,
+        formula: step.formula,
+      });
+    }
+    total += value;
+  });
+
+  return frames;
+}

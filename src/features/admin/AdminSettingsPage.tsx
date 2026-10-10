@@ -83,7 +83,7 @@ function ContactForm({ settings }: { settings: PlatformSettings }) {
       <form className={styles.form} onSubmit={submit} noValidate>
         <div className={styles.formGrid}>
           <TextField
-            label="Telefon raqam"
+            label="Telefon raqami"
             type="tel"
             inputMode="tel"
             placeholder="+998 90 123 45 67"

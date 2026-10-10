@@ -1,0 +1,342 @@
+/*
+ * The application card on the page's soft brand wash (the section carries Landing's `.section` and
+ * `.bandBrand`). A mascot hides behind the card's top edge and peeks over it; the card answers the
+ * visitor's arrival with one soft glow, and a sent application with a cheer.
+ *
+ * Phone and tablet: one centred card, the heading above the form. Desktop (1024px+): the card takes
+ * the section's whole width and splits in two, the heading and the steps beside the form.
+ */
+
+/* Halo, mascot and card share a stacking context, so both can sit behind the card's edge. */
+.stage {
+  /* How much of the 48px mascot shows above the card: eyes and smile, not the number. */
+  --mascot-peek: 36px;
+
+  position: relative;
+  isolation: isolate;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .stage {
+    max-width: none;
+  }
+}
+
+/*
+ * A still light behind the card's top, like the hero stage's halo: the last card reads as the
+ * destination. It stays inside the gutter and the section's top padding, so it never adds width.
+ */
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--space-6) * -1) calc(var(--lp-gutter, var(--space-4)) * -1) 40%;
+  z-index: -1;
+  background: radial-gradient(
+    60% 70% at 50% 30%,
+    color-mix(in srgb, var(--brand-primary) 16%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Washes dim in the dark, the same as the hero's (see body::before in global.css). */
+:global(:root[data-theme='dark']) .stage::before {
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .stage::before {
+    opacity: 0.5;
+  }
+}
+
+.mascot {
+  position: absolute;
+  top: calc(var(--mascot-peek) * -1);
+  right: var(--space-6);
+  z-index: 0;
+  display: block;
+  line-height: 0;
+  pointer-events: none;
+}
+
+/* The moving part: the outer span keeps a steady box for the observer to watch. */
+.mascotInner {
+  display: block;
+}
+
+.card {
+  /*
+   * The card's side padding, which the form's chip rows bleed into on a phone so a row that
+   * scrolls runs on to the card's edge (see ApplicationForm.module.css).
+   */
+  --form-bleed: var(--space-5);
+
+  position: relative;
+  z-index: 1;
+  padding: var(--space-6) var(--form-bleed);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  /* The usual lift, plus a faint violet underglow that sets the last card apart from the rest. */
+  box-shadow:
+    var(--elevation-2),
+    0 28px 56px -32px color-mix(in srgb, var(--brand-primary) 45%, transparent);
+}
+
+/* The underglow dims in the dark like the washes: the lighter dark-mode violet would outshine them. */
+:global(:root[data-theme='dark']) .card {
+  box-shadow:
+    var(--elevation-2),
+    0 28px 56px -32px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .card {
+    box-shadow:
+      var(--elevation-2),
+      0 28px 56px -32px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+  }
+}
+
+/* The smallest phones keep their width for the fields; the card's corners still clear the text. */
+@media (max-width: 359px) {
+  .card {
+    --form-bleed: var(--space-4);
+  }
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--space-7);
+  }
+}
+
+/*
+ * Desktop: the form keeps the wider column, enough for name and phone side by side and the tariff
+ * chips on one line even at 1024px; a hairline in the gap divides the two.
+ */
+@media (min-width: 1024px) {
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    column-gap: var(--space-7);
+  }
+
+  /* Stretched to the form's height, so the hairline runs the card's full height. */
+  .intro {
+    align-self: stretch;
+    padding-right: var(--space-7);
+    border-right: 1px solid var(--border-subtle);
+  }
+
+  .introInner {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  /* The steps below space the heading now, instead of its usual margin above the form. */
+  .head {
+    margin-bottom: 0;
+  }
+
+  /* Three even lines in the narrower column, not a lone "kun bepul." under two long ones. */
+  .lead {
+    text-wrap: balance;
+  }
+}
+
+/*
+ * When the optional fields open, the form outgrows the heading's column: the heading and steps
+ * ride along below the sticky header instead of leaving a hole beside the form. Only on a screen
+ * tall enough to show them whole.
+ */
+@media (min-width: 1024px) and (min-height: 720px) {
+  .introInner {
+    position: sticky;
+    top: calc(var(--lp-header-height, 57px) + var(--tg-safe-top, 0px) + var(--space-6));
+  }
+}
+
+/* The arrival glow's ring: invisible until focus enters the card. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-primary) 28%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Heading ---------- */
+
+.title:focus-visible {
+  outline-offset: 4px;
+}
+
+/* A nod to the demo above: only the round count, never the answers. */
+.rounds {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: var(--space-1) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--content-secondary);
+  font: var(--text-body);
+  text-wrap: pretty;
+}
+
+.roundsIcon {
+  flex: none;
+}
+
+.roundsCount {
+  color: var(--content-primary);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Steps (desktop) ---------- */
+
+/* Phone and tablet show the steps section's own list above; only the desktop repeats it here. */
+.next {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .next {
+    display: grid;
+    gap: var(--space-4);
+  }
+}
+
+.nextList {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Disc and words on one line; a thin rod runs from each disc down to the next, like the steps above. */
+.nextStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.nextStep:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: calc(36px + var(--space-1));
+  bottom: calc(var(--space-5) * -1 + var(--space-1));
+  left: 17px;
+  width: 2px;
+  border-radius: var(--radius-full);
+  background: var(--border-subtle);
+}
+
+.nextDisc {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+  font: var(--text-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* The free-trial step wears the steps section's gift and its soft green. */
+.nextStep[data-trial] .nextDisc {
+  background: var(--success-soft);
+}
+
+.nextText {
+  display: grid;
+  gap: var(--space-1);
+  /* Sits the title on the disc's centre line. */
+  padding-top: var(--space-2);
+}
+
+.nextTitle {
+  font: var(--text-body-lg);
+  font-weight: 800;
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+.nextBody {
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+/* ---------- Motion ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Below the fold, behind the card; nothing hides without the landing's motion gate. */
+  :global([data-landing-motion='on']) .mascot[data-peek='wait'] .mascotInner {
+    transform: translateY(calc(var(--mascot-peek) + var(--space-2)));
+  }
+
+  :global([data-landing-motion='on']) .mascot[data-peek='up'] .mascotInner {
+    transition: transform var(--lp-reveal, 480ms) var(--lp-overshoot, cubic-bezier(0.34, 1.56, 0.64, 1))
+      var(--motion-fast);
+  }
+
+  /*
+   * An apply button scrolls here and focuses the heading, or the visitor taps the first field: the
+   * card glows once, a little after the focus so a smooth scroll has arrived. focus-within, so
+   * moving from the heading to a field neither cuts the glow short nor plays it again.
+   */
+  .card:focus-within::after {
+    animation: arrive calc(var(--motion-slow) * 5) var(--ease-standard) var(--motion-slow) both;
+  }
+
+  /* The application went through: the mascot cheers once. */
+  .stage:has([data-sent]) .mascotInner {
+    animation: cheer calc(var(--motion-slow) * 2) var(--ease-standard) var(--motion-slow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card::after {
+    content: none;
+  }
+}
+
+@keyframes arrive {
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes cheer {
+  30% {
+    transform: translateY(-10px) rotate(-6deg);
+  }
+
+  55% {
+    transform: translateY(0) rotate(0);
+  }
+
+  75% {
+    transform: translateY(-4px) rotate(3deg);
+  }
+}

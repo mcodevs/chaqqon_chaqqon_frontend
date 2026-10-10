@@ -31,6 +31,9 @@ export interface StudentAccess {
 /** How far ahead the teacher may open a student; it also catches a mistyped year. */
 export const MAX_PREPAID_MONTHS = 24;
 
+/** "To'ladi" shortcuts: students often pay a few months ahead. The landing quotes this range too. */
+export const PAYMENT_QUICK_MONTHS = [1, 2, 3, 4] as const;
+
 /** Uzbekistan keeps UTC+5 all year, without daylight saving time. */
 const SCHOOL_UTC_OFFSET_MS = 5 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;

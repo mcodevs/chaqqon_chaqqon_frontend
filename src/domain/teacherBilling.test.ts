@@ -9,6 +9,7 @@ import {
   isValidLedgerAmount,
   nextChargeDate,
   overdueSince,
+  pricePerStudent,
   teacherBillingState,
 } from './teacherBilling';
 
@@ -173,5 +174,18 @@ describe('limits and amounts', () => {
     expect(isValidLedgerAmount(0, 'bonus')).toBe(false);
     expect(isValidLedgerAmount(10.5, 'payment')).toBe(false);
     expect(isValidLedgerAmount(2_000_000_000, 'payment')).toBe(false);
+  });
+});
+
+describe('price per student', () => {
+  it('splits the month over the class, rounded up to the next 100', () => {
+    expect(pricePerStudent(150_000, 20)).toBe(7_500);
+    expect(pricePerStudent(100_000, 30)).toBe(3_400);
+    expect(pricePerStudent(150_000, 1)).toBe(150_000);
+  });
+
+  it('is 0 for a free tariff or an empty class', () => {
+    expect(pricePerStudent(0, 20)).toBe(0);
+    expect(pricePerStudent(150_000, 0)).toBe(0);
   });
 });

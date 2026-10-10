@@ -1,0 +1,233 @@
+/*
+ * The landing's sticky top bar (it scrolls away only on a phone held sideways). 56px of bar plus a
+ * 1px hairline row: the 57px every section's scroll margin and the first-viewport budget count on
+ * (--lp-header-height). Its "lifted" look is
+ * a pseudo-element that only fades, so scrolling never repaints a border or a shadow transition.
+ */
+
+/* Read by the shared observer: while it is on screen the page is at its top. */
+.sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: var(--tg-safe-top, 0px);
+  /* Transparent until lifted; it keeps the hairline's row so lifting never shifts the page. */
+  border-bottom: 1px solid transparent;
+  background: color-mix(in srgb, var(--surface-page) 88%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* The lifted look: hairline and a soft shadow, faded in once the page leaves its top. */
+.header::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 -1px;
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--elevation-1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+
+.header[data-scrolled]::after {
+  opacity: 1;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: var(--lp-max);
+  min-height: 56px;
+  margin-inline: auto;
+  padding-inline: var(--lp-gutter, var(--space-4));
+}
+
+/* ---------- Brand ---------- */
+
+.brand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  color: var(--content-primary);
+  text-decoration: none;
+}
+
+.wordmark {
+  font: var(--text-h3);
+  white-space: nowrap;
+}
+
+.mark {
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+/* A small tilt of the bead under the pointer: the mark answers, quietly. */
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover .mark {
+    transform: rotate(-14deg);
+  }
+}
+
+/* ---------- Section menu (from 768px; packed tighter on a tablet) ---------- */
+
+.nav {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  color: var(--content-secondary);
+  font: var(--text-body);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* The underline draws itself from the left; only its scale moves. */
+.navLink::after {
+  content: '';
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-2);
+  left: var(--space-3);
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--motion-fast) var(--ease-decelerate);
+}
+
+.navLink:focus-visible {
+  color: var(--content-primary);
+}
+
+.navLink:focus-visible::after {
+  transform: scaleX(1);
+}
+
+@media (hover: hover) {
+  .navLink:hover {
+    color: var(--content-primary);
+  }
+
+  .navLink:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Kirish ---------- */
+
+.login {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  margin-inline-start: auto;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font: var(--text-body);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* The global focus ring would square the pill's corners. */
+.login:focus-visible {
+  border-radius: var(--radius-full);
+}
+
+.login:hover {
+  border-color: var(--brand-primary);
+  background: var(--surface-hover);
+  color: var(--brand-primary);
+}
+
+.login:active {
+  transform: translateY(1px);
+}
+
+/*
+ * A phone has no menu: the sticky apply bar is its way to the form, and five links would not fit
+ * beside the brand. From a tablet up the menu sits between them, pushed to the right with Kirish.
+ */
+@media (min-width: 768px) {
+  .nav {
+    display: block;
+    margin-inline-start: auto;
+  }
+
+  .login {
+    margin-inline-start: 0;
+  }
+}
+
+/*
+ * A phone on its side is only about 360px tall. The apply bar keeps its 61px at the bottom, so the
+ * header scrolls away with the page instead of taking another 57px off the top: the sections keep
+ * some 300px to be read in rather than 240. Its brand and Kirish are back at the top, and Kirish is
+ * in the footer too.
+ */
+@media (max-width: 767.98px) and (max-height: 479.98px) {
+  .header {
+    position: relative;
+  }
+}
+
+/* On a tablet the five links sit closer together, so they keep clear of the brand at 768px. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .inner {
+    gap: var(--space-3);
+  }
+
+  .navLink {
+    padding: 0 var(--space-2);
+  }
+
+  .navLink::after {
+    right: var(--space-2);
+    left: var(--space-2);
+  }
+
+  .login {
+    padding: 0 var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header::after,
+  .mark,
+  .navLink::after {
+    transition: none;
+  }
+}

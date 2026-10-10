@@ -1,0 +1,249 @@
+/*
+ * #boshlash on the plain page. Neutral number discs joined by a line that draws itself once, from
+ * each disc on to the next: downwards on a phone, across from 768px (tablet and desktop). Only the
+ * free-trial card is tinted, green with a 🎁. Motion is transform and opacity only; under reduced
+ * motion, or when the steps are on screen from the start, every line is simply drawn.
+ */
+
+.list {
+  /* The disc, the card and the line between discs are all placed from these. */
+  --disc: 36px;
+  --gift: 40px;
+  --card-pad-y: var(--space-4);
+  --card-pad-x: var(--space-4);
+  --steps-gap: var(--space-5);
+  /* On a phone the disc sits level with its card's first title line. */
+  --disc-top: calc(var(--card-pad-y) + (var(--size-h3) * 1.35 - var(--disc)) / 2);
+
+  display: grid;
+  gap: var(--steps-gap);
+  max-width: 720px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--disc) minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--space-4);
+}
+
+/* A plain number: brand violet stays for "press here", and the order is the whole message. */
+.disc {
+  display: grid;
+  place-items: center;
+  width: var(--disc);
+  height: var(--disc);
+  margin-top: var(--disc-top);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font: var(--text-h3);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* ---------- The connector ---------- */
+
+/* A short gap at both ends keeps each disc clear, so the line joins the steps without crossing them. */
+.lineY,
+.lineX {
+  position: absolute;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  pointer-events: none;
+}
+
+/* Phone: from under this disc down to just above the next one, across the gap between the steps. */
+.lineY {
+  --lp-delay: 200ms;
+  top: calc(var(--disc-top) + var(--disc) + var(--space-2));
+  bottom: calc(var(--space-2) - var(--steps-gap) - var(--disc-top));
+  left: calc(var(--disc) / 2 - 1px);
+  width: 2px;
+}
+
+.lineX {
+  display: none;
+}
+
+/* ---------- Card ---------- */
+
+.card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--card-pad-y) var(--card-pad-x);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+}
+
+.title {
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+.text {
+  margin: 0;
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+/* The free trial: the one step that is a gift, and it says so in words as well as in colour. */
+.card[data-trial] {
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border-subtle));
+  background: var(--success-soft);
+}
+
+.card[data-trial] .title {
+  /* Clear of the sticker on the card's corner. */
+  padding-inline-end: calc(var(--gift) + var(--space-4) + var(--space-1) - var(--card-pad-x));
+  color: var(--success-content);
+}
+
+/* A sticker on the card's top corner, tilted like one stuck on by hand. */
+.gift {
+  position: absolute;
+  top: calc(var(--space-3) * -1);
+  right: var(--space-4);
+  display: block;
+  line-height: 0;
+  transform: rotate(8deg);
+}
+
+.giftFace {
+  /* On a phone the step arrives on its own; across, it waits for the line to reach it. */
+  --lp-delay: 280ms;
+  display: grid;
+  place-items: center;
+  width: var(--gift);
+  height: var(--gift);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, var(--border-subtle));
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-2);
+  font-size: var(--size-h2);
+  line-height: 1;
+}
+
+/* ---------- Tablet and desktop: three columns, the line runs across ---------- */
+
+@media (min-width: 768px) {
+  .list {
+    --card-pad-x: var(--space-5);
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    max-width: none;
+  }
+
+  /* Disc on top, card under it; equal rows, so the three cards end level. */
+  .step {
+    grid-template-rows: var(--disc) 1fr;
+    grid-template-columns: none;
+    row-gap: var(--space-4);
+  }
+
+  /* The step's `align-items: start` would keep each card at its content height; filling the 1fr row
+     is what makes the three bottoms meet. Its text stays at the top through `align-content: start`. */
+  .card {
+    align-self: stretch;
+  }
+
+  /* Over the card's text, not its edge, so disc, title and text share one left line. */
+  .disc {
+    margin: 0 0 0 var(--card-pad-x);
+  }
+
+  .lineY {
+    display: none;
+  }
+
+  /* From this disc to just short of the next column's disc; each waits for the one before it. */
+  .lineX {
+    --lp-delay: calc(200ms + var(--step, 0) * 360ms);
+    display: block;
+    top: calc(var(--disc) / 2 - 1px);
+    right: calc(var(--space-2) - var(--steps-gap) - var(--card-pad-x));
+    left: calc(var(--card-pad-x) + var(--disc) + var(--space-2));
+    height: 2px;
+  }
+
+  .giftFace {
+    --lp-delay: calc(200ms + var(--step, 0) * 360ms + 120ms);
+  }
+}
+
+/*
+ * A tablet's columns are narrow: a smaller gap between the steps and a slimmer card padding give the
+ * text the room back. Below 834px the padding slims once more, so the longest title, "Akkauntni ochib
+ * beramiz" (about 201px), still takes one line in a 768px tablet's 229px column.
+ */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .list {
+    --card-pad-x: var(--space-4);
+    --steps-gap: var(--space-4);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 833.98px) {
+  .list {
+    --card-pad-x: var(--space-3);
+  }
+}
+
+/*
+ * Across, the 🎁 sits centred on the card's top edge: it ends where the title's letters begin, so the
+ * title keeps the card's whole width and "14 kun bepul ishlaysiz" stays on one line in a tablet's
+ * column. On a phone it keeps its lower place, clear of the card above, and the title its gap.
+ */
+@media (min-width: 768px) {
+  .gift {
+    top: calc(var(--gift) / -2);
+  }
+
+  .card[data-trial] .title {
+    padding-inline-end: 0;
+  }
+}
+
+/*
+ * Waiting below the fold: the line is undrawn and the gift unopened, until the step is reached and
+ * motion.drawY / drawX / pop play them in. Hidden only with the landing's motion gate on and motion
+ * allowed; otherwise they are simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :global([data-landing-motion='on']) .step[data-draw='wait'] .lineY {
+    transform: scaleY(0);
+  }
+
+  :global([data-landing-motion='on']) .step[data-draw='wait'] .lineX {
+    transform: scaleX(0);
+  }
+
+  :global([data-landing-motion='on']) .step[data-draw='wait'] .giftFace {
+    opacity: 0;
+  }
+}
+
+/* On paper every line is drawn and the gift is there, whether or not the step was ever reached. */
+@media print {
+  .lineY,
+  .lineX {
+    transform: none !important;
+  }
+
+  .giftFace {
+    opacity: 1 !important;
+  }
+}

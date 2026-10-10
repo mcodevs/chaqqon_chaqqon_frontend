@@ -1,0 +1,384 @@
+/*
+ * #imkoniyatlar on the page background. Three audiences, one after another, each hosted by a
+ * mascot: stacked on a phone; from a tablet the host heads its row on one line and the cards share
+ * two even columns (placed by Features.tsx, `--col`/`--row`/`--span`); on a desktop the host keeps
+ * a column of its own beside them. An audience's colour (--data-*) marks only its own chip and disc;
+ * brand violet appears only as the soft emoji tiles.
+ * Motion: heads and cards rise (Reveal), the host pops in once, and a card lifts under a fine pointer.
+ */
+
+/* ---------- Groups ---------- */
+
+.groups {
+  display: grid;
+  gap: var(--space-7);
+}
+
+.group {
+  --group: var(--data-4);
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.group[data-group='teacher'] {
+  --group: var(--data-2);
+}
+
+.group[data-group='parent'] {
+  --group: var(--data-5);
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.mascot {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--group) 16%, var(--surface-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--group) 24%, transparent);
+}
+
+/* The pop scales this wrapper, never the mascot itself. */
+.mascotInner {
+  display: inline-flex;
+}
+
+.groupTitle {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+}
+
+/* Who the group is for: a label, so it never breaks in two. */
+.audience {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--group) 14%, var(--surface-card));
+  color: var(--content-primary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+.promise {
+  display: block;
+  font: var(--text-h2);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+/* The promise follows a dash in the copy, so it starts lower-case there; on its own line it is a title. */
+.promise::first-letter {
+  text-transform: uppercase;
+}
+
+/* ---------- Cards ---------- */
+
+.cards {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+}
+
+/* Below the 360px the page is drawn for, less padding keeps the pictures' one-line chips inside. */
+@media (max-width: 359px) {
+  .card {
+    padding: var(--space-4);
+  }
+}
+
+/* Head, text, tariff tag and link: the words, above the picture or (in a wide card) beside it. */
+.cardBody {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Text, tariff tag and link: under the head, or (in a wide plain card) beside it. */
+.cardWords {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The shadow a hovered card lifts into, on its own layer so that only its opacity changes. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: var(--elevation-2);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--brand-primary-soft);
+  font-size: var(--size-h2);
+  line-height: 1;
+}
+
+.cardTitle {
+  min-width: 0;
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+.cardText {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+/* Which tariffs open the card: a quiet fact, never a sales badge. */
+.tag {
+  justify-self: start;
+  display: inline-block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 var(--space-3);
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--content-secondary);
+  font: var(--text-caption);
+  line-height: 24px;
+  white-space: nowrap;
+  /* A long list of tariff names ends in "…" rather than breaking; a screen reader still hears it all. */
+  text-overflow: ellipsis;
+}
+
+/* A text link with a full-size target, quiet next to the page's one primary button. */
+.link {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  margin-block: calc(var(--space-2) * -1);
+  color: var(--content-primary);
+  font: var(--text-body);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand-primary) 45%, transparent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+
+.link:hover {
+  text-decoration-color: var(--brand-primary);
+}
+
+.linkArrow {
+  display: inline-block;
+}
+
+.visual {
+  min-width: 0;
+  margin-top: var(--space-2);
+}
+
+.footnote {
+  max-width: 62ch;
+  margin: var(--space-6) 0 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-wrap: pretty;
+}
+
+/* ---------- Pointer and motion ---------- */
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::before {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .card::before {
+    transition: opacity var(--motion-base) var(--ease-standard);
+  }
+
+  .tile,
+  .linkArrow {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .link:hover .linkArrow {
+    transform: translateY(2px);
+  }
+
+  /* Below the fold, the host waits in its disc; nothing hides without the landing's motion gate. */
+  :global([data-landing-motion='on']) .mascot[data-play='wait'] .mascotInner {
+    opacity: 0;
+  }
+
+  .mascot[data-play='go'] .mascotInner {
+    animation: hostPop var(--motion-slow) var(--lp-overshoot, ease-out) 120ms backwards;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card:hover {
+    transform: translateY(-2px);
+  }
+
+  .card:hover .tile {
+    transform: rotate(-6deg) scale(1.06);
+  }
+}
+
+@media print {
+  .mascotInner {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+
+/* ---------- Tablet: the host heads its row, the cards share two columns ---------- */
+
+@media (min-width: 768px) {
+  /* The chip and the promise side by side, so the whole head is one line across the row. */
+  .groupTitle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .cards[data-layout='columns'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .cards[data-layout='columns'] > .card {
+    grid-column: var(--col);
+    grid-row: var(--row) / span var(--span);
+  }
+
+  /* Taller rows than a pictured card needs go to its picture, so the card never ends in a gap. */
+  .cards[data-layout='columns'] > .card[data-visual] {
+    grid-template-rows: auto 1fr;
+  }
+
+  .cards[data-layout='columns'] .visual {
+    display: grid;
+  }
+
+  /* No even split (a plain card and a pictured one): full width, the picture beside its words. */
+  .cards[data-layout='stack'] > .card[data-visual] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--space-6);
+  }
+
+  .cards[data-layout='stack'] .visual {
+    margin-top: 0;
+  }
+
+  /*
+   * A plain card in the stack: its head beside its words, split on the same middle line as a
+   * picture beside its words, so a short card fills its row instead of trailing an empty half.
+   */
+  .cards[data-layout='stack'] > .card:not([data-visual]) .cardBody {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+  }
+}
+
+/* ---------- Desktop: the host keeps a column beside its cards ---------- */
+
+@media (min-width: 1024px) {
+  .groups {
+    gap: var(--space-8);
+  }
+
+  .group {
+    grid-template-columns: clamp(248px, 22vw, 300px) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-6);
+  }
+
+  /* Stays in view while its cards scroll past, below the sticky page header. */
+  .groupHead {
+    position: sticky;
+    top: calc(var(--lp-header-height, 57px) + var(--tg-safe-top, 0px) + var(--space-5));
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .groupTitle {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2);
+  }
+}
+
+@media (min-width: 1280px) {
+  .group {
+    gap: var(--space-7);
+  }
+}
+
+@keyframes hostPop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(6px);
+  }
+}

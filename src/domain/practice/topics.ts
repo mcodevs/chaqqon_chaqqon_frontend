@@ -43,7 +43,7 @@ export const TOPIC_GROUPS: Record<TopicGroupId, { label: string; hint: string }>
   katta: { label: "Katta do'st", hint: "10 ning juftligi: o'nlikka o'tish" },
   miks: { label: 'Miks formula', hint: "O'tishda yana 5 ning juftligi kerak" },
   o50: { label: "50 dan o'tish", hint: "O'nliklar xonasida 5 ga o'tish" },
-  o100: { label: "100 dan o'tish", hint: 'Yuzlikka ikki bosqichli ko‘chirish' },
+  o100: { label: "100 dan o'tish", hint: "Yuzlikka ikki bosqichli ko'chirish" },
 };
 
 const ALL: readonly ColumnTechniqueId[] = ['direct', 'small5', 'big10', 'mix'];

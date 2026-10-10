@@ -1,0 +1,275 @@
+/*
+ * The landing's footer. It hangs from the page's one RodDivider: a soroban rod laid on the footer's
+ * top line, carrying four beads that are flicked to its right end once it scrolls into view. Below
+ * it: brand, contact, "Kirish", sharing and the theme choice. A phone stacks them; a tablet puts the
+ * brand on the left and the actions in a right-aligned column beside it; a desktop lays everything
+ * in one row.
+ */
+
+.footer {
+  --bead-w: 22px;
+  --bead-h: 16px;
+  --bead-gap: 2px;
+  /* The beads come to rest a little in from the rod's right end, as on a real frame. */
+  --rail-end: var(--space-6);
+
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ---------- The rod and its beads ---------- */
+
+/* Pulled up by half a bead, so the rod sits centred on the footer's top line. */
+.railBox {
+  max-width: var(--lp-max);
+  margin: calc(var(--bead-h) / -2) auto 0;
+  padding-inline: var(--lp-gutter, var(--space-4));
+}
+
+.rail {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--bead-h);
+}
+
+/* Each bead rides a track as wide as the rod, so the track's percentage translate spans the rod. */
+.track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bead {
+  position: absolute;
+  top: 0;
+  right: calc(var(--rail-end) + var(--n, 0) * (var(--bead-w) + var(--bead-gap)));
+  width: var(--bead-w);
+  height: var(--bead-h);
+  /* The BrandMark's bead: lit from the top left, shaded towards the frame's wood. */
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--abacus-bead-active) 78%, var(--abacus-label)) 0%,
+    var(--abacus-bead-active) 50%,
+    color-mix(in srgb, var(--abacus-bead-active) 78%, var(--abacus-frame-edge)) 100%
+  );
+  clip-path: polygon(50% 0%, 88% 26%, 100% 50%, 88% 74%, 50% 100%, 12% 74%, 0% 50%, 12% 26%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Below the fold the beads wait packed at the rod's left end... */
+  :global([data-landing-motion='on']) .rail[data-beads='wait'] .track {
+    transform: translateX(
+      calc(-100% + var(--rail-end) + var(--beads, 4) * (var(--bead-w) + var(--bead-gap)))
+    );
+  }
+
+  /* ...and are flicked across one after another, the rightmost first, settling into a stack. */
+  :global([data-landing-motion='on']) .rail[data-beads='go'] .track {
+    transition: transform calc(var(--lp-reveal, 480ms) * 1.5) var(--ease-decelerate) calc(var(--n, 0) * 90ms);
+  }
+}
+
+/* ---------- Content ---------- */
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: var(--lp-max);
+  margin-inline: auto;
+  /* No room kept for the sticky apply bar: it hides once the footer is on screen. */
+  padding: var(--space-6) var(--lp-gutter, var(--space-4))
+    calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+}
+
+/* Two columns from a tablet up: the brand takes what the actions leave and wraps its contact if it must. */
+@media (min-width: 768px) {
+  .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-6);
+  }
+}
+
+/* ---------- Brand and contact ---------- */
+
+.about {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.aboutText {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.brand {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.name {
+  color: var(--content-primary);
+  font: var(--text-h3);
+  white-space: nowrap;
+}
+
+/* The line break stands in for it on screen. */
+.dot {
+  display: none;
+}
+
+.tagline {
+  color: var(--content-secondary);
+  font: var(--text-body);
+}
+
+.contact {
+  margin: 0;
+  color: var(--content-secondary);
+  font: var(--text-body);
+}
+
+.contactValue {
+  color: var(--content-primary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Actions ---------- */
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Tablet: the links over the theme choice, both flush with the right edge, as tall as the brand. */
+@media (min-width: 768px) {
+  .actions {
+    align-items: flex-end;
+    gap: var(--space-3);
+  }
+}
+
+/* Desktop: the links and the theme choice in one row, level with the brand. */
+@media (min-width: 1024px) {
+  .actions {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-5);
+  }
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .links {
+    position: relative;
+    flex-wrap: nowrap;
+  }
+}
+
+/* A quiet text link; the negative margin lines its word up with the brand column. */
+.login {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  margin-inline-start: calc(var(--space-3) * -1);
+  padding: 0 var(--space-3);
+  color: var(--content-secondary);
+  font: var(--text-body-lg);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Beside the brand there is no column to line up with. */
+@media (min-width: 768px) {
+  .login {
+    margin-inline-start: 0;
+  }
+}
+
+.login:hover {
+  color: var(--content-primary);
+  text-decoration: underline;
+}
+
+.shareIcon {
+  flex: none;
+}
+
+/* Empty until a copy is tried; it takes no room in the row until then. */
+.status {
+  margin: 0;
+  color: var(--content-secondary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+/*
+ * From a tablet up the message floats just above the links, in the footer's top padding, so showing
+ * it never pushes the buttons or the theme choice aside.
+ */
+@media (min-width: 768px) {
+  .status {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--space-1));
+  }
+}
+
+.status [data-kind='copied'] {
+  color: var(--success-content);
+}
+
+/*
+ * The theme choice keeps every label on one line: when the three do not fit, the row scrolls
+ * inside its own box (the admin's FilterPills pattern), never the page.
+ */
+.theme {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.theme::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * Hairline rings give the track and the chosen option an edge of their own. In light the white pill
+ * and its shadow already stand out; in dark the card, the sunken track and the page are nearly one
+ * shade and a shadow does not show, so without the rings the chosen option all but disappears.
+ */
+.theme > [role='radiogroup'] {
+  width: max-content;
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.theme [role='radiogroup'] [role='radio'] {
+  flex: none;
+  min-height: var(--touch-target);
+  white-space: nowrap;
+}
+
+.theme [role='radiogroup'] [role='radio'][aria-checked='true'] {
+  box-shadow:
+    inset 0 0 0 1px var(--border-strong),
+    var(--elevation-1);
+}

@@ -1,0 +1,646 @@
+/*
+ * The hero: the page's first screen, with the demo stage as its anchor. Four compositions:
+ *   - phone (< 600px): top to bottom (head, stage, rest), aligned to the start edge;
+ *   - tablet (600–1023px): the same single column, but composed on its centre line, so the stage
+ *     card never hugs one edge beside a hole;
+ *   - desktop (>= 1024px): the stage takes its own column beside the text;
+ *   - short landscape (a phone on its side, under 500px tall): the desktop's two columns early, so
+ *     Boshlash and the apply pill are both above its ~300px fold (the last block in this file).
+ *
+ * The 360×640 budget (spec §4) is why the spacing above the stage is tight on a phone: under the
+ * 57px header, 24 padding + eyebrow 16 + 8 + H1 67 + 8 + subline 24 + 24 puts the stage at ~228px,
+ * so Boshlash ends by 520px and the apply pill (#hero-cta) by 584px. Change a gap above the stage
+ * and measure both again. Below the stage nothing is budgeted, so the spacing there breathes.
+ */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The warm wash: violet top-left, honey top-right. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      color-mix(in srgb, var(--brand-primary) 14%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(circle at 85% 10%, var(--warning-soft), transparent 40%);
+  /*
+   * Soft top and bottom edges, so no seam shows under the header or against the next section. A
+   * mask reads only alpha: the colour named here is never seen.
+   */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    var(--content-primary) var(--space-7),
+    var(--content-primary) calc(100% - var(--space-8)),
+    transparent
+  );
+}
+
+/* On a dark page the same wash turns muddy, so it steps back, like body::before in global.css. */
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .hero::before {
+    opacity: 0.5;
+  }
+}
+
+:global(:root[data-theme='dark']) .hero::before {
+  opacity: 0.5;
+}
+
+/* The wash fades up under the entrance instead of standing there from the first frame. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero::before {
+    animation: washIn var(--lp-reveal, 480ms) var(--ease-standard) backwards;
+  }
+}
+
+/* No `to`: it ends on the wash's own opacity, which is 0.5 on a dark page. */
+@keyframes washIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Layout ---------- */
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'head'
+    'stage'
+    'rest';
+  max-width: var(--lp-max);
+  margin-inline: auto;
+  padding: var(--space-5) var(--lp-gutter) var(--space-7);
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding-block: var(--space-7);
+  }
+}
+
+/*
+ * Desktop: text on the left, the stage in its own column on the right, both hanging from the top.
+ * The stage spans all three rows and only the last, empty row is flexible, so when a result, the
+ * teacher peek or the abacus replay makes the stage taller, that row alone grows: the H1, the CTAs
+ * and the stage's own top never move. No min-height either, since the flexible row would only turn
+ * it into empty space; the taller hero comes from the padding.
+ *
+ * The stage column grows with the screen, 432px at 1024 to 528px from 1280, and the gap with it,
+ * so the text column never drops under ~496px: the apply pill and the login link (~465px together)
+ * always share one line.
+ */
+@media (min-width: 1024px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, clamp(27rem, 42vw, 33rem));
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      'head stage'
+      'rest stage'
+      '. stage';
+    align-content: start;
+    column-gap: var(--space-7);
+    padding-block: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .inner {
+    column-gap: var(--space-8);
+  }
+}
+
+/* ---------- Head: eyebrow, H1, subline ---------- */
+
+.head {
+  grid-area: head;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.title {
+  font: var(--text-h1);
+  text-wrap: balance;
+}
+
+.subline {
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+@media (min-width: 768px) {
+  .head {
+    gap: var(--space-3);
+  }
+
+  .title {
+    font: var(--text-display);
+  }
+}
+
+/* Tablet: the head stands on the centre line, over the centred stage. */
+@media (min-width: 600px) and (max-width: 1023.98px) {
+  .head {
+    justify-items: center;
+    text-align: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .head {
+    align-self: start;
+  }
+}
+
+/* ---------- Stage: the demo, its mascots and the teacher peek ---------- */
+
+.stage {
+  /* How much of each 40px mascot shows above the card: eyes and smile. */
+  --mascot-size: 40px;
+  --mascot-peek: 22px;
+
+  grid-area: stage;
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+  /* The subline's clearance, which the peeking mascots stand in. */
+  margin-top: var(--space-5);
+}
+
+/*
+ * Tablet keeps one column, but a stretched stage would read as a banner, not a card: it stands
+ * centred at up to 600px, under the centred head.
+ */
+@media (min-width: 600px) and (max-width: 1023.98px) {
+  .stage {
+    justify-self: center;
+    width: min(100%, 600px);
+  }
+}
+
+@media (min-width: 768px) {
+  .stage {
+    --mascot-peek: 26px;
+
+    margin-top: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stage {
+    align-self: start;
+    /* The mascots stand 1.35× taller here (35px peek, 8px hop), so they need more than 32px. */
+    margin-top: var(--space-7);
+  }
+}
+
+/* The mascots' reference: its top edge is the stage card's top edge. */
+.stageCard {
+  position: relative;
+  min-width: 0;
+}
+
+/*
+ * The stage card lands rather than rises: the same 12px plus a slight grow, so the screen's anchor
+ * arrives as one object instead of moving like the eyebrow text. It keeps the third slot of the
+ * hero's 70ms stagger (motion's heroRise) and is done by 620ms.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .land {
+    animation: stageLand var(--lp-reveal, 480ms) var(--ease-decelerate) calc(2 * var(--lp-hero-stagger, 70ms))
+      backwards;
+  }
+}
+
+@keyframes stageLand {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+
+/*
+ * A window standing on the card's top edge. It clips at that edge (and only there, leaving room for
+ * the hop and the pop), so the rest of the mascot seems to stand behind the card and can never
+ * cover a word inside it. Above the stage's halo, which would otherwise tint it.
+ */
+.mascot {
+  position: absolute;
+  bottom: 100%;
+  z-index: 2;
+  display: block;
+  width: var(--mascot-size);
+  height: var(--mascot-peek);
+  line-height: 0;
+  pointer-events: none;
+  clip-path: inset(calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0);
+}
+
+.mascot[data-place='left'] {
+  left: 10%;
+}
+
+.mascot[data-place='mid'] {
+  left: calc(60% - var(--mascot-size) / 2);
+}
+
+.mascot[data-place='right'] {
+  right: 8%;
+}
+
+/*
+ * On the wide desktop card 26px slivers barely read as characters, so the hosts stand bigger.
+ * Scaled from their feet, the window's clip stays on the card's top edge.
+ */
+@media (min-width: 1024px) {
+  .mascot {
+    transform: scale(1.35);
+    transform-origin: 50% 100%;
+  }
+}
+
+/* Grows from its feet, so the pop reads as climbing up from behind the card. */
+.mascotPop {
+  display: block;
+  transform-origin: 50% 100%;
+}
+
+.mascotHop {
+  display: block;
+}
+
+/* ---------- Rest: the apply pill, the offer, the lead and the facts ---------- */
+
+.rest {
+  grid-area: rest;
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .rest {
+    margin-top: var(--space-6);
+  }
+}
+
+/* The 32px from tablet stays as the gap under the head: the desktop grid has no row gap. */
+@media (min-width: 1024px) {
+  .rest {
+    align-self: start;
+  }
+}
+
+.offer,
+.proof {
+  display: grid;
+  min-width: 0;
+}
+
+.offer {
+  gap: var(--space-3);
+}
+
+.proof {
+  gap: var(--space-5);
+}
+
+/*
+ * Stacked on a phone, the login's own 44px box already holds ~10px of air above its words, so it
+ * sits close under the pill as its quieter partner. The apply pill alone is #hero-cta: the place
+ * the first-view budget and the phone's sticky apply bar both mean by "the hero's apply button".
+ */
+.ctaRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Two classes, so the pill shape wins over Button's own radius whatever order the CSS loads in. */
+.ctaRow .cta {
+  width: 100%;
+  border-radius: var(--radius-full);
+}
+
+/* A 44px pill on a phone: the 52px of size lg would push it past the first view's 584px line. */
+@media (max-width: 767px) {
+  .ctaRow .cta {
+    min-height: var(--touch-target);
+  }
+}
+
+/* A quiet text action: brand violet stays for the stage's "press here". */
+.login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  color: var(--content-secondary);
+  font-family: var(--font-display);
+  font-size: var(--size-body-lg);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.login:hover {
+  background: var(--surface-hover);
+  color: var(--content-primary);
+}
+
+/* Two caption lines are always reserved, so the page never shifts when the settings arrive. */
+.offerNote {
+  min-height: calc(2 * 1.35em);
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* From a tablet the pill and the login share a row: centred under the stage, then at the text's edge. */
+@media (min-width: 600px) {
+  .ctaRow {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+
+  .ctaRow .cta {
+    width: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ctaRow {
+    justify-content: flex-start;
+  }
+
+  .offerNote {
+    text-align: start;
+  }
+}
+
+/* The lead under a centred tablet column: centred too, its two lines balanced (two classes, so it
+   wins over the shared lead's own wrap whatever order the CSS loads in). */
+@media (min-width: 600px) and (max-width: 1023.98px) {
+  .proof .proofLead {
+    margin-inline: auto;
+    text-align: center;
+    text-wrap: balance;
+  }
+}
+
+/* ---------- Proof facts ---------- */
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A frosted tile: the wash shows through, the border keeps the edge. */
+.fact {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface-card) 72%, transparent);
+}
+
+/* In a two-column grid a last lone tile takes the whole row instead of leaving a hole. */
+@media (max-width: 767px) {
+  .fact:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/*
+ * Under 360px two tiles side by side leave ~100px for words: captions break into four lines and
+ * labels drop under their numbers. One tile a row reads cleanly instead.
+ */
+@media (max-width: 359.98px) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * One row for the four computed facts while the hero is a single wide column. Flex rather than a
+ * four-column grid, so live counts that join later wrap to a full, half or third-width row instead
+ * of leaving empty cells beside them (4 × (25% − 12px) + 3 gaps of 12px still fits on one line).
+ */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  /* Centred inside too, so the row of tiles keeps the column's centre line. */
+  .fact {
+    flex: 1 1 calc(25% - var(--space-3));
+    justify-items: center;
+    text-align: center;
+  }
+
+  .factMain {
+    justify-content: center;
+  }
+}
+
+/* Beside the stage the text column is narrow again: back to two, as two even rows. */
+@media (min-width: 1024px) {
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fact:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The label drops under the number when both do not fit; neither one ever breaks. */
+.factMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+}
+
+.factValue {
+  font: var(--text-h2);
+  font-variant-numeric: tabular-nums;
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+.factLabel {
+  font: var(--text-body);
+  font-weight: 800;
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+.factCaption {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-wrap: pretty;
+}
+
+/* A live count wears a small green dot; its caption ("platformada") says the same in words. */
+.fact[data-live] .factCaption::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-inline-end: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--success);
+  vertical-align: 0.1em;
+}
+
+/* The rolling digits sit over the invisible final number, which holds the width. */
+.count {
+  position: relative;
+  display: inline-grid;
+}
+
+.countHold,
+.countShown {
+  grid-area: 1 / 1;
+}
+
+.countHold {
+  visibility: hidden;
+}
+
+/* ---------- Short landscape: a phone on its side ---------- */
+
+/*
+ * Under 500px tall the single column puts Boshlash and the apply pill both under the fold, so a
+ * two-column band comes early: the head and its buttons on the left, the stage beside them, both
+ * hanging from the top and back on the start edge. The proof (lead and facts) runs the full width
+ * under that band, so no hole opens beside the short card. As on a desktop, only the empty third
+ * row is flexible: a result grows the stage into it and pushes the proof down, while the H1 and the
+ * buttons stay put. Last in the file, so it wins over the tablet's centring; the stage card's own
+ * short-screen sizing is in DemoStage.module.css.
+ */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 560px) and (max-width: 1023.98px) {
+  .inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      'head stage'
+      'offer stage'
+      '. stage'
+      'proof proof';
+    align-content: start;
+    column-gap: var(--space-6);
+    padding-block: var(--space-3) var(--space-7);
+  }
+
+  .head {
+    align-self: start;
+    justify-items: start;
+    text-align: start;
+  }
+
+  /* Half a phone's width: the display size would take the H1 to three or four lines. */
+  .title {
+    font: var(--text-h1);
+  }
+
+  /* Its top clears only the peeking hosts (22–26px): the H1 beside it needs no clearance. */
+  .stage {
+    align-self: start;
+    justify-self: stretch;
+    width: auto;
+    margin-top: var(--space-5);
+  }
+
+  /* The offer and the proof take their own places in the grid. */
+  .rest {
+    display: contents;
+  }
+
+  .offer {
+    grid-area: offer;
+    align-self: start;
+    margin-top: var(--space-5);
+  }
+
+  .proof {
+    grid-area: proof;
+    margin-top: var(--space-7);
+  }
+
+  .ctaRow {
+    justify-content: flex-start;
+  }
+
+  .offerNote {
+    text-align: start;
+  }
+
+  .proof .proofLead {
+    margin-inline: 0;
+    text-align: start;
+    text-wrap: pretty;
+  }
+
+  /* Full width, the four facts share one row (flex, as on a tablet, so late live counts wrap whole). */
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .fact {
+    flex: 1 1 calc(25% - var(--space-3));
+    justify-items: start;
+    text-align: start;
+  }
+
+  .factMain {
+    justify-content: flex-start;
+  }
+}
+
+/* Under 700px four tiles would leave ~110px for each caption: two even rows instead. */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 560px) and (max-width: 699.98px) {
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fact:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}

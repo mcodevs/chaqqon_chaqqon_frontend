@@ -1,0 +1,255 @@
+/*
+ * #savollar on the plain page: one card per question, native <details>. Height never animates; the
+ * chevron turns over, the answer fades in, and an open card stands a little above the rest. Below
+ * 1024px heading and list share one reading column, centred; from 1024px the heading holds the left
+ * column while the list scrolls past it.
+ */
+
+/* ---------- Layout ---------- */
+
+/* One column no wider than comfortable reading, in the middle: a tablet keeps no hole on one side. */
+.layout {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/*
+ * A tablet's column is narrower than the section, so a heading kept to its left edge would look
+ * indented next to the blocks above; centred over the list, it reads like the Tariflar heading.
+ */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .layout > .head {
+    justify-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    display: grid;
+    max-width: none;
+    /*
+     * A floor for the heading's column wide enough for "Ko'p so'raladigan" on one line, so at 1024px
+     * the title takes two lines, as from 1280px, instead of three with a word alone at the top.
+     */
+    grid-template-columns: minmax(320px, 1fr) minmax(0, 720px);
+    align-items: start;
+    gap: var(--space-7);
+  }
+
+  /* Beside a long list the heading stays in view, just below the sticky header. */
+  .head {
+    position: sticky;
+    top: calc(var(--lp-header-height, 57px) + var(--tg-safe-top, 0px) + var(--space-6));
+  }
+}
+
+/* ---------- Questions ---------- */
+
+.list {
+  --chevron: 32px;
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-1);
+}
+
+/* Open, it lifts a step: the reader's place in the list. Shadows switch, they never animate. */
+.item[open] {
+  border-color: var(--border-strong);
+  box-shadow: var(--elevation-2);
+}
+
+/* The whole row is the button: at least a touch target tall, however short the question. */
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--touch-target);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+  border-radius: calc(var(--radius-lg) - 1px);
+  color: var(--content-primary);
+  font: var(--text-body-lg);
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A question is a sentence, not a label: it wraps, evenly. */
+.question {
+  flex: 1;
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+/* The form's chevron: a drawn arrow in a small disc that turns over when the card opens. */
+.chevron {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--chevron);
+  height: var(--chevron);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-secondary);
+}
+
+.chevron::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.item[open] .chevron {
+  border-color: transparent;
+  background: var(--brand-primary-soft);
+  color: var(--content-primary);
+  transform: rotate(180deg);
+}
+
+/* Hover only where there is a pointer: on a phone it would stick to the card just tapped. */
+@media (hover: hover) and (pointer: fine) {
+  .summary:hover .chevron {
+    border-color: var(--border-strong);
+    color: var(--content-primary);
+  }
+}
+
+/* The ring goes round the whole card where :has() allows; otherwise inside the question row. */
+.summary:focus-visible {
+  border-radius: calc(var(--radius-lg) - 1px);
+  outline-offset: -2px;
+}
+
+@supports selector(:has(*)) {
+  .summary:focus-visible {
+    outline: none;
+  }
+
+  .item:has(> .summary:focus-visible) {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+}
+
+.answer {
+  margin: 0;
+  padding: 0 var(--space-5) var(--space-5);
+  color: var(--content-secondary);
+  font: var(--text-body);
+  text-wrap: pretty;
+}
+
+/* Wide enough to spare the room: the answer keeps to the question's column, clear of the chevron. */
+@media (min-width: 768px) {
+  .answer {
+    padding-inline-end: calc(var(--space-4) * 2 + var(--chevron));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chevron {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  /* A press the finger can feel, on a phone as much as with a mouse. */
+  .summary:active .chevron {
+    transform: scale(0.9);
+  }
+
+  .item[open] .summary:active .chevron {
+    transform: rotate(180deg) scale(0.9);
+  }
+
+  /* Plays each time the card opens: the selector stops matching on close, so it starts afresh. */
+  .item[open] .answer {
+    animation: answerIn var(--motion-slow) var(--ease-decelerate);
+  }
+}
+
+@keyframes answerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* ---------- Contact ---------- */
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+/* A narrow phone gives the text the room, so "Aloqa:" and the number share a line. */
+@media (max-width: 400px) {
+  .contact {
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+}
+
+.contactIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  font-size: var(--size-h3);
+  line-height: 1;
+}
+
+.contactText {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.contactAsk {
+  color: var(--content-primary);
+  font: var(--text-body-lg);
+  font-weight: 700;
+}
+
+.contactWay {
+  color: var(--content-secondary);
+  font: var(--text-body-lg);
+}
+
+.contactValue {
+  color: var(--content-primary);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Moves to the next line whole; only a piece wider than the whole line may break inside. */
+.whole {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

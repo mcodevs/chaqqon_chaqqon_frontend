@@ -1,0 +1,197 @@
+/*
+ * The landing's shared motion. Rules every class here keeps:
+ *   - only transform and opacity move, and nothing loops forever;
+ *   - every animation lives inside `prefers-reduced-motion: no-preference`, and each one ends on the
+ *     element's natural state, so under reduced motion the element simply sits at its end frame;
+ *   - a class plays when it is added, so replay by changing the element's React `key`;
+ *   - a staggered sibling sets `--lp-delay` inline (e.g. `style={{ '--lp-delay': '80ms' }}`);
+ *   - an element with a transform of its own (a centred mascot) carries these on an inner wrapper,
+ *     since a keyframe transform replaces the element's own while it plays.
+ * Durations come from the motion tokens, through the `--lp-*` properties `.page` sets; the fallbacks
+ * keep a class working if it is ever used outside the page.
+ */
+
+/* ---------- Scroll reveal (see Reveal.tsx) ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  :global([data-landing-motion='on']) .reveal[data-reveal='pending'] {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  :global([data-landing-motion='on']) .reveal[data-reveal='done'] {
+    transition:
+      opacity var(--lp-reveal, 480ms) var(--ease-decelerate),
+      transform var(--lp-reveal, 480ms) var(--ease-decelerate);
+    transition-delay: calc(var(--i, 0) * var(--lp-stagger, 60ms));
+  }
+}
+
+@media print {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------- One-shot keyframe classes ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* A value that just changed: a score, a price, a date. */
+  .bump {
+    animation: bump var(--motion-base) var(--ease-standard) var(--lp-delay, 0ms);
+  }
+
+  /* Something earned arriving: a mascot, a verdict, a medal. Overshoot is for celebrations only. */
+  .pop {
+    animation: pop var(--motion-slow) var(--lp-overshoot, cubic-bezier(0.34, 1.56, 0.64, 1))
+      var(--lp-delay, 0ms) both;
+  }
+
+  /* A new block settling in: the answer row, the teacher peek. */
+  .rise {
+    animation: rise var(--motion-base) var(--ease-decelerate) var(--lp-delay, 0ms) both;
+  }
+
+  /* A flashed number entering. Fast, so the flash timing stays the exercise. */
+  .flashIn {
+    animation: flashIn var(--motion-fast) var(--ease-decelerate) var(--lp-delay, 0ms) both;
+  }
+
+  /* A connector line drawing itself from its start. */
+  .drawX {
+    transform-origin: left center;
+    animation: drawX var(--lp-reveal, 480ms) var(--ease-decelerate) var(--lp-delay, 0ms) both;
+  }
+
+  .drawY {
+    transform-origin: center top;
+    animation: drawY var(--lp-reveal, 480ms) var(--ease-decelerate) var(--lp-delay, 0ms) both;
+  }
+
+  /*
+   * The hero's first-paint entrance. Each piece sets `--i` (0…4): five pieces 70ms apart, 400ms
+   * each, all done by 680ms. Not for the H1, which is the LCP element and must paint at once.
+   */
+  .heroRise {
+    animation: heroRise calc(var(--motion-base) * 2) var(--ease-decelerate)
+      calc(min(var(--i, 0), 4) * var(--lp-hero-stagger, 70ms)) both;
+  }
+
+  /* A mascot's single cheer after a correct answer. */
+  .hop {
+    animation: hop calc(var(--motion-slow) * 1.25) var(--ease-standard) var(--lp-delay, 0ms);
+  }
+
+  /*
+   * A soft halo breathing around a button three times, then gone: an invitation, not an alarm.
+   * Put it on the button itself (Button passes className through), so the halo follows its corners.
+   */
+  .ringPulse {
+    position: relative;
+  }
+
+  .ringPulse::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--brand-primary) 30%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    animation: ringPulse calc(var(--motion-slow) * 3) var(--ease-standard) var(--lp-delay, 0ms) 3;
+  }
+}
+
+/* Reduced motion: no keyframes at all, so every element above is already at its end frame. */
+@media (prefers-reduced-motion: reduce) {
+  .bump,
+  .pop,
+  .rise,
+  .flashIn,
+  .drawX,
+  .drawY,
+  .heroRise,
+  .hop {
+    animation: none;
+  }
+
+  .ringPulse::after {
+    content: none;
+  }
+}
+
+/* While a demo round flashes, nothing else on the page may move and pull the eye away. */
+:global([data-demo-busy] [data-ambient]),
+:global([data-demo-busy] [data-ambient])::before,
+:global([data-demo-busy] [data-ambient])::after {
+  animation-play-state: paused;
+}
+
+@keyframes bump {
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes flashIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes drawX {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes drawY {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes heroRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes hop {
+  40% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ringPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  40% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}

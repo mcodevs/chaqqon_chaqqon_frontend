@@ -1,0 +1,432 @@
+/*
+ * The landing's application form. Class names are the ones it had in Landing.module.css, so the
+ * markup reads the same; only the details box, the chip tick and the thank-you's contact are new.
+ * Motion here is transform and opacity only, and none of it plays under reduced motion.
+ */
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+/*
+ * Fields and notices bring their own bottom margin; inside the form the grid gaps space them
+ * instead, so every block sits the same distance from the next.
+ */
+.formGrid > div,
+.choiceBlock > div,
+.detailsBody > div,
+.actions > div,
+.extraField > div {
+  margin-bottom: 0;
+}
+
+/*
+ * Two fields a row once each gets 200px: name and phone pair up from a 480px-wide phone, and still
+ * do in the desktop card's form column at 1024px.
+ */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: var(--space-4) var(--space-3);
+}
+
+.choiceBlock {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* Reads like a field's label, so a row of chips and a text field look like one family. */
+.choiceLabel {
+  font: var(--text-caption);
+  color: var(--content-secondary);
+}
+
+/* ---------- Chips ---------- */
+
+/*
+ * A label never breaks in two. On a phone a row that does not fit scrolls sideways inside itself
+ * (the FilterPills pattern), running on under the card's edge with a fade that says "there is
+ * more"; a thumb swipes it. From 768px, where a mouse cannot swipe, the row wraps whole chips into
+ * a second line instead, which only the six "where did you hear" answers ever need.
+ */
+.chipScroller {
+  /* Room for the focus ring, which the scroll box would otherwise cut off. */
+  margin: calc(var(--space-1) * -1);
+  padding: var(--space-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (max-width: 767px) {
+  .chipScroller {
+    /* --form-bleed is the side padding of the box around the row: the card's, or the details'. */
+    --chip-bleed: var(--form-bleed, var(--space-1));
+    /* An edge that hides more chips fades this much wider (ChipRow marks it). */
+    --chip-fade-wide: calc(var(--chip-bleed) + var(--space-6));
+    --chip-fade-start: var(--chip-bleed);
+    --chip-fade-end: var(--chip-bleed);
+
+    margin-inline: calc(var(--chip-bleed) * -1);
+    padding-inline: var(--chip-bleed);
+    /* A chip scrolled into view (by focus or by the chosen-tariff nudge) lands clear of the fade. */
+    scroll-padding-inline: var(--chip-fade-wide);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    /*
+     * Chips fade as they pass under the box's padding, and further in on a side that hides more
+     * chips: even a row that happens to end on a whole chip then reads as "there is more". At
+     * either end of the scroll that side's fade narrows to the padding, where no chip rests, so a
+     * chip standing still at an end is never dimmed.
+     */
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      var(--content-primary) var(--chip-fade-start),
+      var(--content-primary) calc(100% - var(--chip-fade-end)),
+      transparent
+    );
+  }
+
+  .chipScroller[data-more-start] {
+    --chip-fade-start: var(--chip-fade-wide);
+  }
+
+  .chipScroller[data-more-end] {
+    --chip-fade-end: var(--chip-fade-wide);
+  }
+
+  .chipScroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chips {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  .chip {
+    flex: none;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font: var(--text-body);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+/* The global ring would square the pill's corners. */
+.chip:focus-visible {
+  border-radius: var(--radius-full);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--content-tertiary);
+  }
+}
+
+/* The soft brand family (like a secondary pill): violet that says "chosen", not "press here". */
+.chip[aria-pressed='true'] {
+  padding-left: var(--space-3);
+  border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent);
+  background: var(--brand-primary-soft);
+  font-weight: 700;
+}
+
+.chipCheck {
+  flex: none;
+  color: var(--brand-primary);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/*
+ * An admin-typed tariff name can be long: in a wrapping row it shortens rather than pushing the card
+ * sideways (a phone's scrolling row simply scrolls further).
+ */
+.chipLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Referral ---------- */
+
+.referralNote {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+  color: var(--success-content);
+  font: var(--text-body);
+}
+
+/* ---------- Optional fields ---------- */
+
+.details {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+/*
+ * Below 360px the never-wrapping title has no room inside a framed box, so the box becomes a band
+ * across the card, edge to edge, its words on the same 16px line as the fields above it.
+ */
+@media (max-width: 359px) {
+  .details {
+    margin-inline: calc(var(--form-bleed, 0px) * -1);
+    border-inline: 0;
+    border-radius: 0;
+  }
+}
+
+/*
+ * The title never wraps, so at phone width the row gives it every pixel it can: at 360px it has
+ * 216px for its 207px. Roomier from 480px, where the title also grows to body-lg.
+ */
+.detailsSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 60px;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 359px) {
+  .detailsSummary {
+    padding-inline: var(--space-4);
+    border-radius: 0;
+  }
+}
+
+@media (min-width: 480px) {
+  .detailsSummary {
+    gap: var(--space-3);
+    padding-inline: var(--space-4);
+  }
+}
+
+.detailsSummary::-webkit-details-marker {
+  display: none;
+}
+
+.detailsSummary:focus-visible {
+  border-radius: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .detailsSummary:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.detailsText {
+  display: grid;
+  flex: 1;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* 14px at phone width, so the whole title fits one line at 360px; full body size above that. */
+.detailsTitle {
+  font: var(--text-body);
+  font-weight: 700;
+  color: var(--content-primary);
+  white-space: nowrap;
+}
+
+@media (min-width: 480px) {
+  .detailsTitle {
+    font: var(--text-body-lg);
+    font-weight: 700;
+  }
+}
+
+.detailsHint {
+  font: var(--text-caption);
+  font-weight: 600;
+  color: var(--content-tertiary);
+}
+
+/* A drawn chevron in a small disc; it turns over when the box opens. */
+.chevron {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-secondary);
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+.chevron::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.details[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.detailsBody {
+  /* Its own side padding, which the "where did you hear" chips bleed into on a phone. */
+  --form-bleed: var(--space-3);
+
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-2) var(--form-bleed) var(--space-5);
+}
+
+@media (max-width: 359px), (min-width: 480px) {
+  .detailsBody {
+    --form-bleed: var(--space-4);
+  }
+}
+
+/* ---------- Submit ---------- */
+
+.honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+/* Two lines at phone width: balanced, so neither line is a lone word. */
+.formHint {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* ---------- Thank-you ---------- */
+
+/* In the desktop card's two columns it centres beside the taller heading and steps. */
+.sent {
+  display: grid;
+  align-self: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) 0 var(--space-3);
+  text-align: center;
+}
+
+.sentIcon {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--success-soft);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--success-soft) 50%, transparent);
+  font-size: var(--size-display);
+  line-height: 1;
+}
+
+.sentTitle {
+  margin: 0;
+  font: var(--text-h2);
+  color: var(--content-primary);
+  text-wrap: balance;
+}
+
+.sentTitle:focus-visible {
+  outline-offset: 4px;
+}
+
+.sentText {
+  max-width: 40ch;
+  margin: 0;
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+.sentContact {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--content-primary);
+  font: var(--text-body);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Motion ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The tick lands with a small overshoot: something was chosen. */
+  .chipCheck {
+    animation: tickIn var(--motion-base) var(--lp-overshoot, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+  }
+
+  /* The opened fields settle down out of the summary; the height itself is never animated. */
+  .details[open] > .detailsBody {
+    animation: unfold var(--motion-base) var(--ease-decelerate) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .chevron {
+    transition: none;
+  }
+}
+
+@keyframes tickIn {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

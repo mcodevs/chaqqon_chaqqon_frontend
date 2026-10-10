@@ -1,0 +1,730 @@
+/*
+ * The demo stage (#sinab): one real flash-anzan round inside the hero.
+ *
+ * The card is a three-row grid: a fixed 28px top row, the verdict (empty, so zero height, until a
+ * result) and the body. Every phase stacks into the body's one cell, and the idle layer stays laid
+ * out (only hidden) under a running round, so the body keeps its height from idle through the
+ * flashing to the answer: nothing on the page moves until a result arrives, and a result only
+ * grows because the visitor asked for it.
+ *
+ * The 360×640 budget (spec §4) counts on the idle body as it is: ghost 95 + summary 46 + meta 18 +
+ * Boshlash 64 = 223px. Add a line above Boshlash and measure the hero again.
+ */
+
+.stage {
+  /* FlashDigits and the idle ghost both size themselves from this. */
+  --flash-size: clamp(72px, 24vw, 128px);
+  --halo-strength: 1;
+
+  position: relative;
+  /* Keeps the halo's z-index inside the stage, above the hero's own wash. */
+  isolation: isolate;
+  /*
+   * A result lifts the stage to the top of the screen, with the mascots showing. Only their room:
+   * the page's scroll-padding already keeps it below the header (Landing.module.css).
+   */
+  scroll-margin-top: var(--space-6);
+}
+
+/* The halo: a violet glow around the card that brightens while a round runs. Only its opacity moves. */
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 var(--space-4) var(--space-8) var(--space-2)
+    color-mix(in srgb, var(--brand-primary) 16%, transparent);
+  opacity: calc(0.6 * var(--halo-strength));
+  pointer-events: none;
+  transition: opacity var(--motion-slow) var(--ease-standard);
+}
+
+.stage[data-phase='round']::before {
+  opacity: var(--halo-strength);
+}
+
+/*
+ * The glow the eye actually sees: a soft violet pool behind the card, under the halo above. It sits
+ * mostly below and beside the card (small top inset) so it never tints the hero's subline on a phone;
+ * the page's overflow-x: clip takes the sideways overhang. It swells a little while a round runs.
+ */
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: -12% -18% -22%;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--brand-primary) 24%, transparent) 55%,
+    transparent
+  );
+  opacity: var(--halo-strength);
+  transition: transform var(--motion-slow) var(--ease-decelerate);
+}
+
+.stage[data-phase='round']::after {
+  transform: scale(1.04);
+}
+
+/*
+ * Once, while the hero lands the card (140ms in, done by 620ms), the pool blooms in behind it from
+ * a little smaller, so the card seems to light up as it settles. It never plays again: the stage
+ * stays mounted from idle to result. No `to`: it ends on the pool's own opacity and size.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .stage::after {
+    animation: glowIn calc(var(--motion-base) * 2) var(--ease-decelerate) 220ms backwards;
+  }
+}
+
+@keyframes glowIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+}
+
+/* On a dark page a glow turns muddy, so the halo steps back like the hero's washes. */
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .stage {
+    --halo-strength: 0.5;
+  }
+}
+
+:global(:root[data-theme='dark']) .stage {
+  --halo-strength: 0.5;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'top'
+    'verdict'
+    'body';
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-3);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--space-5);
+  }
+}
+
+/*
+ * A desktop card has room to be calmer: bigger digits (sized by the screen's height, so a short
+ * laptop still sees the whole card) and more padding; the idle text follows under .start. The
+ * phone's first-view budget never sees this.
+ */
+@media (min-width: 1024px) {
+  .stage {
+    --flash-size: clamp(128px, 18vh, 160px);
+  }
+
+  .card {
+    padding: var(--space-6);
+  }
+}
+
+/*
+ * A phone on its side has only ~300px under the header, at any width: the digits follow its height
+ * instead, so the whole card stands in view beside the hero's text (Hero.module.css), its Boshlash
+ * above the fold (~340px of 360) and the round's numbers and answer on screen as they come.
+ */
+@media (orientation: landscape) and (max-height: 500px) {
+  .stage {
+    --flash-size: clamp(56px, 18vh, 96px);
+  }
+}
+
+/* ---------- Top row: the caption, or the round's progress and its stop button ---------- */
+
+.top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+  height: 28px;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.count {
+  min-width: 3ch;
+  font: var(--text-caption);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+.dots {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* The progress dots are soroban beads: each one grows to full size as its number flashes. */
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--border-strong);
+  clip-path: polygon(50% 0%, 88% 26%, 100% 50%, 88% 74%, 50% 100%, 12% 74%, 0% 50%, 12% 26%);
+  transform: scale(0.6);
+  transition: transform var(--motion-fast) var(--ease-decelerate);
+}
+
+.dot[data-on] {
+  background: var(--abacus-bead-active);
+  transform: none;
+}
+
+/* A full 44px target that still fits the 28px row: the extra height hangs over the row's edges. */
+.top .stop {
+  min-height: var(--touch-target);
+  margin-block: calc((var(--touch-target) - 28px) / -2);
+}
+
+/* ---------- The verdict: the stage's one live region, from the round's start ---------- */
+
+.verdict {
+  grid-area: verdict;
+  display: grid;
+  margin: 0;
+}
+
+.banner {
+  display: block;
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font: var(--text-h2);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.banner[data-verdict='correct'] {
+  background: var(--success-soft);
+  color: var(--success-content);
+}
+
+/* A miss is said in words on a quiet surface: no red, no shake. */
+.banner[data-verdict='wrong'] {
+  background: var(--surface-sunken);
+  color: var(--content-primary);
+}
+
+/* ---------- Body layers ---------- */
+
+.layer {
+  grid-area: body;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  min-height: calc(var(--flash-size) * 1.1 + 120px);
+}
+
+/* Idle: the ghost number, what happens, how fast, and the stage's one primary action. */
+.idle {
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+/* Under a running round: still laid out, so the body keeps its height, but neither seen nor reachable. */
+.idle[data-hidden] {
+  visibility: hidden;
+}
+
+/* The same box and type as FlashDigits, so the first screen already reads as a flash screen. */
+.ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--flash-size) * 1.1);
+  font-family: var(--font-display);
+  font-size: var(--flash-size);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--content-tertiary);
+  opacity: 0.35;
+  user-select: none;
+  transition: opacity var(--motion-slow) var(--ease-standard);
+}
+
+/* While the teaser flashes the ghost steps up (same colour), still lighter than a real flashed number. */
+.ghost[data-teaser] {
+  opacity: 0.7;
+}
+
+.ghostNumber {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ghostSign {
+  font-size: calc(var(--flash-size) * 0.6);
+}
+
+.summary {
+  margin: var(--space-1) 0 0;
+  max-width: 34ch;
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-wrap: balance;
+}
+
+.meta {
+  margin: 2px 0 0;
+  font: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+  color: var(--content-tertiary);
+}
+
+.idle .settings {
+  margin-top: var(--space-5);
+}
+
+.start {
+  margin-top: var(--space-3);
+}
+
+.settings + .start {
+  margin-top: var(--space-5);
+}
+
+/* The desktop card's idle text: the summary at reading size, and more air above Boshlash. */
+@media (min-width: 1024px) {
+  .summary {
+    font: var(--text-body-lg);
+  }
+
+  .start {
+    margin-top: var(--space-5);
+  }
+}
+
+/* ---------- The round: the flashed number, then the answer ---------- */
+
+/* The flash region fills the body, so the number sits in its middle and a focus ring frames it all. */
+.flash {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+}
+
+.flash:focus {
+  outline: none;
+}
+
+.flash:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+.answer {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+}
+
+.answerLabel {
+  font: var(--text-body-lg);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.answerRow {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 360px;
+}
+
+.answerRow > button {
+  flex: none;
+}
+
+/* One big box for one number, its spinners gone: they are useless for a typed sum and eat the tap. */
+.answerInput {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 var(--space-3);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font-family: var(--font-display);
+  font-size: var(--size-h1);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.answerInput::-webkit-outer-spin-button,
+.answerInput::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.answerInput::placeholder {
+  color: var(--content-disabled);
+}
+
+/* The global ring would also round the box to radius-sm; this keeps its own corners. */
+.answerInput:focus,
+.answerInput:focus-visible {
+  border-color: var(--border-focus);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+  outline: none;
+}
+
+/* ---------- Result ---------- */
+
+.result {
+  align-content: start;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+}
+
+.feedback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  text-align: center;
+}
+
+.cheer {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+}
+
+.mascots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  /* Room for the mascots' own drop shadow, so the chip below never touches it. */
+  padding-bottom: var(--space-1);
+}
+
+/* Each mascot grows from its feet, so the pop reads as jumping up onto the card. */
+.mascot {
+  display: block;
+  line-height: 0;
+  transform-origin: 50% 100%;
+}
+
+/* The streak is the one place brand-accent warms a chip. */
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--brand-accent) 16%, var(--surface-card));
+  color: var(--content-primary);
+  font: var(--text-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The written column for a miss: the right total in success, the visitor's answer under it. */
+.review {
+  display: flex;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+/* Small type, so both quiet actions share a line where they can, but always a full-size target. */
+.actions .action {
+  min-height: var(--touch-target);
+}
+
+/* What comes next, set apart from the verdict by a hairline. */
+.next {
+  justify-self: stretch;
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ---------- Daraja and Tezlik ---------- */
+
+.settings {
+  container-type: inline-size;
+  justify-self: stretch;
+}
+
+/*
+ * On a phone each label sits above its pills, all centred. Once the card is wide enough the labels
+ * move beside the pills into one shared column, so both rows line up.
+ */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, max-content);
+  justify-content: center;
+  justify-items: center;
+  row-gap: var(--space-1);
+}
+
+.settingsGrid > .pills + .settingLabel {
+  margin-top: var(--space-3);
+}
+
+@container (min-width: 360px) {
+  .settingsGrid {
+    grid-template-columns: max-content minmax(0, max-content);
+    justify-items: start;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .settingsGrid > .pills + .settingLabel {
+    margin-top: 0;
+  }
+}
+
+.settingLabel {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  white-space: nowrap;
+}
+
+/*
+ * A label never breaks in two: when the pills are wider than the card they scroll sideways inside
+ * their own box (the admin's FilterPills pattern), and the chosen one is kept in view. Their padding
+ * is trimmed so the three levels still fit on one line of a 360px phone without scrolling.
+ */
+.pills {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pills::-webkit-scrollbar {
+  display: none;
+}
+
+.pills > [role='radiogroup'] {
+  width: max-content;
+  border-radius: var(--radius-full);
+}
+
+/* Three levels, so it wins over the pill's own 36px whatever order the CSS loads in. */
+.pills [role='radiogroup'] [role='radio'] {
+  flex: none;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/*
+ * The chosen pill's card fill sits too close to the sunken track to tell apart (about 1.2:1), so a
+ * brand ring marks it as well. Weight stays put, so a nowrap row never changes width on a tap.
+ */
+.pills [role='radiogroup'] [role='radio'][aria-checked='true'] {
+  box-shadow:
+    inset 0 0 0 1.5px var(--brand-primary),
+    var(--elevation-1);
+}
+
+/* ---------- The bridge to the form ---------- */
+
+/*
+ * The sentence and its link side by side where they fit; on a narrower card the whole link drops
+ * to its own centred line, rather than its 44px target splitting the sentence with a tall gap.
+ */
+.bridge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--space-1);
+  margin: var(--space-3) 0 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.result > .bridge {
+  margin-top: 0;
+}
+
+.bridgeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-1);
+  color: var(--content-primary);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.bridgeLink:hover {
+  color: var(--content-primary);
+  text-decoration-thickness: 2px;
+}
+
+/* ---------- Abacus replay ---------- */
+
+.replay {
+  justify-self: stretch;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+/* The round's numbers, the one being worked lit: where in the problem this step belongs. */
+.moves {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.move {
+  min-width: 36px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-tertiary);
+  font: var(--text-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard);
+}
+
+.move[data-state='done'] {
+  color: var(--content-secondary);
+}
+
+.move[data-state='current'] {
+  background: var(--brand-primary-soft);
+  color: var(--content-primary);
+}
+
+.replayCaption {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.stepCount {
+  margin: 0;
+  font: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+  color: var(--content-tertiary);
+}
+
+.stepHeader {
+  margin: 0;
+  font: var(--text-h3);
+  font-variant-numeric: tabular-nums;
+  color: var(--content-primary);
+}
+
+/* Held open when a step has no formula, so the text and buttons below never jump between steps. */
+.formulaSlot {
+  display: flex;
+  justify-content: center;
+  min-height: 28px;
+}
+
+.formula {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--content-primary);
+  font: var(--text-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Three lines reserved: the longest step sentence takes three on a phone. */
+.stepText {
+  max-width: 40ch;
+  min-height: calc(3 * 1.5em);
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+  text-wrap: pretty;
+}
+
+.replayActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* At the last step "Keyingi qadam" stays focusable (aria-disabled), but reads as done. */
+.replayActions [aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---------- Reduced motion: every state change is instant ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .stage::before,
+  .stage::after,
+  .ghost,
+  .dot,
+  .move {
+    transition: none;
+  }
+}

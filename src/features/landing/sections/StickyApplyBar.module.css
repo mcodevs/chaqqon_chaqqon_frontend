@@ -1,0 +1,79 @@
+/*
+ * The phone's apply bar, pinned to the bottom edge. It slides up from below the screen when shown
+ * and back down when hidden; visibility follows only after the slide, so the way out is seen too.
+ * Phones only: from 768px the header menu and the sections' own buttons are always in reach.
+ * At most 77px tall (12 + 52 + 12 + the hairline): the 80px the page's scroll padding and the bar's
+ * own watch keep clear for it. The home indicator's inset is added below the button, the page
+ * gutter (which clears a landscape notch) at the sides.
+ */
+
+.bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) var(--lp-gutter, var(--space-4))
+    calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-page) 92%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform var(--motion-slow) var(--ease-standard),
+    opacity var(--motion-slow) var(--ease-standard),
+    visibility 0s linear var(--motion-slow);
+}
+
+.bar[data-visible] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition:
+    transform var(--motion-slow) var(--ease-decelerate),
+    opacity var(--motion-slow) var(--ease-decelerate),
+    visibility 0s;
+}
+
+/* Full width on a phone held upright; on a wider one it stops short of a slab across the screen. */
+.action {
+  max-width: 480px;
+}
+
+/*
+ * A phone on its side has little height to spare: the bar shrinks to the 44px touch target and
+ * tighter padding, 61px in all instead of 77px.
+ */
+@media (max-height: 480px) {
+  .bar {
+    padding-block: var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bar .action {
+    min-height: var(--touch-target);
+  }
+}
+
+@media (min-width: 768px) {
+  .bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .bar[data-visible] {
+    transition: none;
+  }
+}
+
+@media print {
+  .bar {
+    display: none;
+  }
+}
