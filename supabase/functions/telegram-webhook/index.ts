@@ -8,7 +8,7 @@ import { sendTelegramMessage } from '../_shared/telegram.ts';
  * Optionally protected by a secret: if TELEGRAM_WEBHOOK_SECRET is set, the
  * request's X-Telegram-Bot-Api-Secret-Token header must match it.
  */
-const APP_URL = 'https://chaqqon-chaqqon.vercel.app';
+const APP_URL = 'https://chaqqon-chaqqon.uz';
 
 const WELCOME =
   '👋 <b>Assalomu alaykum!</b>\n\n' +
