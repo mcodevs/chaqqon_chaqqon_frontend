@@ -75,3 +75,5 @@ Natijada:
 Egasiga aytiladigan trade-off'lar: "qayerdan eshitdingiz" chiplari telefonda scroll qiladi (oldin wrap edi); desktopda ariza yonida qadamlar takrorlanadi.
 Tuzoq: headless Chrome `--window-size` 500px'dan tor layout bermaydi, telefon skrinshotlari yolg'on chiqadi. CDP `Emulation.setDeviceMetricsOverride` (mobile:true) kerak. Toza profilda local backend bo'sh bo'ladi, shuning uchun tariflar localStorage'ga seed qilinadi.
 Bog'liq: [[osish-vositalari]].
+**Jonli (2026-10-11):** `ac3f1a3` push qilindi. U boshqa sessiyaning `801b2eb` va `6ef0d61` commitlari bilan birga ketdi, egasi buni tasdiqladi. Vercel ~30 s'da deploy qildi; chaqqon-chaqqon.uz'da landing chunk lokal build bilan bir xil (`LandingPage-32R-wNVT.js`). Prod'da 390px audit toza. Real "to'g'ri javob" statistikasi (4 128) chegaradan o'tgani uchun hero'da 5-plitka bo'lib chiqyapti.
+Egasi "ruxsat" bilan quyidagi to'rt qarorni o'zgartirishsiz qabul qildi: hero subline, "Hali bilmayman" birinchi turishi, telefonda chiplarni scroll qilish, desktopda qadamlar takrori.
