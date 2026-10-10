@@ -28,7 +28,9 @@ export type Feature = (typeof FEATURES)[number];
 
 export interface FeatureMeta {
   label: string;
-  /** What the teacher gets; null when the feature has no teacher section. */
+  /** Names the section at a glance; the same emoji as its tab, where it has one. */
+  icon: string;
+  /** What the section lets the teacher do, as the admin reads it when building a tariff. */
   teacher: string | null;
   /** What the teacher's students get; null when they see nothing of it. */
   student: string | null;
@@ -37,24 +39,57 @@ export interface FeatureMeta {
 export const FEATURE_META: Record<Feature, FeatureMeta> = {
   homework_rooms: {
     label: 'Interaktiv uy vazifasi',
-    teacher: 'Interaktiv vazifalar berish',
+    icon: '📝',
+    teacher: "Interaktiv vazifa tuzib, o'quvchilarga beradi",
     student: 'Uy vazifasi va yulduzchalar',
   },
-  classroom: { label: 'Sinf musobaqasi', teacher: 'Sinf musobaqasi (proyektor)', student: null },
-  market: { label: "Do'kon", teacher: "Sovg'alar do'koni", student: "Yulduzchaga sovg'a olish" },
-  leaderboard: { label: 'Reyting', teacher: 'Sinf reytingi', student: 'Sinfdoshlar reytingi' },
-  stats: { label: 'Statistika', teacher: "O'quvchilar statistikasi", student: null },
-  worksheet: { label: 'Yozma vazifa', teacher: 'Yozma vazifa varaqlarini chop etish', student: null },
-  written_homework: { label: 'Yozma uy vazifasi belgisi', teacher: 'Bajardi / chala belgisi', student: null },
+  classroom: {
+    label: 'Sinf musobaqasi',
+    icon: '🏫',
+    teacher: "2–4 o'quvchini proyektorda bellashtiradi",
+    student: null,
+  },
+  market: {
+    label: "Do'kon",
+    icon: '🎁',
+    teacher: "Sovg'alar qo'yadi, buyurtmalarni ko'radi",
+    student: "Yulduzchaga sovg'a olish",
+  },
+  leaderboard: {
+    label: 'Reyting',
+    icon: '🏆',
+    teacher: "Sinf reytingini ko'radi",
+    student: 'Sinfdoshlar reytingi',
+  },
+  stats: {
+    label: 'Statistika',
+    icon: '📊',
+    teacher: "Natija va faollik statistikasini ko'radi",
+    student: null,
+  },
+  worksheet: {
+    label: 'Yozma vazifa',
+    icon: '🖨️',
+    teacher: "Mavzu bo'yicha A4 misollar varag'ini chop etadi",
+    student: null,
+  },
+  written_homework: {
+    label: 'Yozma uy vazifasi belgisi',
+    icon: '✅',
+    teacher: "Yozma vazifaga «bajardi / chala» belgisini qo'yadi",
+    student: null,
+  },
   extra_drills: {
     label: "Qo'shimcha mashqlar",
-    teacher: 'Chaqnovchi mashqini vazifaga berish',
+    icon: '🧩',
+    teacher: "Chaqnovchi mashqini vazifaga qo'sha oladi",
     student: 'Chaqnovchi va ustunlar mashqlari',
   },
   telegram: {
     label: 'Telegram xabarlari',
-    teacher: 'Telegram bildirishnomalari',
-    student: 'Telegram bildirishnomalari',
+    icon: '📱',
+    teacher: 'Natija va vazifalar haqida xabar oladi',
+    student: "Yangi vazifa va sovg'alar haqida xabar",
   },
 };
 

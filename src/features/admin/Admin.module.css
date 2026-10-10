@@ -33,17 +33,47 @@
   color: var(--content-secondary);
 }
 
-.toolbar {
+/* FilterPills: the pill keeps its natural width and scrolls inside this box when the screen is narrower. */
+.filterPills {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filterPills::-webkit-scrollbar {
+  display: none;
+}
+
+.filterPills > [role='radiogroup'] {
+  width: max-content;
+}
+
+.filterPills [role='radio'] {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Search with its action on one line: both are 44px tall, so they share a centre line. */
+.searchBar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--space-3);
 }
 
-.toolbarGrow {
-  flex: 1 1 220px;
-  min-width: 0;
+.searchGrow {
+  flex: 1 1 260px;
+}
+
+@media (max-width: 480px) {
+  .searchBar > button {
+    flex: 1 1 100%;
+  }
+}
+
+.columnHint {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
 }
 
 /* Stat tiles */
@@ -134,15 +164,6 @@
   color: var(--content-secondary);
 }
 
-.badge {
-  display: inline-block;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--surface-soft);
-  color: var(--content-secondary);
-  font: var(--text-caption);
-}
-
 .statusList {
   display: grid;
   gap: var(--space-2);
@@ -204,11 +225,10 @@
 
 .rowLink {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-3);
   min-height: var(--touch-target);
-  padding: var(--space-3) var(--space-1);
+  padding: var(--space-3) var(--space-2);
   color: inherit;
   text-decoration: none;
   border-radius: var(--radius-md);
@@ -221,14 +241,45 @@
 
 .rowMain {
   display: flex;
-  flex: 1 1 200px;
+  flex: 1 1 auto;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
+.rowAvatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary);
+  font: var(--text-body-lg);
+  font-weight: 800;
+}
+
+/* Money over status, both flush right: every row ends on the same edge, whatever the amount's width. */
+.rowEnd {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  text-align: right;
+}
+
+.rowChevron {
+  flex: none;
+  color: var(--content-tertiary);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
 .rowTitle {
-  font: var(--text-body);
-  font-weight: 600;
+  font: var(--text-body-lg);
+  font-weight: 700;
   color: var(--content-primary);
 }
 
@@ -240,14 +291,45 @@
 .rowFacts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
+  gap: 0 var(--space-2);
   font: var(--text-caption);
   color: var(--content-secondary);
+}
+
+/* A quiet dot between facts. It trails the fact, so a wrapped line never starts with one;
+   inline-block keeps a link's underline off it. */
+.rowFacts > :not(:last-child)::after {
+  content: '·';
+  display: inline-block;
+  margin-left: var(--space-2);
+  color: var(--content-tertiary);
+}
+
+/* On a phone the money and status leave the right edge for a line of their own under the facts,
+   status first, so the name and facts get the whole width. */
+@media (max-width: 560px) {
+  .rowLink {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .rowAvatar,
+  .rowChevron {
+    display: none;
+  }
+
+  .rowEnd {
+    flex: 1 1 100%;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .amount {
   font: var(--text-body);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--content-primary);
   white-space: nowrap;
 }
@@ -255,6 +337,7 @@
 .negativeAmount {
   font: var(--text-body);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--danger-content);
   white-space: nowrap;
 }
@@ -262,6 +345,7 @@
 .positiveAmount {
   font: var(--text-body);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--success-content);
   white-space: nowrap;
 }
@@ -353,41 +437,7 @@
   background: var(--brand-primary-soft);
 }
 
-/* Feature picker: each feature says what the teacher and the students get. */
-.featureGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
-  gap: var(--space-2);
-}
-
-.featureOption {
-  display: grid;
-  gap: 2px;
-  padding: var(--space-3);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--surface-card);
-  color: var(--content-primary);
-  text-align: left;
-  font: var(--text-caption);
-  cursor: pointer;
-}
-
-.featureOption[aria-pressed='true'] {
-  border-color: var(--brand-primary);
-  background: var(--brand-primary-soft);
-}
-
-.featureTitle {
-  font: var(--text-body);
-  font-weight: 600;
-}
-
-.featureWho {
-  color: var(--content-secondary);
-}
-
-/* Tariff cards */
+/* Card grid (the applications page lays its applications out with these) */
 .tariffGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
@@ -404,29 +454,10 @@
   border-radius: var(--radius-lg);
 }
 
-.tariffArchived {
-  opacity: 0.6;
-}
-
 .tariffName {
   margin: 0;
   font: var(--text-h3);
   color: var(--content-primary);
-}
-
-.tariffPrice {
-  font: var(--text-h2);
-  font-weight: 700;
-  color: var(--content-primary);
-}
-
-.tagList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 /* Chart */

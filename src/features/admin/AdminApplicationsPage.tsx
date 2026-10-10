@@ -17,8 +17,8 @@ import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { MenuButton } from '@/shared/ui/MenuButton';
 import { EmptyState, ErrorMessage } from '@/shared/ui/Notice';
-import { SegmentedControl } from '@/shared/ui/SegmentedControl';
 import styles from './Admin.module.css';
+import { FilterPills } from './FilterPills';
 import { NewTeacherForm } from './NewTeacherForm';
 
 type Filter = ApplicationStatus | 'all';
@@ -98,13 +98,7 @@ export function AdminApplicationsPage() {
       )}
 
       <div className={styles.filters}>
-        <SegmentedControl
-          label="Holat"
-          appearance="pill"
-          options={options}
-          value={filter}
-          onChange={setFilter}
-        />
+        <FilterPills label="Holat" options={options} value={filter} onChange={setFilter} />
       </div>
       <ErrorMessage>{setStatus.error}</ErrorMessage>
 

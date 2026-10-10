@@ -6,8 +6,8 @@ import { useAdminLedger, useAdminTariffs, useAdminTeachers, useSchoolToday } fro
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
-import { SegmentedControl } from '@/shared/ui/SegmentedControl';
 import styles from './Admin.module.css';
+import { FilterPills } from './FilterPills';
 import { LedgerList } from './LedgerList';
 import { KIND_LABEL } from './ledgerText';
 import { PERIOD_OPTIONS, type PeriodId, rangeFor } from './periods';
@@ -79,16 +79,10 @@ export function AdminFinancePage() {
   return (
     <div className={styles.page}>
       <div className={styles.filters}>
-        <SegmentedControl
-          label="Davr"
-          appearance="pill"
-          options={PERIODS}
-          value={period}
-          onChange={setPeriod}
-        />
+        <FilterPills label="Davr" options={PERIODS} value={period} onChange={setPeriod} />
       </div>
       <div className={styles.filters}>
-        <SegmentedControl label="Turi" appearance="pill" options={KINDS} value={kind} onChange={setKind} />
+        <FilterPills label="Turi" options={KINDS} value={kind} onChange={setKind} />
         <select
           className={styles.select}
           style={{ maxWidth: 280 }}

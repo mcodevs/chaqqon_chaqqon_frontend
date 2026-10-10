@@ -80,3 +80,23 @@ Edge function'lar: `manage-students` (egalik + limit + blok), yangi `manage-teac
 4. Ixtiyoriy: yangi logo (eski `logo.webp` o'chirildi — unda "Mohira ustoz bilan" bor edi).
 
 **Topilgan tuzoqlar:** `useAsyncAction.run` void action uchun ham `undefined` qaytaradi — forma muvaffaqiyatni ko'rishi kerak bo'lsa, action `true` qaytarsin; `prettier` ni butun papkaga ishlatish begona fayllarni qayta formatlaydi.
+
+**Admin "Tariflar" sahifasi redizayni (2026-10-10):** foydalanuvchi eski formani "zich va tushunarsiz" dedi. Endi:
+`TariffForm.tsx` 4 sarlavhali bo'lim (Asosiy · O'quvchilar soni · Ochiladigan bo'limlar · Ko'rinish); funksiyalar
+**auditoriya bo'yicha** guruhlangan ("Ustozga ham, o'quvchiga ham" / "Faqat ustozga" — `FEATURE_META.student`
+bo'yicha) va har biri butun qator checkbox. `TariffCard.tsx` 9 bo'limni har doim bir tartibda ✓/– bilan ko'rsatadi
+(kartalar qatorma-qator solishtiriladi) va tarifdagi ustozlar sonini chiqaradi. `FEATURE_META` ga `icon` qo'shildi;
+`teacher` matni faqat shu formada o'qiladi (admin uchun "nima qiladi" jumlasi), `student` matni landing'da ham chiqadi.
+`TextField` endi `hint` prop'ini oladi (`aria-describedby` bilan).
+
+**Admin ro'yxatlari tekislandi (2026-10-10):** qidiruv `shared/ui/SearchField` (yorliqsiz, 🔍, 44px — yonidagi
+tugma bilan bir chiziqda; `TextField` yorlig'i + `margin-bottom` tugmani pastga tushirib yuborgan edi). Admin qatorlari
+(`Admin.module.css` → `rowLink`): chapda bosh harf doirasi, o'ngda **`rowEnd`** — summa ustida holat chipi, ikkalasi
+o'ng chetga tekis (summa kengligi qanday bo'lmasin chiplar bir ustunda), `›` belgisi; ≤560px da avatar/`›` yashirinadi
+va holat + summa faktlar ostida alohida qatorga tushadi. `rowFacts` orasida "·" — u faktdan **keyin** turadi, shunda
+o'ralgan qator nuqta bilan boshlanmaydi. Ustozlar ro'yxati ham, statistika sahifasidagi qarzdorlar ro'yxati ham shu naqshda.
+
+**Admin filtrlari (2026-10-10):** davr/tur/holat tanlagichlari `features/admin/FilterPills.tsx` orqali — yozuvlar
+`nowrap` ("O'tgan oy" ikki qatorga bo'linmaydi), qator tor ekranda yonga suriladi va tanlangan variantni ko'rinishga
+oladi (faqat `scrollLeft`, sahifa qimirlamaydi). Umumiy `SegmentedControl` ga tegilmadi: sidebar'dagi mavzu
+tanlagichi tor joyda yozuvni ataylab bo'ladi.

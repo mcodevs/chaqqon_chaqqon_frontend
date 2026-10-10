@@ -1,0 +1,432 @@
+/* The tariffs page: cards to compare, and a form split into short, titled sections. */
+
+.page {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.page > * {
+  min-width: 0;
+}
+
+.intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+}
+
+.introText {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 60ch;
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.introText strong {
+  font: var(--text-body-lg);
+  font-weight: 700;
+  color: var(--content-primary);
+}
+
+/* ---------- Cards ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+.card[data-archived='true'] {
+  background: var(--surface-soft);
+  box-shadow: none;
+}
+
+.card[data-archived='true'] .cardName,
+.card[data-archived='true'] .price {
+  color: var(--content-secondary);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cardName {
+  margin: 0;
+  font: var(--text-h3);
+  color: var(--content-primary);
+  overflow-wrap: anywhere;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-soft);
+  color: var(--content-secondary);
+  font: var(--text-caption);
+  white-space: nowrap;
+}
+
+.price {
+  margin: 0;
+  font: var(--text-h2);
+  color: var(--content-primary);
+}
+
+.perMonth {
+  font: var(--text-body-lg);
+  color: var(--content-tertiary);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.facts li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.description {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.cardSections {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cardSectionsHead {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 var(--space-2);
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
+.checklist {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--text-body);
+  color: var(--content-primary);
+}
+
+.checklist li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.checklist li[data-included='false'] {
+  color: var(--content-tertiary);
+}
+
+.checkMark {
+  flex-shrink: 0;
+  width: 1em;
+  font-weight: 800;
+  text-align: center;
+  color: var(--success-content);
+}
+
+[data-included='false'] > .checkMark {
+  color: var(--content-tertiary);
+}
+
+/* The actions sit on the card's floor, so cards of one row line their buttons up. */
+.cardActions {
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Form ---------- */
+
+/* Leaves room for the sticky app bar when the form scrolls itself into view. */
+.formAnchor {
+  scroll-margin-top: calc(var(--space-8) + var(--space-4));
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.section:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.sectionIntro {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 62ch;
+}
+
+.sectionTitle {
+  margin: 0;
+  font: var(--text-body-lg);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.sectionText {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+/* A text field brings its own bottom margin; here the section's gap does the spacing. */
+.section > div,
+.fieldPair > div,
+.limitRow > div,
+.narrowField > div {
+  margin-bottom: 0;
+}
+
+.fieldPair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* The choice first, then the number it unlocks, both no wider than they need. */
+.limitRow {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 360px;
+}
+
+.narrowField {
+  max-width: 260px;
+}
+
+.sectionTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.counter {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-soft);
+  color: var(--content-primary);
+  font: var(--text-caption);
+}
+
+.textButton {
+  min-height: 36px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--brand-primary);
+  font: var(--text-caption);
+  cursor: pointer;
+}
+
+.textButton:hover {
+  background: var(--surface-hover);
+}
+
+.textButton:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+/* A group of options under its own small heading. */
+.group {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.groupTitle {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-2);
+}
+
+/* ---------- Option row: a checkbox the size of its explanation ---------- */
+
+.option {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.option:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.option[data-checked='true'] {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-soft);
+}
+
+.optionInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.optionBox {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border: 2px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: transparent;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.option[data-checked='true'] .optionBox {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+  color: var(--brand-on-primary);
+}
+
+.optionInput:focus-visible + .optionBox {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.optionBody {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.optionTitle {
+  font: var(--text-body-lg);
+  font-weight: 700;
+  color: var(--content-primary);
+}
+
+.optionText {
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+/* "Ustoz … / O'quvchi …": the role names line up in their own column. */
+.audience {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px var(--space-2);
+}
+
+.audienceRole {
+  font: var(--text-caption);
+  line-height: inherit;
+  color: var(--content-tertiary);
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 599px) {
+  .card {
+    padding: var(--space-4);
+  }
+
+  .option {
+    padding: var(--space-3);
+  }
+}

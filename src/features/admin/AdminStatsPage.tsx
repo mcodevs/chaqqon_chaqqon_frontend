@@ -13,8 +13,8 @@ import {
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
-import { SegmentedControl } from '@/shared/ui/SegmentedControl';
 import styles from './Admin.module.css';
+import { FilterPills } from './FilterPills';
 import { FinanceChart } from './FinanceChart';
 import { PERIOD_OPTIONS, type PeriodId, compactSom, rangeFor } from './periods';
 import { StatTile } from './StatTile';
@@ -59,13 +59,7 @@ export function AdminStatsPage() {
   return (
     <div className={styles.page}>
       <div className={styles.filters}>
-        <SegmentedControl
-          label="Davr"
-          appearance="pill"
-          options={PERIOD_OPTIONS}
-          value={period}
-          onChange={setPeriod}
-        />
+        <FilterPills label="Davr" options={PERIOD_OPTIONS} value={period} onChange={setPeriod} />
         <span className={styles.filterHint}>
           {formatCalendarDate(range.from)} – {formatCalendarDate(range.to)}
         </span>
@@ -234,8 +228,13 @@ export function AdminStatsPage() {
                       {debtor.overdueSince ? `${formatCalendarDate(debtor.overdueSince)} dan beri` : ''}
                     </span>
                   </span>
-                  <StatusChip status={debtor.status} />
-                  <span className={styles.negativeAmount}>{formatSom(debtor.balance)}</span>
+                  <span className={styles.rowEnd}>
+                    <span className={styles.negativeAmount}>{formatSom(debtor.balance)}</span>
+                    <StatusChip status={debtor.status} />
+                  </span>
+                  <span className={styles.rowChevron} aria-hidden="true">
+                    ›
+                  </span>
                 </Link>
               </li>
             ))}

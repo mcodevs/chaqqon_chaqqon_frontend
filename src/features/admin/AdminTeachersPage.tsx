@@ -10,7 +10,7 @@ import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
-import { TextField } from '@/shared/ui/TextField';
+import { SearchField } from '@/shared/ui/SearchField';
 import styles from './Admin.module.css';
 import { NewTeacherForm } from './NewTeacherForm';
 import { StatusChip } from './StatusChip';
@@ -65,20 +65,22 @@ export function AdminTeachersPage() {
           onCancel={() => setAdding(false)}
         />
       ) : (
-        <div className={styles.toolbar}>
-          <div className={styles.toolbarGrow}>
-            <TextField
-              label="Qidirish"
-              placeholder="Ism, login, telefon yoki markaz"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
+        <div className={styles.searchBar}>
+          <SearchField
+            className={styles.searchGrow}
+            label="Ustozlarni qidirish"
+            placeholder="Ism, login, telefon yoki markaz"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
           <Button onClick={() => setAdding(true)}>+ Yangi ustoz</Button>
         </div>
       )}
 
-      <Card title={rows ? `Ustozlar (${rows.length})` : 'Ustozlar'}>
+      <Card
+        title={rows ? `Ustozlar (${rows.length})` : 'Ustozlar'}
+        actions={rows && rows.length > 0 && <span className={styles.columnHint}>Balans va holat</span>}
+      >
         {!rows ? (
           <SkeletonList rows={4} />
         ) : rows.length === 0 ? (
@@ -92,6 +94,9 @@ export function AdminTeachersPage() {
             {rows.map(({ teacher, tariff, state }) => (
               <li key={teacher.id}>
                 <Link to={`/admin/teachers/${teacher.id}`} className={styles.rowLink}>
+                  <span className={styles.rowAvatar} aria-hidden="true">
+                    {teacherName(teacher).charAt(0).toUpperCase()}
+                  </span>
                   <span className={styles.rowMain}>
                     <span className={styles.rowTitle}>{teacherName(teacher)}</span>
                     <span className={styles.rowFacts}>
@@ -108,9 +113,14 @@ export function AdminTeachersPage() {
                       <span>30 kunda {teacher.practiceCount} mashq</span>
                     </span>
                   </span>
-                  <StatusChip status={state.status} />
-                  <span className={state.balance < 0 ? styles.negativeAmount : styles.amount}>
-                    {formatSom(state.balance)}
+                  <span className={styles.rowEnd}>
+                    <span className={state.balance < 0 ? styles.negativeAmount : styles.amount}>
+                      {formatSom(state.balance)}
+                    </span>
+                    <StatusChip status={state.status} />
+                  </span>
+                  <span className={styles.rowChevron} aria-hidden="true">
+                    ›
                   </span>
                 </Link>
               </li>
