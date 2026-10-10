@@ -58,3 +58,25 @@ arifmetika ustozlari va ularning o'quvchilari** uchun. To'liq reja:
 ---
 
 Related: [[yozma-vazifa-chop-etish]] · [[vault-konvensiyasi]] · [MEMORY.md](../MEMORY.md)
+
+## Holat (2026-10-10, 4 bosqich ham jonli)
+
+| Bosqich | Commit | Migratsiya |
+|---|---|---|
+| 1. Tenant izolyatsiyasi | `0015369` | `20261009230937_teacher_tenancy` |
+| 2. Superadmin, tariflar, balans | `e10d4a7` | `20261010000550_platform_billing` (+ `pg_cron` `teacher-billing-daily`) |
+| 3. Landing + arizalar | `91bf3a9` | `20261010002100_teacher_applications` |
+| 4. Brending + cheklangan rejim | `b16beaa` | `20261010002957_teacher_card` |
+
+Edge function'lar: `manage-students` (egalik + limit + blok), yangi `manage-teachers` (faqat admin), `register-teacher` — 410 qaytaradigan stub (Dashboard'dan o'chirsa bo'ladi).
+
+**Deploy tartibi (har bosqichda ishladi):** MCP `apply_migration` → faylni qo'llangan versiya nomiga `git mv` → MCP `deploy_edge_function` (fayl nomlari `functions/<nom>/index.ts` + `functions/_shared/*.ts`) → push. Toshkent tungi soatida.
+
+**Foydalanuvchidan kutilmoqda:**
+
+1. Superadmin akkaunti: Dashboard → Authentication → Add user (`<login>@chaqqon.example.com`, parol `chaqqon:<parol>`, auto-confirm), keyin `profiles` ga `role='admin'` qatori (README'da SQL bor).
+2. `/admin` → Sozlamalar: to'lov kontakti; Tariflar: public tariflar (landing'da ko'rinadi).
+3. Mohira ustoz (login `ravshanovna`, ismi bo'sh) — yashirin "Legacy" tarifda, hisob yuritilmaydi; admin unga tarif, hisob sanasi va ism beradi.
+4. Ixtiyoriy: yangi logo (eski `logo.webp` o'chirildi — unda "Mohira ustoz bilan" bor edi).
+
+**Topilgan tuzoqlar:** `useAsyncAction.run` void action uchun ham `undefined` qaytaradi — forma muvaffaqiyatni ko'rishi kerak bo'lsa, action `true` qaytarsin; `prettier` ni butun papkaga ishlatish begona fayllarni qayta formatlaydi.
