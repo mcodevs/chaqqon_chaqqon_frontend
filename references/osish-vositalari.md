@@ -46,3 +46,5 @@ Migratsiya: `supabase/migrations/20261010114050_platform_growth.sql`. Bog'liq: [
 2026-10-10: **jonli.** Migratsiya prodga `20261010114050_platform_growth` sifatida qo'llandi (sozlamalar standartda:
 14 kun sinov, 30 kun kafolat, referal yoqiq; cron `application-reminders` ro'yxatda), frontend push bilan chiqdi.
 Advisorlarda faqat ataylab qilingan WARN: `platform_public_stats` va `submit_teacher_application` anon uchun ochiq.
+
+Commit `14fdd2b`. Push'dan keyin: Mohira'da "Boshlash · 4/5" — profilida ism va telefon bo'sh (to'g'ri ishlash). **Egasi qilishi kerak:** bitta tarifni "⭐ Tavsiya etiladi" qilish (hozir yo'q), kafolat/sinov qiymatlarini Sozlamalarda tasdiqlash yoki 0 qilish.
