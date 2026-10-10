@@ -269,7 +269,7 @@ export const FEATURE_GROUPS: readonly FeatureGroup[] = [
         id: 'motivation',
         icon: '🏆',
         title: "O'zi mashq qilgisi keladi",
-        text: "Xatosiz vazifa — yulduzcha, yulduzchaga — siz qo'ygan sovg'a. Sinf reytingi raqobat ruhini beradi.",
+        text: "90% to'g'ri vazifa — yulduzcha, yulduzchaga — siz qo'ygan sovg'a. Sinf reytingi raqobat ruhini beradi.",
         features: ['homework_rooms', 'market', 'leaderboard'],
         // The text promises stars, gifts and the leaderboard, so a tariff needs all three.
         match: 'all',

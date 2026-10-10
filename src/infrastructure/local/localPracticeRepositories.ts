@@ -123,7 +123,7 @@ export function createLocalMarketRepository(store: KeyValueStore, platform: Loca
 
     for (const result of results ?? []) {
       const mode = resolvePracticeMode(result.mode, result.roomId ?? null);
-      if (mode !== 'online' || result.total <= 0 || result.correct !== result.total) continue;
+      if (mode !== 'online' || result.total <= 0 || result.correct * 10 < result.total * 9) continue;
       awards.push({
         id: `homework:${result.id}`,
         studentId: result.studentId,

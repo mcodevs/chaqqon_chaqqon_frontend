@@ -241,8 +241,15 @@ describe('the star ledger', () => {
     expect(await balance(ALI)).toBe(1);
   });
 
-  it('pays nothing for a homework with a slip in it, or for solo practice', async () => {
+  it('pays a star for a homework answered at least 90% right', async () => {
+    const before = await balance(ALI);
+    await homework(ALI, 9, 10);
+    expect(await balance(ALI)).toBe(before + 1);
+  });
+
+  it('pays nothing for a homework under 90%, or for solo practice', async () => {
     await homework(VALI, 4, 5);
+    await homework(VALI, 17, 19);
     await db.query(
       `insert into public.practice_results (student_id, config, correct, total, mode)
        values ($1, $2, 50, 50, 'practice')`,

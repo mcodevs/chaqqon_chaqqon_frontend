@@ -69,7 +69,7 @@ export function StudentMarketPage() {
           <div>
             <h1 className={styles.title}>Yutuqlar Do'koni</h1>
             <p className={styles.subtitle}>
-              Interaktiv uy vazifasini xatosiz bajaring — har biri uchun 1 ta yulduzcha, va ajoyib
+              Interaktiv uy vazifasini kamida 90% to'g'ri bajaring — har biri uchun 1 ta yulduzcha, va ajoyib
               sovg'alarga ega bo'ling!
             </p>
           </div>

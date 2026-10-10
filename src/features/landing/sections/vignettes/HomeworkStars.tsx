@@ -22,7 +22,7 @@ const PUPIL_DIGIT = 6;
 
 /**
  * "O'zi mashq qilgisi keladi": a homework solved without a mistake earns a star. Plays once when it
- * comes into view: the examples tick green one by one, then "Xatosiz! +1 ⭐" pops and the mascot
+ * comes into view: the examples tick green one by one, then "Barakalla! +1 ⭐" pops and the mascot
  * cheers. The words stay readable to a screen reader; the dots are decoration.
  */
 export function HomeworkStars() {
@@ -65,7 +65,7 @@ export function HomeworkStars() {
               </span>
             </span>
             <p className={styles.verdict} onAnimationEnd={finish}>
-              Xatosiz! +1 <span className={styles.star}>⭐</span>
+              Barakalla! +1 <span className={styles.star}>⭐</span>
             </p>
           </div>
         </div>
