@@ -15,7 +15,8 @@ export type RealtimeTable =
   | 'tariffs'
   | 'teachers'
   | 'teacher_ledger'
-  | 'platform_settings';
+  | 'platform_settings'
+  | 'teacher_applications';
 
 /** Calls `listener` whenever rows this user may see (per RLS) change in the given tables. */
 export function subscribeToTables(

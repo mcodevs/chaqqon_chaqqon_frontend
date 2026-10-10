@@ -39,6 +39,8 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   BILLING_STARTED: "To'lov yechilgani uchun hisob boshlanish sanasini o'zgartirib bo'lmaydi",
   INVALID_AMOUNT: "Summani to'g'ri kiriting",
   INVALID_DATE: "Sanani to'g'ri kiriting",
+  INVALID_APPLICATION: "Ism va telefon raqamini to'g'ri kiriting",
+  TOO_MANY_APPLICATIONS: "Arizangiz allaqachon qabul qilingan. Tez orada siz bilan bog'lanamiz.",
 };
 
 const UNEXPECTED_ERROR = "Kutilmagan xatolik yuz berdi. Qaytadan urinib ko'ring.";

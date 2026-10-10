@@ -9,7 +9,6 @@ export type FunctionErrorCode =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
-  | 'TEACHER_EXISTS'
   | 'USERNAME_TAKEN'
   | 'INVALID_USERNAME'
   | 'PASSWORD_TOO_SHORT'

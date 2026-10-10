@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { AbacusPage } from '@/features/abacus/AbacusPage';
+import { AdminApplicationsPage } from '@/features/admin/AdminApplicationsPage';
 import { AdminFinancePage } from '@/features/admin/AdminFinancePage';
 import { AdminLayout } from '@/features/admin/AdminLayout';
 import { AdminSettingsPage } from '@/features/admin/AdminSettingsPage';
@@ -8,6 +9,7 @@ import { AdminTariffsPage } from '@/features/admin/AdminTariffsPage';
 import { AdminTeacherPage } from '@/features/admin/AdminTeacherPage';
 import { AdminTeachersPage } from '@/features/admin/AdminTeachersPage';
 import { LoginPage } from '@/features/auth/LoginPage';
+import { LandingPage } from '@/features/landing/LandingPage';
 import { ClassroomPage } from '@/features/competition/classroom/ClassroomPage';
 import { StudentCompetitionPage } from '@/features/competition/StudentCompetitionPage';
 import { TeacherCompetitionPage } from '@/features/competition/TeacherCompetitionPage';
@@ -23,11 +25,20 @@ import { TeacherMarketPage } from '@/features/teacher/TeacherMarketPage';
 import { TeacherProfilePage } from '@/features/teacher/TeacherProfilePage';
 import { TeacherStatsPage } from '@/features/teacher/TeacherStatsPage';
 import { WorksheetPage } from '@/features/teacher/worksheet/WorksheetPage';
-import { GuestOnly, HomeRedirect, RequireFeature, RequireRole } from './routeGuards';
+import { GuestOnly, HomeRedirect, LandingOrHome, RequireFeature, RequireRole } from './routeGuards';
 
 export function AppRouter() {
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          <LandingOrHome>
+            <LandingPage />
+          </LandingOrHome>
+        }
+      />
+
       <Route
         path="/login"
         element={
@@ -145,6 +156,7 @@ export function AppRouter() {
         }
       >
         <Route index element={<AdminStatsPage />} />
+        <Route path="applications" element={<AdminApplicationsPage />} />
         <Route path="teachers" element={<AdminTeachersPage />} />
         <Route path="teachers/:teacherId" element={<AdminTeacherPage />} />
         <Route path="finance" element={<AdminFinancePage />} />

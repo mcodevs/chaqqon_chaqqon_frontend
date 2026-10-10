@@ -1,3 +1,4 @@
+import type { ApplicationInput, ApplicationStatus, TeacherApplication } from '@/domain/applications';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
 import type { MarketItem, MarketOrder, OrderStatus, StarAward } from '@/domain/market';
@@ -228,6 +229,16 @@ export interface PlatformSettingsRepository {
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 
+/** Teachers' applications from the landing page. */
+export interface ApplicationRepository {
+  /** Anyone may apply. Throws `AppError('TOO_MANY_APPLICATIONS' | 'INVALID_APPLICATION')`. */
+  submit(application: ApplicationInput): Promise<void>;
+  /** Superadmin: every application, newest first. */
+  list(): Promise<TeacherApplication[]>;
+  update(id: string, changes: { status: ApplicationStatus; teacherId?: string | null; adminNote?: string }): Promise<void>;
+  subscribe(listener: ChangeListener): Unsubscribe;
+}
+
 /** Everything a backend has to provide. */
 export interface Ports {
   auth: AuthGateway;
@@ -241,6 +252,7 @@ export interface Ports {
   tariffs: TariffRepository;
   admin: AdminRepository;
   settings: PlatformSettingsRepository;
+  applications: ApplicationRepository;
   storage: StorageGateway;
   telegram: TelegramGateway;
 }

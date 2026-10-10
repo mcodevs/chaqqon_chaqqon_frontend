@@ -33,7 +33,9 @@ export type AppErrorCode =
   | 'TARIFF_NOT_FOUND'
   | 'BILLING_STARTED'
   | 'INVALID_AMOUNT'
-  | 'INVALID_DATE';
+  | 'INVALID_DATE'
+  | 'INVALID_APPLICATION'
+  | 'TOO_MANY_APPLICATIONS';
 
 /** Expected, user-facing failure of a use case. Presentation maps `code` to a message. */
 export class AppError extends Error {

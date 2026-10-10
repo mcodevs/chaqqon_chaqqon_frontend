@@ -6,6 +6,7 @@ import { createSupabasePaymentRepository } from './supabasePaymentRepository';
 import {
   createSupabaseAccountRepository,
   createSupabaseAdminRepository,
+  createSupabaseApplicationRepository,
   createSupabasePlatformSettingsRepository,
   createSupabaseTariffRepository,
 } from './supabasePlatformRepositories';
@@ -34,6 +35,7 @@ export function createSupabasePorts(config: SupabaseConfig): Ports {
     tariffs: createSupabaseTariffRepository(client),
     admin: createSupabaseAdminRepository(client),
     settings: createSupabasePlatformSettingsRepository(client),
+    applications: createSupabaseApplicationRepository(client),
     storage: createSupabaseStorageGateway(client),
     telegram: createSupabaseTelegramGateway(client, window),
   };

@@ -1,5 +1,6 @@
 import type { AccountService } from './accountService';
 import type { AdminService } from './adminService';
+import type { ApplicationService } from './applicationService';
 import type { AuthService } from './authService';
 import type { BillingService } from './billingService';
 import type { CompetitionService } from './competitionService';
@@ -22,6 +23,7 @@ export interface AppServices {
   account: AccountService;
   admin: AdminService;
   platform: PlatformService;
+  applications: ApplicationService;
   storage: StorageGateway;
   telegram: TelegramGateway;
 }

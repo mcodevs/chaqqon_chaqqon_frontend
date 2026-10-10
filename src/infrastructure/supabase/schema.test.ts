@@ -305,8 +305,8 @@ describe('the star ledger', () => {
 });
 
 describe('database schema and row-level security', () => {
-  it('tells guests whether the teacher exists, but shows them nothing else', async () => {
-    expect(await as('anon', null, 'select public.teacher_exists() as exists')).toEqual([{ exists: true }]);
+  it('shows guests no account at all, not even whether one exists', async () => {
+    await expect(as('anon', null, 'select public.teacher_exists()')).rejects.toThrow(/does not exist/);
     await expect(as('anon', null, 'select id from public.profiles')).rejects.toThrow(/permission denied/);
   });
 
@@ -1334,5 +1334,80 @@ describe('the platform: tariffs, the teacher balance and the superadmin', () => 
     await expect(
       insertProfile('00000000-0000-4000-8000-0000000000e2', 'admin', 'boss2', 'X', TEACHER_C),
     ).rejects.toThrow(/profiles_teacher_link|must name a teacher/);
+  });
+});
+
+describe('applications from the landing page', () => {
+  const ADMIN = '00000000-0000-4000-8000-0000000000e1';
+  const submit = (name: string, phone: string, tariffId: string | null = null) =>
+    as(
+      'anon',
+      null,
+      `select public.submit_teacher_application($1, $2, 25, '@ustoz', 'Toshkent', '', 'Instagram', $3, 'Salom')`,
+      [name, phone, tariffId],
+    );
+
+  it('takes an application from a guest, who cannot read any back', async () => {
+    await db.exec('delete from private.sent_notifications');
+    const hidden = (await db.query<{ id: string }>("select id from public.tariffs where name = 'Legacy'"))
+      .rows[0].id;
+    await submit('Dilnoza Karimova', '+998 90 111 22 33', hidden);
+
+    await expect(as('anon', null, 'select id from public.teacher_applications')).rejects.toThrow(
+      /permission denied/,
+    );
+    expect(await as('authenticated', TEACHER, 'select id from public.teacher_applications')).toEqual([]);
+
+    const rows = await as<{ full_name: string; tariff_id: string | null; status: string }>(
+      'authenticated',
+      ADMIN,
+      'select full_name, tariff_id, status from public.teacher_applications',
+    );
+    // A tariff that is not on offer is not kept.
+    expect(rows).toEqual([{ full_name: 'Dilnoza Karimova', tariff_id: null, status: 'new' }]);
+
+    const told = await db.query<{ profile_id: string; text: string }>(
+      'select profile_id, text from private.sent_notifications',
+    );
+    expect(told.rows.map((row) => row.profile_id)).toEqual([ADMIN]);
+    expect(told.rows[0].text).toContain('📝 <b>Yangi ariza</b>');
+    expect(told.rows[0].text).toContain("👥 25 o'quvchi");
+  });
+
+  it('refuses a malformed application and a flood from one phone', async () => {
+    await expect(submit('D', '+998 90 111 22 33')).rejects.toThrow(/INVALID_APPLICATION/);
+    await expect(submit('Dilnoza', "qo'ng'iroq qiling")).rejects.toThrow(/INVALID_APPLICATION/);
+    await submit('Dilnoza', '+998901112233');
+    await submit('Dilnoza', '998 (90) 111-22-33');
+    await expect(submit('Dilnoza', '+998 90 111 22 33')).rejects.toThrow(/TOO_MANY_APPLICATIONS/);
+  });
+
+  it('lets only the admin handle an application, and records who did', async () => {
+    const [{ id }] = await as<{ id: string }>(
+      'authenticated',
+      ADMIN,
+      'select id from public.teacher_applications order by created_at limit 1',
+    );
+    expect(
+      await as(
+        'authenticated',
+        TEACHER,
+        "update public.teacher_applications set status = 'rejected' returning id",
+      ),
+    ).toEqual([]);
+    expect(
+      await as(
+        'authenticated',
+        ADMIN,
+        "update public.teacher_applications set status = 'contacted' where id = $1 returning status, handled_by",
+        [id],
+      ),
+    ).toEqual([{ status: 'contacted', handled_by: ADMIN }]);
+    await expect(
+      as('authenticated', ADMIN, 'update public.teacher_applications set phone = $1 where id = $2', [
+        '+1',
+        id,
+      ]),
+    ).rejects.toThrow(/permission denied/);
   });
 });

@@ -2,11 +2,13 @@ import { AppError } from '@/application/errors';
 import type {
   AccountRepository,
   AdminRepository,
+  ApplicationRepository,
   Clock,
   IdGenerator,
   PlatformSettingsRepository,
   TariffRepository,
 } from '@/application/ports';
+import type { TeacherApplication } from '@/domain/applications';
 import { type Payment, accessOf, schoolDate } from '@/domain/billing';
 import type { Room } from '@/domain/competition';
 import type { TeacherOverview } from '@/domain/platformStats';
@@ -293,6 +295,61 @@ export function createLocalPlatformSettingsRepository({
       requireAdmin(platform);
       await platform.saveSettings(settings);
     },
+    subscribe: platform.subscribe,
+  };
+}
+
+const APPLICATIONS_KEY = 'platform/applications';
+
+export function createLocalApplicationRepository({
+  store,
+  platform,
+  clock,
+  generateId,
+}: Dependencies): ApplicationRepository {
+  const list = async () => (await store.get<TeacherApplication[]>(APPLICATIONS_KEY)) ?? [];
+
+  return {
+    async submit(application) {
+      const offered = (await platform.listTariffs()).some(
+        (t) => t.id === application.tariffId && t.isPublic && !t.archivedAt,
+      );
+      await store.set<TeacherApplication[]>(APPLICATIONS_KEY, [
+        {
+          ...application,
+          tariffId: offered ? application.tariffId : null,
+          id: generateId(),
+          status: 'new',
+          teacherId: null,
+          adminNote: '',
+          createdAt: clock.now().toISOString(),
+        },
+        ...(await list()),
+      ]);
+    },
+
+    async list() {
+      requireAdmin(platform);
+      return list();
+    },
+
+    async update(id, changes) {
+      requireAdmin(platform);
+      await store.set(
+        APPLICATIONS_KEY,
+        (await list()).map((a) =>
+          a.id === id
+            ? {
+                ...a,
+                status: changes.status,
+                teacherId: changes.teacherId === undefined ? a.teacherId : changes.teacherId,
+                adminNote: changes.adminNote ?? a.adminNote,
+              }
+            : a,
+        ),
+      );
+    },
+
     subscribe: platform.subscribe,
   };
 }

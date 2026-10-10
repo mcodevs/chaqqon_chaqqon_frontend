@@ -1,6 +1,7 @@
 import { createAccountService } from '@/application/accountService';
 import { createAdminService } from '@/application/adminService';
 import type { AppServices } from '@/application/appServices';
+import { createApplicationService } from '@/application/applicationService';
 import { createAuthService } from '@/application/authService';
 import { createBillingService } from '@/application/billingService';
 import { createCompetitionService } from '@/application/competitionService';
@@ -35,6 +36,7 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
       random: Math.random,
     }),
     platform: createPlatformService({ tariffs: ports.tariffs, settings: ports.settings }),
+    applications: createApplicationService({ applications: ports.applications }),
     storage: ports.storage,
     telegram: ports.telegram,
   };

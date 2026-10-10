@@ -13,6 +13,7 @@ import { createLocalPlatform } from './localPlatform';
 import {
   createLocalAccountRepository,
   createLocalAdminRepository,
+  createLocalApplicationRepository,
   createLocalPlatformSettingsRepository,
   createLocalTariffRepository,
 } from './localPlatformRepositories';
@@ -73,6 +74,7 @@ export function createLocalPorts(browser: Window, clock: Clock): Ports {
     tariffs: createLocalTariffRepository(platformDeps),
     admin: createLocalAdminRepository(platformDeps),
     settings: createLocalPlatformSettingsRepository(platformDeps),
+    applications: createLocalApplicationRepository(platformDeps),
     storage: createLocalStorageGateway(),
     telegram: createNoopTelegramGateway(),
   };

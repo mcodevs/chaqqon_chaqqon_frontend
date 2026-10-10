@@ -7,6 +7,7 @@ import { createLocalPlatform } from '@/infrastructure/local/localPlatform';
 import {
   createLocalAccountRepository,
   createLocalAdminRepository,
+  createLocalApplicationRepository,
   createLocalPlatformSettingsRepository,
   createLocalTariffRepository,
 } from '@/infrastructure/local/localPlatformRepositories';
@@ -91,6 +92,7 @@ export async function createTestDependencies() {
     tariffs: createLocalTariffRepository(platformDeps),
     admin: createLocalAdminRepository(platformDeps),
     settings: createLocalPlatformSettingsRepository(platformDeps),
+    applications: createLocalApplicationRepository(platformDeps),
     generateId,
     clock,
     random: createSeededRandom(1),

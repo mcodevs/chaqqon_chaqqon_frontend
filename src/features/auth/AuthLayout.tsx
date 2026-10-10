@@ -16,7 +16,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       </div>
       <main className={styles.card}>
         <h1 className={styles.brand}>Chaqqon-chaqqon</h1>
-        <p className={styles.brandSub}>Mental arifmetika · Mohira ustoz bilan</p>
+        <p className={styles.brandSub}>Mental arifmetika platformasi</p>
         {children}
       </main>
     </div>

@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { PlatformSettings } from '@/application/ports';
 import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { useServices } from '@/shared/services/ServicesContext';
@@ -20,6 +21,13 @@ export function AdminSettingsPage() {
   return (
     <div className={styles.page}>
       {settings ? <ContactForm initial={settings} /> : <SkeletonList rows={2} avatar={false} />}
+
+      <Card title="Tariflar">
+        <p className={styles.hint}>Narx, o'quvchi limiti va ochiladigan bo'limlar.</p>
+        <Link to="/admin/tariffs" className={styles.back}>
+          🏷️ Tariflarni boshqarish ›
+        </Link>
+      </Card>
 
       <Card title="Ko'rinish">
         <ThemeToggle />

@@ -1,8 +1,15 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { APPLICATION_STATUS_LABEL, applicationFunnel } from '@/domain/applications';
 import { computePlatformStats, monthlyFinance } from '@/domain/platformStats';
 import { formatCalendarDate, formatSom } from '@/shared/format';
-import { useAdminLedger, useAdminTariffs, useAdminTeachers, useSchoolToday } from '@/shared/services/queries';
+import {
+  useAdminLedger,
+  useAdminTariffs,
+  useAdminTeachers,
+  useApplications,
+  useSchoolToday,
+} from '@/shared/services/queries';
 import { Card } from '@/shared/ui/Card';
 import { SkeletonList } from '@/shared/ui/LoadingScreen';
 import { EmptyState } from '@/shared/ui/Notice';
@@ -23,6 +30,11 @@ export function AdminStatsPage() {
   const teachers = useAdminTeachers(range);
   const tariffs = useAdminTariffs();
   const ledger = useAdminLedger();
+  const applications = useApplications();
+  const funnel = useMemo(
+    () => (applications ? applicationFunnel(applications, range) : undefined),
+    [applications, range],
+  );
 
   const stats = useMemo(
     () =>
@@ -127,6 +139,43 @@ export function AdminStatsPage() {
           <StatTile label="Interaktiv uy vazifalari" value={String(stats.activity.homeworkRooms)} />
         </div>
       </section>
+
+      {funnel && (
+        <Card title="Arizalar">
+          <div className={styles.tiles}>
+            <StatTile
+              label="Davrda kelgan"
+              value={String(funnel.total)}
+              detail={`Ustozga aylangan: ${funnel.conversion}%`}
+            />
+            {(['new', 'contacted', 'approved', 'rejected'] as const).map((status) => (
+              <StatTile
+                key={status}
+                label={APPLICATION_STATUS_LABEL[status]}
+                value={String(funnel.byStatus[status])}
+              />
+            ))}
+          </div>
+          {funnel.bySource.length > 0 && (
+            <ul className={styles.shareList} aria-label="Qayerdan eshitgan">
+              {funnel.bySource.map((row) => (
+                <li key={row.source}>
+                  <div className={styles.shareHead}>
+                    <span>{row.source}</span>
+                    <span className={styles.muted}>{row.count} ta</span>
+                  </div>
+                  <div className={styles.meter} aria-hidden="true">
+                    <div
+                      className={styles.meterFill}
+                      style={{ width: `${percent(row.count, funnel.total)}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
 
       <div className={styles.columns}>
         <Card title="Ustozlar holati">

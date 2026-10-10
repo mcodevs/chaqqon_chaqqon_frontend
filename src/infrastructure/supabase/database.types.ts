@@ -170,6 +170,25 @@ type TeacherOverviewRow = {
   homework_rooms: number;
 };
 
+type TeacherApplicationRow = {
+  id: string;
+  full_name: string;
+  phone: string;
+  students_count: number | null;
+  telegram_username: string;
+  city: string;
+  center_name: string;
+  heard_from: string;
+  tariff_id: string | null;
+  note: string;
+  status: 'new' | 'contacted' | 'approved' | 'rejected';
+  teacher_id: string | null;
+  handled_by: string | null;
+  admin_note: string;
+  created_at: string;
+  updated_at: string;
+};
+
 type TelegramLinkRow = {
   id: string;
   profile_id: string;
@@ -279,6 +298,13 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      teacher_applications: {
+        Row: TeacherApplicationRow;
+        // Guests apply through submit_teacher_application().
+        Insert: never;
+        Update: Partial<Pick<TeacherApplicationRow, 'status' | 'teacher_id' | 'admin_note'>>;
+        Relationships: [];
+      };
       platform_settings: {
         Row: PlatformSettingsRow;
         Insert: never;
@@ -288,7 +314,20 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
-      teacher_exists: { Args: NoArgs; Returns: boolean };
+      submit_teacher_application: {
+        Args: {
+          p_full_name: string;
+          p_phone: string;
+          p_students_count: number | null;
+          p_telegram_username: string;
+          p_city: string;
+          p_center_name: string;
+          p_heard_from: string;
+          p_tariff_id: string | null;
+          p_note: string;
+        };
+        Returns: void;
+      };
       student_accounts: {
         Args: NoArgs;
         Returns: Pick<

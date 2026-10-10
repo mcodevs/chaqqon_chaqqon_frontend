@@ -5,6 +5,7 @@ import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
 import type { WrittenHomework } from '@/domain/homework';
 import type { TariffInput } from '@/application/ports';
+import type { TeacherApplication } from '@/domain/applications';
 import type { TeacherOverview } from '@/domain/platformStats';
 import { type LedgerEntry, type Tariff, isFeature } from '@/domain/teacherBilling';
 import type { Student, StudentAccount } from '@/domain/users';
@@ -232,6 +233,25 @@ export function toTeacherOverview(
     correctAnswers: row.correct_answers,
     totalAnswers: row.total_answers,
     homeworkRooms: row.homework_rooms,
+  };
+}
+
+export function toTeacherApplication(row: Tables['teacher_applications']['Row']): TeacherApplication {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    phone: row.phone,
+    studentsCount: row.students_count,
+    telegramUsername: row.telegram_username,
+    city: row.city,
+    centerName: row.center_name,
+    heardFrom: row.heard_from,
+    tariffId: row.tariff_id,
+    note: row.note,
+    status: row.status,
+    teacherId: row.teacher_id,
+    adminNote: row.admin_note,
+    createdAt: row.created_at,
   };
 }
 

@@ -2,7 +2,7 @@
 project_id = "chaqqon-chaqqon"
 
 [functions.register-teacher]
-# Called before anyone is signed in; the function validates its input itself.
+# Retired: refuses every call. Teachers apply on the landing page and the admin creates them.
 verify_jwt = false
 
 [functions.manage-students]

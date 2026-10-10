@@ -6,3 +6,15 @@
 .roleToggle {
   margin-bottom: var(--space-4);
 }
+
+.footnote {
+  margin: var(--space-4) 0 0;
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  text-align: center;
+}
+
+.footnote a {
+  color: var(--brand-primary);
+  font-weight: 600;
+}

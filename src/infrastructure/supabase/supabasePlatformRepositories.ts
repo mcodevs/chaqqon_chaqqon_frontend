@@ -2,6 +2,7 @@ import { AppError } from '@/application/errors';
 import type {
   AccountRepository,
   AdminRepository,
+  ApplicationRepository,
   PlatformSettingsRepository,
   TariffRepository,
 } from '@/application/ports';
@@ -9,7 +10,7 @@ import { isFeature } from '@/domain/teacherBilling';
 import type { AppSupabaseClient } from './client';
 import type { Database } from './database.types';
 import { invokeFunction, raisedAppError } from './edgeFunctions';
-import { toLedgerEntry, toTariff, toTariffRow, toTeacherOverview } from './mappers';
+import { toLedgerEntry, toTariff, toTariffRow, toTeacherApplication, toTeacherOverview } from './mappers';
 import { liveSubscription } from './realtime';
 
 type Tables = Database['public']['Tables'];
@@ -213,6 +214,51 @@ export function createSupabasePlatformSettingsRepository(
         .select('id');
       if (error) throw error;
       if (!data.length) throw new AppError('FORBIDDEN');
+      live.notify();
+    },
+
+    subscribe: live.subscribe,
+  };
+}
+
+export function createSupabaseApplicationRepository(client: AppSupabaseClient): ApplicationRepository {
+  const live = liveSubscription(client, ['teacher_applications']);
+
+  return {
+    async submit(application) {
+      const { error } = await client.rpc('submit_teacher_application', {
+        p_full_name: application.fullName,
+        p_phone: application.phone,
+        p_students_count: application.studentsCount,
+        p_telegram_username: application.telegramUsername,
+        p_city: application.city,
+        p_center_name: application.centerName,
+        p_heard_from: application.heardFrom,
+        p_tariff_id: application.tariffId,
+        p_note: application.note,
+      });
+      if (error) throw raisedAppError(error, ['TOO_MANY_APPLICATIONS', 'INVALID_APPLICATION']);
+    },
+
+    async list() {
+      const { data, error } = await client
+        .from('teacher_applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data.map(toTeacherApplication);
+    },
+
+    async update(id, changes) {
+      const { error } = await client
+        .from('teacher_applications')
+        .update({
+          status: changes.status,
+          ...(changes.teacherId !== undefined ? { teacher_id: changes.teacherId } : {}),
+          ...(changes.adminNote !== undefined ? { admin_note: changes.adminNote } : {}),
+        })
+        .eq('id', id);
+      if (error) throw error;
       live.notify();
     },
 

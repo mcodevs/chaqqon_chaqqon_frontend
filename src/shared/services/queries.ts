@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeacherAccountView } from '@/application/accountService';
 import type { RoomSnapshot } from '@/application/competitionService';
 import type { PlatformSettings } from '@/application/ports';
+import type { TeacherApplication } from '@/domain/applications';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { WrittenHomework } from '@/domain/homework';
 import {
@@ -201,4 +202,10 @@ export function useAdminLedger(): LedgerEntry[] | undefined {
 export function useAdminTariffs(): Tariff[] | undefined {
   const { admin } = useServices();
   return useLiveQuery({ load: admin.listTariffs, subscribe: admin.subscribe });
+}
+
+/** Superadmin: every application from the landing page, newest first. */
+export function useApplications(): TeacherApplication[] | undefined {
+  const { applications } = useServices();
+  return useLiveQuery({ load: applications.list, subscribe: applications.subscribe });
 }
