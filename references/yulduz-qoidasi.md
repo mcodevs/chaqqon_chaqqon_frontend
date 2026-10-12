@@ -1,6 +1,8 @@
 ---
 name: yulduz-qoidasi
-description: "2026-10-11: interaktiv uy vazifasida ≥90% to'g'ri javob → 1 yulduz (oldin faqat 100%); faqat yangi natijalarga"
+description: "2026-10-11: interaktiv uy vazifasida ≥90% to'g'ri javob → 1 yulduz
+  (oldin faqat 100%); faqat yangi natijalarga; prodda (eabe974),
+  telegram-send-document ham deploy (17dfab1)"
 metadata:
   type: project
 ---

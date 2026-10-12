@@ -13,6 +13,7 @@ yerdan kerakli faylni oching.
 - [O'sish vositalari](references/osish-vositalari.md) — 2026-10-10: tavsiya etilgan tarif, kunlik narx, real raqamlar (chegara bilan), bepul sinov, kafolat, referal (`?taklif=`, bonus faqat taklif qilganga), boshlash ro'yxati, ariza eslatmasi
 - [Landing redizayni](references/landing-redizayn.md) — 2026-10-10/11: "Jonli raund" demo-first + review (49 tuzatish) + responsive (breakpointlar 768/1024/1440, --lp-max, Imkoniyatlar qatorlari, tarif karuseli); 2026-10-11 push qilindi
 - [Yulduz qoidasi (90%)](references/yulduz-qoidasi.md) — 2026-10-11: uy vazifasida ≥90% to'g'ri → 1 yulduz, DB trigger, retroaktiv emas; prodda 2026-10-11 dan
+- [Tarif tavsiyasi](references/tarif-tavsiyasi.md) — 2026-10-11: egasi yaratdi Bronza 0/5, Kumush⭐ 50k/10, Oltin 70k/cheksiz; tahlil: Kumush Oltin oldida yutqazadi, Oltin arzon, bepulda asosiy qiymat yo'q; taklif Bronza 0/5 + uy vazifasi, Kumush 59k/20, Oltin 99k
 - [useAsyncAction void tuzog'i](references/useasyncaction-void-tuzogi.md) — `run()` void amalda ham `undefined` qaytaradi → shoxlanadigan joyda `return true` bilan o'rang; local sinov uchun `verify.localhost:5174` toza origin
 - [Maxsus domen](references/maxsus-domen.md) — 2026-10-11: **chaqqon-chaqqon.uz jonli** (DNS Ahost'da, www → apex 308, `www` uchun CNAME hali kerak); telegram-webhook `APP_URL` yangi domenda (v5, MCP deploy); qolgan ishlar: BotFather menu URL, `6ef0d61` push
 
