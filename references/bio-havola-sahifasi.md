@@ -38,7 +38,7 @@ ro'yxatdan o'tishga olib boradi, real platforma statistikasini ko'rsatish mumkin
 
 ## Holat
 
-2026-10-14: **A bosqich yozildi**, hali to'ldirilmagan.
+2026-10-14: **jonli** — `2baf1a8` main'ga push qilindi, Vercel avtomatik deploy qildi. Manzil: `chaqqon-chaqqon.uz/link`.
 
 - `src/features/linkPage/content/linkProfile.ts` — `PROFILE` konstantasi (tiplar + `visibleLinks`,
   `isExternal`, `isFilled`). Kontent faqat shu yerda: B bosqichda konstanta o'rniga so'rov qo'yiladi,
