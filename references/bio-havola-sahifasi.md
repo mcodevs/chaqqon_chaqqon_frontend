@@ -132,3 +132,8 @@ kengligida cho'zilib, tasodifiy taxtaga o'xshab ko'rinardi.
 - `.column { margin: auto }` — qolgan joyni tepa va pastga teng bo'ladi, futer pastda qoladi.
   Telefonda kontent ekrandan baland bo'lgani uchun hech narsa o'zgarmaydi.
 - Tayoq `min(100%, 180px)` va `opacity: .75` — endi bosh qismni yopuvchi chiziq, taxta emas.
+
+**Ochiq taklif:** `/link` ochilishida ilovaning umumiy "Yuklanmoqda..." ekrani bir lahza chiqadi —
+`SessionProvider` sessiyani tiklaguncha hamma marshrut kutadi. Bu sahifa hech qanday ma'lumot
+yuklamaydi, shuning uchun uni shu darvozadan chiqarib, darhol ochiladigan qilish mumkin. Egasiga
+aytildi, javobi kutilmoqda.
