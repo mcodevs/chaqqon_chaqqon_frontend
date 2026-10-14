@@ -112,3 +112,13 @@ Tuzilish o'zgarishi: alohida CTA tugmasi **olib tashlandi** (u bilan "Sinov dars
 marta chiqardi) — endi `ProfileLink.primary` bayrog'i qaysi qator brend rangida bo'lishini
 belgilaydi, `ProfileLink.eyebrow` esa qator ustidagi "USTOZLAR UCHUN" yozuvini beradi. Shu bilan
 bitta primary qoidasi ikki auditoriya uchun ham saqlanadi.
+
+## Logo (2026-10-15)
+
+Egasi bergan logo (`public/link/logo.webp`) dumaloq avatar o'rnida turadi: `LinkProfile.logo`
+to'ldirilgan bo'lsa sahifa logoni ko'rsatadi, `h1` esa ekranda yashiriladi (logoda ism allaqachon
+yozilgan) — lekin skrinrider va qidiruv tizimlari uchun qoladi. Logo o'z oq foni bilan kelgani
+uchun yumaloqlangan va yengil soya bilan kartaga o'xshatildi, kengligi 248px bilan cheklandi:
+"Sinov darsiga yozilish" tugmasi telefonning birinchi ekranida qolishi kerak.
+
+Sahifa ranglari endi [[brend-ranglari]] dagi logo palitrasidan keladi.

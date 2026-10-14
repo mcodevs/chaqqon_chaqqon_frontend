@@ -5,6 +5,7 @@ const base: LinkProfile = {
   name: 'Mohira ustoz',
   role: 'Mental arifmetika ustozi',
   city: null,
+  logo: null,
   avatar: null,
   badges: [],
   links: [],

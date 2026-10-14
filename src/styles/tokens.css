@@ -1,5 +1,6 @@
 /*
- * Design tokens — "Warm Focus".
+ * Design tokens — "Warm Focus", in the logo's colours: a leaf green for every action, the logo's
+ * orange for the playful highlights, on the same warm cream the mark itself sits on.
  *
  * Three rules this file exists to enforce:
  *   1. one neutral ramp (warm, never blue-grey), one brand colour for actions;
@@ -69,11 +70,11 @@
   --ease-decelerate: cubic-bezier(0, 0, 0, 1);
 
   /* ---------- Colour: brand ---------- */
-  --brand-primary: #6d46d6;
-  --brand-primary-hover: #5c37bd;
-  --brand-primary-soft: #f0ebfd;
+  --brand-primary: #1a7a34;
+  --brand-primary-hover: #14622a;
+  --brand-primary-soft: #e6f4e9;
   --brand-on-primary: #ffffff;
-  --brand-accent: #ff6b5c; /* playful highlight: medals, streaks, empty-state art */
+  --brand-accent: #f58a1f; /* playful highlight: medals, streaks, empty-state art */
 
   /* ---------- Colour: surfaces ---------- */
   --surface-page: #fdf7ee;
@@ -84,10 +85,10 @@
   --surface-overlay: rgba(28, 24, 20, 0.45);
 
   /* ---------- Colour: content ---------- */
-  --content-primary: #241f2b;
-  --content-secondary: #5d5768;
-  --content-tertiary: #6e6878;
-  --content-disabled: #b6b0bf;
+  --content-primary: #27231b;
+  --content-secondary: #5d564a;
+  --content-tertiary: #6e675a;
+  --content-disabled: #b7b1a4;
   --content-on-accent: #ffffff;
 
   /* ---------- Colour: borders ---------- */
@@ -96,9 +97,9 @@
   --border-focus: var(--brand-primary);
 
   /* ---------- Colour: semantic ---------- */
-  --success: #2f8f4e;
-  --success-soft: #e6f6ea;
-  --success-content: #1f6b39;
+  --success: #0f8a63;
+  --success-soft: #e3f6ee;
+  --success-content: #0b6b4c;
   --warning: #c8761a;
   --warning-soft: #fdf0dd;
   --warning-content: #8c5310;
@@ -110,13 +111,13 @@
   --info-content: #1f5795;
 
   /* ---------- Colour: data (charts, levels, avatars) ---------- */
-  --data-1: #6d46d6;
+  --data-1: #1a7a34;
   --data-2: #2d77c9;
-  --data-3: #2f8f4e;
+  --data-3: #0e8a80;
   --data-4: #c8761a;
   --data-5: #d4497f;
   /* Admin finance chart: money received vs fees charged (a validated pair, see dataviz). */
-  --chart-income: #6d46d6;
+  --chart-income: #1a7a34;
   --chart-charge: #c8761a;
 
   --medal-gold: #e0a32b;
@@ -137,9 +138,9 @@
 
   /* ---------- Elevation ---------- */
   --elevation-0: none;
-  --elevation-1: 0 1px 2px rgba(36, 31, 43, 0.05);
-  --elevation-2: 0 4px 12px rgba(36, 31, 43, 0.07);
-  --elevation-3: 0 12px 28px rgba(36, 31, 43, 0.1);
+  --elevation-1: 0 1px 2px rgba(38, 34, 26, 0.05);
+  --elevation-2: 0 4px 12px rgba(38, 34, 26, 0.07);
+  --elevation-3: 0 12px 28px rgba(38, 34, 26, 0.1);
 }
 
 /*
@@ -148,31 +149,31 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --brand-primary: #a78bfa;
-    --brand-primary-hover: #b9a2fc;
-    --brand-primary-soft: #2e2740;
-    --brand-on-primary: #1a1520;
-    --brand-accent: #ff8b7e;
+    --brand-primary: #5ec97a;
+    --brand-primary-hover: #7ad694;
+    --brand-primary-soft: #1d3325;
+    --brand-on-primary: #0d2113;
+    --brand-accent: #f3a44f;
 
-    --surface-page: #151219;
-    --surface-card: #1e1a25;
-    --surface-soft: #251f2e;
-    --surface-sunken: #121016;
-    --surface-hover: #2b2435;
+    --surface-page: #14120e;
+    --surface-card: #1e1b15;
+    --surface-soft: #262118;
+    --surface-sunken: #110f0c;
+    --surface-hover: #2c261c;
     --surface-overlay: rgba(0, 0, 0, 0.6);
 
-    --content-primary: #f4f1f8;
-    --content-secondary: #bcb4c7;
-    --content-tertiary: #8f879c;
-    --content-disabled: #6b6478;
-    --content-on-accent: #1a1520;
+    --content-primary: #f6f2e9;
+    --content-secondary: #c2baaa;
+    --content-tertiary: #948c7c;
+    --content-disabled: #6e6758;
+    --content-on-accent: #1b1710;
 
-    --border-subtle: #322b3d;
-    --border-strong: #463d55;
+    --border-subtle: #332d22;
+    --border-strong: #4a4234;
 
-    --success: #5cc47c;
-    --success-soft: #1d3326;
-    --success-content: #8fdca6;
+    --success: #4fd3a4;
+    --success-soft: #15332a;
+    --success-content: #86e0c0;
     --warning: #e3a14f;
     --warning-soft: #362a19;
     --warning-content: #f0c288;
@@ -183,12 +184,12 @@
     --info-soft: #1b2b3d;
     --info-content: #a3cbf5;
 
-    --data-1: #a78bfa;
+    --data-1: #5ec97a;
     --data-2: #6aa9ea;
-    --data-3: #5cc47c;
+    --data-3: #4ec9bd;
     --data-4: #e3a14f;
     --data-5: #ec7ba9;
-    --chart-income: #8a6ae8;
+    --chart-income: #5ec97a;
     --chart-charge: #b87d33;
 
     --medal-gold: #e8bb55;
@@ -211,31 +212,31 @@
 }
 
 :root[data-theme='dark'] {
-  --brand-primary: #a78bfa;
-  --brand-primary-hover: #b9a2fc;
-  --brand-primary-soft: #2e2740;
-  --brand-on-primary: #1a1520;
-  --brand-accent: #ff8b7e;
+  --brand-primary: #5ec97a;
+  --brand-primary-hover: #7ad694;
+  --brand-primary-soft: #1d3325;
+  --brand-on-primary: #0d2113;
+  --brand-accent: #f3a44f;
 
-  --surface-page: #151219;
-  --surface-card: #1e1a25;
-  --surface-soft: #251f2e;
-  --surface-sunken: #121016;
-  --surface-hover: #2b2435;
+  --surface-page: #14120e;
+  --surface-card: #1e1b15;
+  --surface-soft: #262118;
+  --surface-sunken: #110f0c;
+  --surface-hover: #2c261c;
   --surface-overlay: rgba(0, 0, 0, 0.6);
 
-  --content-primary: #f4f1f8;
-  --content-secondary: #bcb4c7;
-  --content-tertiary: #8f879c;
-  --content-disabled: #6b6478;
-  --content-on-accent: #1a1520;
+  --content-primary: #f6f2e9;
+  --content-secondary: #c2baaa;
+  --content-tertiary: #948c7c;
+  --content-disabled: #6e6758;
+  --content-on-accent: #1b1710;
 
-  --border-subtle: #322b3d;
-  --border-strong: #463d55;
+  --border-subtle: #332d22;
+  --border-strong: #4a4234;
 
-  --success: #5cc47c;
-  --success-soft: #1d3326;
-  --success-content: #8fdca6;
+  --success: #4fd3a4;
+  --success-soft: #15332a;
+  --success-content: #86e0c0;
   --warning: #e3a14f;
   --warning-soft: #362a19;
   --warning-content: #f0c288;
@@ -246,12 +247,12 @@
   --info-soft: #1b2b3d;
   --info-content: #a3cbf5;
 
-  --data-1: #a78bfa;
+  --data-1: #5ec97a;
   --data-2: #6aa9ea;
-  --data-3: #5cc47c;
+  --data-3: #4ec9bd;
   --data-4: #e3a14f;
   --data-5: #ec7ba9;
-  --chart-income: #8a6ae8;
+  --chart-income: #5ec97a;
   --chart-charge: #b87d33;
 
   --medal-gold: #e8bb55;

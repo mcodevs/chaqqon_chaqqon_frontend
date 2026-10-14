@@ -85,9 +85,35 @@
   place-items: center;
 }
 
+/*
+ * The mark at the head, in place of the round avatar. The artwork carries its own light ground, so
+ * it is rounded and lifted into a card rather than left as a white rectangle on the cream page —
+ * and kept small enough that the action below it is still on the first screen of a phone.
+ */
+.logo {
+  display: block;
+  width: min(100%, 248px);
+  height: auto;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-1);
+}
+
 .name {
   margin: 0;
   font: var(--text-h1);
+}
+
+/* Read by screen readers and search engines, invisible on screen: the logo already says it. */
+.nameHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .role {

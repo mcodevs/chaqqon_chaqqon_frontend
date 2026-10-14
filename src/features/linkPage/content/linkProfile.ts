@@ -43,6 +43,11 @@ export interface LinkProfile {
   /** One line under the name: what she teaches. */
   role: string;
   city: string | null;
+  /**
+   * A wide mark at the top, in place of the round avatar. It already carries her name, so the page
+   * keeps its heading for screen readers and search engines and hides it on screen.
+   */
+  logo: { src: string; alt: string } | null;
   avatar: { src: string; alt: string } | null;
   /** Short trust chips — "7 yil tajriba", "120+ o'quvchi". Kept to three on screen. */
   badges: readonly string[];
@@ -82,6 +87,7 @@ export const PROFILE: LinkProfile = {
   name: 'Mohira ustoz',
   role: 'Mental arifmetika ustozi',
   city: null,
+  logo: { src: '/link/logo.webp', alt: 'Mohira ustoz bilan Chaqqon-chaqqon' },
   avatar: null,
   badges: [],
   links: [

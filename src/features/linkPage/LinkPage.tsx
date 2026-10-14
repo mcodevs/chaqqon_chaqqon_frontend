@@ -93,7 +93,9 @@ function Head({ profile }: { profile: LinkProfile }) {
   return (
     <header className={styles.head}>
       <span className={styles.avatarDrop}>
-        {profile.avatar ? (
+        {profile.logo ? (
+          <img className={styles.logo} src={profile.logo.src} alt={profile.logo.alt} />
+        ) : profile.avatar ? (
           <img className={styles.avatar} src={profile.avatar.src} alt={profile.avatar.alt} />
         ) : (
           /* No photo yet: her initial stands in, so the head never collapses. */
@@ -102,7 +104,8 @@ function Head({ profile }: { profile: LinkProfile }) {
           </span>
         )}
       </span>
-      <h1 className={styles.name}>{profile.name}</h1>
+      {/* The logo says her name in its own lettering, so on screen the heading would say it twice. */}
+      <h1 className={profile.logo ? styles.nameHidden : styles.name}>{profile.name}</h1>
       <p className={styles.role}>
         {profile.role}
         {profile.city && <span className={styles.city}> · {profile.city}</span>}
