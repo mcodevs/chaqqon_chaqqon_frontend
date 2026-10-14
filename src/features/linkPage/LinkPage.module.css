@@ -64,9 +64,14 @@
   text-align: center;
 }
 
-/* The avatar carries the drop, so the photo's own rounding and border stay untouched by transforms. */
+/*
+ * The avatar carries the drop, so the photo's own rounding and border stay untouched by transforms.
+ * The logo's own artwork is far wider than it is drawn, so the wrapper takes the column's full
+ * width and the mark inside it must centre itself rather than rely on the head's grid.
+ */
 .avatarDrop {
-  display: block;
+  display: grid;
+  justify-items: center;
 }
 
 .avatar,

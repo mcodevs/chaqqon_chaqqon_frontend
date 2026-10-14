@@ -132,6 +132,10 @@ kengligida cho'zilib, tasodifiy taxtaga o'xshab ko'rinardi.
 - `.column { margin: auto }` — qolgan joyni tepa va pastga teng bo'ladi, futer pastda qoladi.
   Telefonda kontent ekrandan baland bo'lgani uchun hech narsa o'zgarmaydi.
 - Tayoq `min(100%, 180px)` va `opacity: .75` — endi bosh qismni yopuvchi chiziq, taxta emas.
+- **Logo chapga surilib qolgan edi**: `.avatarDrop` blok element edi, logoning tabiiy kengligi
+  (1254px) katta bo'lgani uchun o'rab turuvchi element ustunning butun kengligini egallagan va
+  rasm uning chap chetiga yopishgan. `display: grid; justify-items: center` bilan tuzatildi.
+  Dumaloq avatarda bu bilinmasdi — 96px lik bola element o'z-o'zidan markazda qolardi.
 
 **Ochiq taklif:** `/link` ochilishida ilovaning umumiy "Yuklanmoqda..." ekrani bir lahza chiqadi —
 `SessionProvider` sessiyani tiklaguncha hamma marshrut kutadi. Bu sahifa hech qanday ma'lumot
