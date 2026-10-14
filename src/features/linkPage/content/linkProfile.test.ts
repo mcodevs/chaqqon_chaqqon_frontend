@@ -3,7 +3,7 @@ import { LINK_META, PROFILE, type LinkProfile, isExternal, isFilled, visibleLink
 
 const base: LinkProfile = {
   name: 'Mohira ustoz',
-  role: 'Mental arifmetika ustozi',
+  role: null,
   city: null,
   logo: null,
   avatar: null,

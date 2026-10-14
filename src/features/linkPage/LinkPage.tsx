@@ -106,10 +106,17 @@ function Head({ profile }: { profile: LinkProfile }) {
       </span>
       {/* The logo says her name in its own lettering, so on screen the heading would say it twice. */}
       <h1 className={profile.logo ? styles.nameHidden : styles.name}>{profile.name}</h1>
-      <p className={styles.role}>
-        {profile.role}
-        {profile.city && <span className={styles.city}> · {profile.city}</span>}
-      </p>
+      {(profile.role || profile.city) && (
+        <p className={styles.role}>
+          {profile.role}
+          {profile.city && (
+            <span className={styles.city}>
+              {profile.role ? ' · ' : ''}
+              {profile.city}
+            </span>
+          )}
+        </p>
+      )}
       {profile.badges.length > 0 && (
         <ul className={styles.badges}>
           {profile.badges.map((badge) => (

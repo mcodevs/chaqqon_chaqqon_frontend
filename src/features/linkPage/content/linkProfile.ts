@@ -40,8 +40,8 @@ export interface Testimonial {
 
 export interface LinkProfile {
   name: string;
-  /** One line under the name: what she teaches. */
-  role: string;
+  /** One line under the name: what she teaches. Left out where the mark already says it. */
+  role: string | null;
   city: string | null;
   /**
    * A wide mark at the top, in place of the round avatar. It already carries her name, so the page
@@ -85,7 +85,7 @@ const TELEGRAM = 'https://t.me/Mohira_Ravshan_qizi';
  */
 export const PROFILE: LinkProfile = {
   name: 'Mohira ustoz',
-  role: 'Mental arifmetika ustozi',
+  role: null,
   city: null,
   logo: { src: '/link/logo.webp', alt: 'Mohira ustoz bilan Chaqqon-chaqqon' },
   avatar: null,

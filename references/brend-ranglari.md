@@ -39,17 +39,21 @@ Brauzerda ko'rildi: /link, landing (`dev:local`), ustoz paneli — yorug' va qor
 
 ## Ikonkalar (2026-10-15)
 
-Eski binafsha chaqmoq favicon butunlay almashtirildi. Logoning o'zi 16px da o'qilmaydi (bola,
-abakus va yozuv), shuning uchun ikki xil ikonka:
+Avval yasalgan geometrik belgi (yashil kvadrat + ikki tosh, `favicon.svg`) egasiga yoqmadi —
+u logodagi **bolaning o'zini** so'radi va alohida rasm berdi (yuguruvchi bola: bir qo'lida abakus,
+ikkinchisida kubok). `favicon.svg` o'chirildi, hamma ikonka shu rasmdan:
 
-| Fayl                          | Nima                                                                                                                               | Qayerda                                     |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `public/favicon.svg`          | yashil kvadrat + sterjendagi ikki tosh (osmon toshi pastda, yer toshi tepada) — logoning palitrasi va `BrandMark` ning tosh shakli | brauzer varag'i                             |
-| `public/favicon-32.png`       | shu belgining 32px rasteri                                                                                                         | SVG favicon'ni qabul qilmaydigan brauzerlar |
-| `public/apple-touch-icon.png` | logoning o'zidan kesilgan bola + abakus (180px, yozuvsiz)                                                                          | iOS bosh ekraniga qo'shilganda              |
+| Fayl                          | Kesim                       | Qayerda                          |
+| ----------------------------- | --------------------------- | -------------------------------- |
+| `public/favicon-32.png`       | bolaning yuziga yaqin kesim | brauzer varag'i                  |
+| `public/favicon-48.png`       | o'sha kesim, kattaroq       | yuqori zichlikdagi varaq, yorliq |
+| `public/apple-touch-icon.png` | butun figura (180px)        | iOS bosh ekrani                  |
 
-Ya'ni kichik o'lchamda — geometrik belgi, katta o'lchamda — logoning o'zi. PNG'lar macOS `qlmanage`
-va `sips` bilan yasaldi (`sips -c 640 640 --cropOffset 75 300` — yozuvni kesib tashlaydi).
-Telegram bot/mini-app ikonkasi bu yerdan emas, BotFather'dan olinadi — u alohida yangilanadi.
+**Nega ikki xil kesim:** varaq ikonkasi 16–32px, unda butun figura rangli dog'ga aylanadi; yuzga
+yaqin kesimda hech bo'lmasa bola tanilib turadi. Katta o'lchamda esa butun rasm ko'rinadi.
+PNG'lar `sips` bilan yasaldi (yuz kesimi `-c 620 620 --cropOffset 60 300`, butun figura
+`-c 1090 1090 --cropOffset 55 110`). Manba rasm repoda saqlanmagan — kerak bo'lsa egasidan.
+
+Telegram bot/mini-app ikonkasi bu yerdan emas, BotFather'dan olinadi.
 
 Bog'liq: [[bio-havola-sahifasi]], [[landing-redizayn]].
