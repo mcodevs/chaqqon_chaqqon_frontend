@@ -1,12 +1,38 @@
 /*
- * The bio-link page. One narrow column, phone first: the head, one primary action, the links as
- * full-width rows big enough for a thumb, the photos as a grid, then the platform's numbers. Only
- * the call to action is tinted with the brand colour; every row stays a quiet card, so the page has
- * a single primary action however many links are added.
+ * The bio-link page. One narrow column, phone first.
+ *
+ * Its motion is one gesture — a reckoning. A rod draws down to the avatar, the avatar settles onto
+ * the bar under the name, then each row's bead is pushed up its own rod against the bar: one bead
+ * pitch for the first row, two for the second, so the stagger is a distance as much as a delay.
+ * Rules this file keeps, on top of the house rules in landing/motion/motion.module.css:
+ *   - only transform and opacity animate, and every keyframe is `from`-only, so the end frame is
+ *     the element's natural state: after ~700ms the page is pixel-identical to the page a
+ *     reduced-motion visitor sees on frame one;
+ *   - the words never wait. The name, the role and both row labels are at full opacity from the
+ *     first frame; only the instrument — rods, bar, beads — is held back;
+ *   - a bead never fades. It arrives opaque along its rod, because a thing that appears from
+ *     nothing is a graphic and a thing that travels is a mechanism;
+ *   - no overshoot anywhere (the string --lp-overshoot must never appear in this file): every
+ *     arrival ends flat, the way a bead dies against the bar.
  */
 
 .page {
   --link-max: 480px;
+
+  /* The bead box the whole page is measured in — the same one the landing's footer rod uses. */
+  --bead-w: 20px;
+  --bead-h: 15px;
+  --bead-gap: 3px;
+  --pitch: calc(var(--bead-h) + var(--bead-gap));
+
+  /* Derived from the motion tokens, the way the landing derives its own. */
+  --link-draw: calc(var(--motion-slow) * 1.5);
+  --link-settle: var(--motion-slow);
+  --link-stagger: var(--lp-hero-stagger, 70ms);
+  /* When the rows start: after the head's rod and bar have finished drawing. */
+  --link-rows-at: 300ms;
+  /* A bead waits for its own rod to be most of the way down before it climbs it. */
+  --link-bead-in: 80ms;
 
   display: flex;
   min-height: 100vh;
@@ -32,6 +58,24 @@
   justify-items: center;
   gap: var(--space-2);
   text-align: center;
+}
+
+/* The rod the avatar comes down. It starts above the column's padding and ends at the avatar. */
+.rodStub {
+  width: 3px;
+  height: var(--space-6);
+  margin-bottom: calc(var(--space-2) * -1);
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--abacus-rod) 20%, transparent),
+    var(--abacus-rod)
+  );
+}
+
+/* The avatar carries the drop, so the photo's own rounding and border stay untouched by transforms. */
+.avatarDrop {
+  display: block;
 }
 
 .avatar,
@@ -88,74 +132,138 @@
   font: var(--text-caption);
 }
 
-/* ---------- The one primary action ---------- */
-
-.cta {
-  display: flex;
-  min-height: var(--touch-target);
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-lg);
-  background: var(--brand-primary);
-  color: var(--brand-on-primary);
-  font: var(--text-h3);
-  text-align: center;
-  text-decoration: none;
-  transition: background var(--motion-fast) var(--ease-standard);
+/* The reckoning bar: the line every bead below is pushed up against. */
+.bar {
+  margin-top: var(--space-4);
 }
 
-.cta:hover {
-  background: var(--brand-primary-hover);
-}
-
-/* ---------- Link rows ---------- */
+/* ---------- Rows ---------- */
 
 .links {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
+}
+
+.rowBox {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Who the row below is for, for the visitor it is not for. Static type: it never moves. */
+.eyebrow {
+  margin: 0 0 0 var(--space-1);
+  color: var(--content-tertiary);
+  font: var(--text-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .row {
   display: grid;
-  min-height: 64px;
-  align-items: center;
+  min-height: 68px;
+  align-items: stretch;
   gap: var(--space-3);
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: var(--bead-w) minmax(0, 1fr) auto;
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--surface-card);
   color: inherit;
   text-decoration: none;
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
 }
 
 .row:hover {
   border-color: var(--border-strong);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .row:active {
-    transform: scale(0.99);
-  }
+/* The one primary action: the parent's trial lesson, in the brand colour. */
+.row[data-primary] {
+  border-color: transparent;
+  background: var(--brand-primary);
+  color: var(--brand-on-primary);
 }
 
-/* The way back into the app is the one row that carries the brand's tint. */
-.row[data-kind='platform'] {
-  border-color: color-mix(in srgb, var(--brand-primary) 35%, var(--border-subtle));
-  background: var(--brand-primary-soft);
+.row[data-primary]:hover {
+  background: var(--brand-primary-hover);
 }
 
-.rowIcon {
-  font-size: var(--size-h2);
-  line-height: 1;
+/* ---------- The bead and its rod ---------- */
+
+.mark {
+  position: relative;
+  display: grid;
+  width: var(--bead-w);
+  place-items: center;
 }
+
+/* Each row carries its own short rod, inside the card, so nothing is drawn across the cards. */
+.markRod {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--abacus-rod) 55%, transparent);
+}
+
+.row[data-primary] .markRod {
+  background: color-mix(in srgb, var(--brand-on-primary) 28%, transparent);
+}
+
+/* The travel is the wrapper's, so the bead's own transform is free for the press. */
+.beadTravel {
+  position: relative;
+  display: block;
+}
+
+/* The house bead: a flattened bicone lit from the top left, the same polygon the soroban clips. */
+.bead {
+  position: relative;
+  display: block;
+  width: var(--bead-w);
+  height: var(--bead-h);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--abacus-bead-active) 78%, var(--abacus-label)) 0%,
+    var(--abacus-bead-active) 50%,
+    color-mix(in srgb, var(--abacus-bead-active) 78%, var(--abacus-frame-edge)) 100%
+  );
+  clip-path: polygon(50% 0%, 88% 26%, 100% 50%, 88% 74%, 50% 100%, 12% 74%, 0% 50%, 12% 26%);
+}
+
+/* On the brand fill an amber bead would fight the violet, so the primary's bead is cut from light. */
+.row[data-primary] .bead {
+  background: linear-gradient(
+    160deg,
+    var(--brand-on-primary) 0%,
+    color-mix(in srgb, var(--brand-on-primary) 88%, var(--brand-primary)) 50%,
+    color-mix(in srgb, var(--brand-on-primary) 62%, var(--brand-primary)) 100%
+  );
+}
+
+/* The contact: the bead's top edge catches the light for one frame as it meets the bar. */
+.bead::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 12%;
+  height: 1px;
+  background: var(--abacus-label);
+  opacity: 0;
+}
+
+.row[data-primary] .bead::after {
+  background: var(--brand-on-primary);
+}
+
+/* ---------- Words ---------- */
 
 .rowText {
   display: grid;
+  align-content: center;
   gap: 2px;
   min-width: 0;
 }
@@ -170,9 +278,122 @@
   font: var(--text-body);
 }
 
+.row[data-primary] .rowNote {
+  color: color-mix(in srgb, var(--brand-on-primary) 78%, transparent);
+}
+
 .rowChevron {
+  align-self: center;
   color: var(--content-tertiary);
   font: var(--text-body-lg);
+}
+
+.row[data-primary] .rowChevron {
+  color: color-mix(in srgb, var(--brand-on-primary) 80%, transparent);
+}
+
+/* ---------- Press ---------- */
+
+/*
+ * The press is a flick, not a squash: the bead gives a little and the arrow leans towards where the
+ * row goes. Transform only, on the two smallest things in the row, so the card never repaints.
+ */
+.bead,
+.rowChevron {
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.row:active .bead {
+  transform: translateY(2px);
+}
+
+.row:active .rowChevron {
+  transform: translateX(3px);
+}
+
+/* ---------- The one reckoning ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The rod draws down to the avatar: the first thing that moves, and the only one for 90ms. */
+  .rodStub {
+    transform-origin: center top;
+    animation: linkDrawY var(--link-draw) var(--ease-decelerate) both;
+  }
+
+  /* The avatar comes down a bead and a half and settles. It never fades: it arrives. */
+  .avatarDrop {
+    animation: linkAvatar var(--link-settle) var(--ease-decelerate) 90ms both;
+  }
+
+  /* The bar opens from its centre, under the name. */
+  .bar {
+    transform-origin: center;
+    animation: linkBar var(--link-settle) var(--ease-decelerate) 90ms both;
+  }
+
+  /*
+   * The row settles at full opacity — the label is readable on the first frame, whatever the
+   * animation is doing. Only the instrument is held back.
+   */
+  .row {
+    animation: linkRow var(--link-settle) var(--ease-decelerate)
+      calc(var(--link-rows-at) + var(--i, 0) * var(--link-stagger)) both;
+  }
+
+  .markRod {
+    transform-origin: center top;
+    animation: linkDrawY var(--link-settle) var(--ease-decelerate)
+      calc(var(--link-rows-at) + var(--i, 0) * var(--link-stagger)) both;
+  }
+
+  /* One pitch per row up the rod, ending flat against the bar. */
+  .beadTravel {
+    animation: linkBead var(--link-settle) var(--ease-decelerate)
+      calc(var(--link-rows-at) + var(--i, 0) * var(--link-stagger) + var(--link-bead-in)) both;
+  }
+
+  /* 120ms of light at the exact frame the bead stops, so 15px of travel reads as weight. */
+  .bead::after {
+    animation: linkLand var(--motion-fast) var(--ease-standard)
+      calc(var(--link-rows-at) + var(--i, 0) * var(--link-stagger) + var(--link-bead-in) + var(--link-settle))
+      both;
+  }
+}
+
+@keyframes linkDrawY {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes linkAvatar {
+  from {
+    transform: translateY(calc(var(--pitch) * -1.5));
+  }
+}
+
+@keyframes linkBar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes linkRow {
+  from {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes linkBead {
+  from {
+    transform: translateY(calc(var(--pitch) * (var(--i, 0) + 1)));
+  }
+}
+
+@keyframes linkLand {
+  50% {
+    opacity: 0.55;
+  }
 }
 
 /* ---------- Photos ---------- */

@@ -1,6 +1,6 @@
 ---
 name: bio-havola-sahifasi
-description: '2026-10-14 rejasi: Mohira ustoz uchun /link bio-havola sahifasi (Taplink muqobili); A bosqich yozildi (/link, linkProfile.ts), B bosqich (/u/<login>, DB) keyin'
+description: '2026-10-14 rejasi: Mohira ustoz uchun /link bio-havola sahifasi (Taplink muqobili); A bosqich yozildi va kontent to'ldirildi (2 ta havola, 2 xil auditoriya); animatsiya "One Reckoning" (soroban toshlari) qo'llandi'
 metadata:
   type: project
 ---
@@ -59,3 +59,52 @@ kasb va platformaga qaytaruvchi qator bor.
 **Egasidan kutilmoqda:** Mohira ustozning rasmi, 6-9 galereya rasmi (`public/link/`),
 Telegram/Instagram/YouTube havolalari, telefon raqami, manzil, va CTA qayerga ketishi.
 Shular kelgach faqat `linkProfile.ts` tahrirlanadi.
+
+## Kontent (egasi bergan, 2026-10-14)
+
+Ikki qator — **ikki xil auditoriya**, bu sahifaning asosiy o'ziga xosligi:
+
+| Qator                            | Kimga          | Qayerga                                                                |
+| -------------------------------- | -------------- | ---------------------------------------------------------------------- |
+| "Sinov darsiga yozilish"         | ota-onaga      | `https://t.me/Mohira_Ravshan_qizi` (Mohira ustozning Telegram profili) |
+| "Mental arifmetika ustozimisiz?" | boshqa ustozga | `/` (chaqqon-chaqqon platformasi)                                      |
+
+Qaror: ota-onaning qatori — sahifaning **yagona primary** amali (CTA tugmasi), ustozga qaratilgan
+qator pastda jim turadi. Shunday qilib bitta primary qoidasi ([[dizayn-tizimi]]) buzilmaydi.
+
+Egasining talabi: "qiziqarli va animatsiyali, e'tiborni tortadigan, **ammo bachkana emas**".
+Shu sababli animatsiya yo'nalishi uchta mustaqil taklif + uchta hakam (did, qurilish/ishlash,
+e'tibor/konversiya) orqali tanlanmoqda; uy qoidalari: faqat transform/opacity, hech narsa abadiy
+aylanmaydi, hammasi `prefers-reduced-motion` ichida, ranglar faqat tokenlardan
+(`src/features/landing/motion/motion.module.css` namunasi).
+
+## Animatsiya: "One Reckoning" (2026-10-14)
+
+Yo'nalish uchta mustaqil taklif uchta hakam tomonidan baholandi (did 8, qurilish 9, e'tibor 9 =
+26/30 — qolgan ikkisi 19 va 16). Tanlangan g'oya: **sahifa abakusning o'zi**, yuklanish esa bitta
+harakat — sterjen chiziladi, avatar tayoqqa tushadi, so'ng har qatorning toshi o'z sterjeni bo'ylab
+yuqoriga, birinchi qator bitta tosh qadami, ikkinchisi ikkita.
+
+Qoidalar (shu fayl boshida ham yozilgan):
+
+- faqat `transform`/`opacity`; har keyframe `from`-only, shuning uchun **~700 ms dan keyingi sahifa
+  `prefers-reduced-motion: reduce` sahifasiga piksel-aniq teng** (tekshirildi: animatsiyalarni
+  o'chirib solishtirildi);
+- **so'zlar kutmaydi** — ism, kasb va ikkala qator matni birinchi kadrdayoq to'liq o'qiladi; faqat
+  asbob (sterjen, tayoq, toshlar) ushlab turiladi;
+- **tosh hech qachon fade bilan paydo bo'lmaydi** — u sterjen bo'ylab to'q holda keladi (grafik
+  emas, mexanizm);
+- overshoot yo'q (`--lp-overshoot` bu faylda uchramasligi kerak) — har kelish tekis tugaydi;
+- emoji ikonkalar olib tashlandi (`LINK_META` dan `icon` o'chdi) — har qator soroban toshi bilan
+  belgilanadi; emoji har telefonda boshqacha chiziladi va shablon ko'rinish beradi;
+- bosilganda karta siqilmaydi: tosh 2px pastga, strelka 3px o'ngga (faqat transform).
+
+Vaqt jadvali (brauzerda `getAnimations()` bilan tasdiqlangan): sterjen 0–480, avatar va tayoq
+90–410, 1-qator 300–620 (tosh 380–700), 2-qator 370–690 (tosh 450–770), har tosh to'xtagan kadrda
+120 ms lik 1px yorug'lik; 780 ms dan keyin primary qator atrofida uy effekti `motion.ringPulse`
+uch marta nafas oladi va butunlay to'xtaydi. Boshqa hech narsa abadiy aylanmaydi.
+
+Tuzilish o'zgarishi: alohida CTA tugmasi **olib tashlandi** (u bilan "Sinov darsiga yozilish" ikki
+marta chiqardi) — endi `ProfileLink.primary` bayrog'i qaysi qator brend rangida bo'lishini
+belgilaydi, `ProfileLink.eyebrow` esa qator ustidagi "USTOZLAR UCHUN" yozuvini beradi. Shu bilan
+bitta primary qoidasi ikki auditoriya uchun ham saqlanadi.

@@ -18,6 +18,13 @@ export interface ProfileLink {
   note?: string;
   /** An absolute address for an outside service, or a path for our own pages. */
   href: string;
+  /**
+   * The page's one primary action, painted in the brand colour. At most one link carries it; the
+   * rest stay quiet cards, so a page of links still has a single thing to do.
+   */
+  primary?: boolean;
+  /** A small label above the row naming who it is for, where that is not obvious from the title. */
+  eyebrow?: string;
 }
 
 export interface GalleryPhoto {
@@ -39,29 +46,37 @@ export interface LinkProfile {
   avatar: { src: string; alt: string } | null;
   /** Short trust chips — "7 yil tajriba", "120+ o'quvchi". Kept to three on screen. */
   badges: readonly string[];
-  /** The page's single primary action. Null while the owner has not said where it should lead. */
-  cta: { label: string; href: string } | null;
   links: readonly ProfileLink[];
   gallery: readonly GalleryPhoto[];
   testimonials: readonly Testimonial[];
 }
 
-/** The icon and the accessible name of each kind of link. */
-export const LINK_META: Record<LinkKind, { icon: string; label: string }> = {
-  telegram: { icon: '✈️', label: 'Telegram' },
-  instagram: { icon: '📷', label: 'Instagram' },
-  youtube: { icon: '▶️', label: 'YouTube' },
-  phone: { icon: '📞', label: 'Telefon' },
-  whatsapp: { icon: '💬', label: 'WhatsApp' },
-  map: { icon: '📍', label: 'Manzil' },
-  platform: { icon: '🎯', label: 'Chaqqon-chaqqon' },
+/**
+ * What each kind of link is called. No icons: every row is marked by a soroban bead instead, which
+ * is the page's own motif and renders the same on every phone — emoji do not.
+ */
+export const LINK_META: Record<LinkKind, { label: string }> = {
+  telegram: { label: 'Telegram' },
+  instagram: { label: 'Instagram' },
+  youtube: { label: 'YouTube' },
+  phone: { label: 'Telefon' },
+  whatsapp: { label: 'WhatsApp' },
+  map: { label: 'Manzil' },
+  platform: { label: 'Chaqqon-chaqqon' },
 };
+
+/** Her own Telegram: where a parent's "trial lesson" tap lands. */
+const TELEGRAM = 'https://t.me/Mohira_Ravshan_qizi';
 
 /**
  * Mohira ustoz's page at /link.
  *
- * To fill it in: add the photos to `public/link/`, then write the links below. A link with an empty
- * `href` is dropped, so half-filled rows never reach the page.
+ * Two rows for two different visitors: a parent who came from her Instagram and wants a trial
+ * lesson, and a fellow teacher who wants the platform her students work on. The parent's row is the
+ * page's one primary action; the teacher's row stays quiet below it.
+ *
+ * To add to it: photos go in `public/link/`, then the gallery below. A link with an empty `href` is
+ * dropped, so a half-filled row never reaches the page.
  */
 export const PROFILE: LinkProfile = {
   name: 'Mohira ustoz',
@@ -69,13 +84,20 @@ export const PROFILE: LinkProfile = {
   city: null,
   avatar: null,
   badges: [],
-  cta: null,
   links: [
     {
+      kind: 'telegram',
+      title: 'Sinov darsiga yozilish',
+      note: "Telegram orqali bevosita o'zimga yozing",
+      href: TELEGRAM,
+      primary: true,
+    },
+    {
       kind: 'platform',
-      title: "Chaqqon-chaqqon'ni sinab ko'rish",
-      note: "O'quvchilarim shu platformada mashq qiladi",
+      title: 'Mental arifmetika ustozimisiz?',
+      note: "Chaqqon-chaqqon — o'quvchilaringiz uchun platforma",
       href: '/',
+      eyebrow: 'Ustozlar uchun',
     },
   ],
   gallery: [],
@@ -97,10 +119,5 @@ export function isExternal(href: string): boolean {
  * plainly instead of showing an empty frame.
  */
 export function isFilled(profile: LinkProfile): boolean {
-  return (
-    visibleLinks(profile).length > 0 ||
-    profile.gallery.length > 0 ||
-    profile.testimonials.length > 0 ||
-    profile.cta !== null
-  );
+  return visibleLinks(profile).length > 0 || profile.gallery.length > 0 || profile.testimonials.length > 0;
 }

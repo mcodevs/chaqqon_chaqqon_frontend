@@ -7,7 +7,6 @@ const base: LinkProfile = {
   city: null,
   avatar: null,
   badges: [],
-  cta: null,
   links: [],
   gallery: [],
   testimonials: [],
@@ -49,7 +48,6 @@ describe('isFilled', () => {
     );
     expect(isFilled({ ...base, gallery: [{ src: '/link/a.webp', caption: 'Dars' }] })).toBe(true);
     expect(isFilled({ ...base, testimonials: [{ text: 'Zo‘r', author: 'Ota-ona' }] })).toBe(true);
-    expect(isFilled({ ...base, cta: { label: 'Darsga yoziling', href: 'https://t.me/example' } })).toBe(true);
   });
 });
 
@@ -60,5 +58,16 @@ describe('PROFILE', () => {
 
   it('keeps a way back into the platform', () => {
     expect(visibleLinks(PROFILE).some((link) => link.kind === 'platform')).toBe(true);
+  });
+
+  it('has exactly one primary action, and it is the parent-facing one', () => {
+    const primary = visibleLinks(PROFILE).filter((link) => link.primary);
+    expect(primary).toHaveLength(1);
+    expect(primary[0].href).toBe('https://t.me/Mohira_Ravshan_qizi');
+  });
+
+  it('never shows the same address twice', () => {
+    const hrefs = visibleLinks(PROFILE).map((link) => link.href);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 });
