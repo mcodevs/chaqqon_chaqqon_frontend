@@ -36,7 +36,6 @@ Barcha asosiy juftliklar WCAG AA (≥4.5) dan o'tdi, skript bilan tekshirildi: e
 yashil matn och yashil fonda 4.77, oq matn yashil tugmada 5.42. Qorong'i rejimda hammasi ≥5.15.
 
 Brauzerda ko'rildi: /link, landing (`dev:local`), ustoz paneli — yorug' va qorong'i rejimda.
-Bog'liq: [[bio-havola-sahifasi]], [[landing-redizayn]].
 
 ## Ikonkalar (2026-10-15)
 
@@ -52,3 +51,5 @@ abakus va yozuv), shuning uchun ikki xil ikonka:
 Ya'ni kichik o'lchamda — geometrik belgi, katta o'lchamda — logoning o'zi. PNG'lar macOS `qlmanage`
 va `sips` bilan yasaldi (`sips -c 640 640 --cropOffset 75 300` — yozuvni kesib tashlaydi).
 Telegram bot/mini-app ikonkasi bu yerdan emas, BotFather'dan olinadi — u alohida yangilanadi.
+
+Bog'liq: [[bio-havola-sahifasi]], [[landing-redizayn]].
