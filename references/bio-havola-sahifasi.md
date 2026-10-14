@@ -122,3 +122,13 @@ uchun yumaloqlangan va yengil soya bilan kartaga o'xshatildi, kengligi 248px bil
 "Sinov darsiga yozilish" tugmasi telefonning birinchi ekranida qolishi kerak.
 
 Sahifa ranglari endi [[brend-ranglari]] dagi logo palitrasidan keladi.
+
+## Katta ekran tuzatishi (2026-10-15)
+
+Egasi kompyuterda ochib "g'alati UI" dedi: sahifada atigi ikki qator bo'lgani uchun kontent
+ekranning tepasiga yopishib, pastda katta bo'sh maydon qolardi; hisob tayog'i esa butun ustun
+kengligida cho'zilib, tasodifiy taxtaga o'xshab ko'rinardi.
+
+- `.column { margin: auto }` — qolgan joyni tepa va pastga teng bo'ladi, futer pastda qoladi.
+  Telefonda kontent ekrandan baland bo'lgani uchun hech narsa o'zgarmaydi.
+- Tayoq `min(100%, 180px)` va `opacity: .75` — endi bosh qismni yopuvchi chiziq, taxta emas.

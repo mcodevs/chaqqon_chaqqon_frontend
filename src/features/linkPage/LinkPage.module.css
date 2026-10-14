@@ -41,12 +41,17 @@
   color: var(--content-primary);
 }
 
+/*
+ * The page is a short column of two links, so on a desktop it would otherwise sit in the top
+ * corner of an empty screen. `margin: auto` centres it in whatever room is left over and leaves the
+ * footer at the bottom; on a phone, where the content is taller than the viewport, it does nothing.
+ */
 .column {
   display: grid;
   gap: var(--space-5);
   width: 100%;
   max-width: var(--link-max);
-  margin-inline: auto;
+  margin: auto;
   padding: var(--space-6) max(var(--space-4), env(safe-area-inset-left, 0px)) var(--space-5);
 }
 
@@ -144,9 +149,15 @@
   font: var(--text-caption);
 }
 
-/* The reckoning bar: the line every bead below is pushed up against. */
+/*
+ * The reckoning bar: the line every bead below is pushed up against. Kept short and centred — at
+ * the column's full width it reads as a stray plank rather than as the head's closing rule.
+ */
 .bar {
+  width: min(100%, 180px);
   margin-top: var(--space-4);
+  margin-inline: auto;
+  opacity: 0.75;
 }
 
 /* ---------- Rows ---------- */
