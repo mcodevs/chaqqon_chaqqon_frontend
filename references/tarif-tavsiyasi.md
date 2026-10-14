@@ -50,3 +50,17 @@ Taklif (narx darajasi saqlanadi):
 Muqobil: hozirgi tariflar qolsa, "Tavsiya" belgisi Oltin'ga o'tkazilsin.
 
 Egasining tanlovi kutilmoqda. Bazaga faqat ruxsat bilan yoziladi.
+## Sinov (trial) qanday ishlaydi — 2026-10-14
+
+Alohida "sinov tarifi" yo'q.
+- Admin `NewTeacherForm`da tarifni tanlaydi. `billing_starts_on` = bugun + `trial_days`.
+- Sinov davomida ustoz shu tarifning funksiyalari va limiti bilan ishlaydi (`my_features()` faqat `teachers.tariff_id`ga qaraydi). Faqat yechim kechikadi.
+- Sinovdan keyin balans 0 bo'lsa, balans manfiyga o'tadi, keyin 7 kun muhlat va blok. Ya'ni to'lamagan ustoz amalda ~21 kun ishlaydi.
+
+Muammo: Bronza'da sinov ma'nosiz. Kumush'dagi ustoz Oltin funksiyalarini ko'rmaydi, demak upsell bo'lmaydi.
+
+Taklif ("teskari sinov"): sinovda Oltin, tugagach tanlangan tarif yoki Bronza.
+1. Qo'lda: admin Oltin beradi, keyin tarifni o'zi almashtiradi.
+2. Avtomatik: `trial_tariff` + keyingi tarif. Cron sinov tugaganda tarifni almashtiradi va Telegram'ga "tarif tanlang" yuboradi. Migratsiya kerak.
+
+Egasining javobi kutilmoqda.
