@@ -1,6 +1,6 @@
 ---
 name: bio-havola-sahifasi
-description: '2026-10-14 rejasi: Mohira ustoz uchun /link bio-havola sahifasi (Taplink muqobili); A bosqich yozildi va kontent to'ldirildi (2 ta havola, 2 xil auditoriya); animatsiya "One Reckoning" (soroban toshlari) qo'llandi'
+description: '2026-10-14: Mohira ustoz uchun /link bio-havola sahifasi (Taplink muqobili); A bosqich yozildi, 2 havola (ota-onaga Telegram, ustozga platforma), animatsiya — soroban toshlari, ~700 ms'
 metadata:
   type: project
 ---
