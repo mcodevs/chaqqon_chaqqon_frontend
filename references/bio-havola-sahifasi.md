@@ -99,10 +99,14 @@ Qoidalar (shu fayl boshida ham yozilgan):
   belgilanadi; emoji har telefonda boshqacha chiziladi va shablon ko'rinish beradi;
 - bosilganda karta siqilmaydi: tosh 2px pastga, strelka 3px o'ngga (faqat transform).
 
-Vaqt jadvali (brauzerda `getAnimations()` bilan tasdiqlangan): sterjen 0–480, avatar va tayoq
-90–410, 1-qator 300–620 (tosh 380–700), 2-qator 370–690 (tosh 450–770), har tosh to'xtagan kadrda
-120 ms lik 1px yorug'lik; 780 ms dan keyin primary qator atrofida uy effekti `motion.ringPulse`
-uch marta nafas oladi va butunlay to'xtaydi. Boshqa hech narsa abadiy aylanmaydi.
+Vaqt jadvali (brauzerda `getAnimations()` bilan tasdiqlangan): avatar 0–320, tayoq 100–420,
+1-qator 340–660 (tosh 420–740), 2-qator 410–730 (tosh 490–810), har tosh to'xtagan kadrda 120 ms lik
+1px yorug'lik; 900 ms dan keyin (oxirgi tosh tushgach) primary qator atrofida uy effekti
+`motion.ringPulse` uch marta nafas oladi va butunlay to'xtaydi. Boshqa hech narsa abadiy aylanmaydi.
+
+**Egasi olib tashlatgan (2026-10-14):** avatar ustidagi sterjen va pastdagi platforma statistikasi
+("5 195 to'g'ri javob") — sahifada ortiqcha edi. Shu bilan `Proof` komponenti va `usePublicStats`
+chaqiruvi ham ketdi: endi sahifa hech qanday ma'lumot yuklamaydi, sof statik.
 
 Tuzilish o'zgarishi: alohida CTA tugmasi **olib tashlandi** (u bilan "Sinov darsiga yozilish" ikki
 marta chiqardi) — endi `ProfileLink.primary` bayrog'i qaysi qator brend rangida bo'lishini

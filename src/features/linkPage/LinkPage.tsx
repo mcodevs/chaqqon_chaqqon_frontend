@@ -1,10 +1,7 @@
 import { type CSSProperties, useState } from 'react';
 import { Link } from 'react-router-dom';
 import motion from '@/features/landing/motion/motion.module.css';
-import { visibleFacts } from '@/features/landing/content/landingFacts';
 import { RodDivider } from '@/features/landing/art/BrandMark';
-import { formatCount } from '@/shared/format';
-import { usePublicStats } from '@/shared/services/queries';
 import { ImageLightbox } from '@/shared/ui/ImageLightbox';
 import styles from './LinkPage.module.css';
 import {
@@ -25,9 +22,9 @@ import {
  * It has no navigation and no DashboardLayout: a visitor arriving from Instagram is a guest, and
  * the page's only way into the app is the teacher's row itself.
  *
- * Motion — "one reckoning". Everything that moves on arrival is explained by one cause: the rod
- * draws, the avatar settles onto the bar, and each row's bead is pushed up its rod against the bar,
- * one bead pitch per row, landing flat with no bounce. Beads never fade in; they arrive opaque
+ * Motion — "one reckoning". Everything that moves on arrival is explained by one cause: the avatar
+ * settles onto the bar, which opens from its centre, and then each row's bead is pushed up its rod
+ * against the bar, one bead pitch per row, landing flat with no bounce. Beads never fade in; they arrive opaque
  * along a rod, which is what makes them read as a mechanism rather than as a page animating. The
  * text never waits for any of it. It is pure CSS, every keyframe is `from`-only, and the whole
  * sequence is over by ~700ms — so the page at rest is exactly the page a reduced-motion visitor
@@ -66,8 +63,6 @@ function Profile({ profile }: { profile: LinkProfile }) {
           </section>
         )}
 
-        <Proof />
-
         {!isFilled(profile) && (
           <p className={styles.empty}>
             Bu sahifa hali to'ldirilmagan: havolalar va rasmlar qo'shilgandan keyin ko'rinadi.
@@ -90,14 +85,13 @@ function outside(href: string) {
 }
 
 /**
- * The head: a rod drawn down to the avatar, which settles onto the reckoning bar under the name.
+ * The head: the avatar settling onto the reckoning bar under the name.
  * The name and the role are never animated — they are what the visitor came to read, and on a
  * phone they are the largest thing on the first frame.
  */
 function Head({ profile }: { profile: LinkProfile }) {
   return (
     <header className={styles.head}>
-      <span className={styles.rodStub} aria-hidden="true" />
       <span className={styles.avatarDrop}>
         {profile.avatar ? (
           <img className={styles.avatar} src={profile.avatar.src} alt={profile.avatar.alt} />
@@ -151,10 +145,10 @@ function LinkRow({ link, index }: { link: ProfileLink; index: number }) {
     </>
   );
 
-  // The halo breathes three times around the primary row once the beads have settled, then is gone
-  // for good: an invitation at the end of the gesture, not an alarm competing with it.
+  // The halo breathes three times around the primary row once the last bead has landed (810ms),
+  // then is gone for good: an invitation at the end of the gesture, not an alarm competing with it.
   const className = [styles.row, link.primary && motion.ringPulse].filter(Boolean).join(' ');
-  const style = { '--i': index, '--lp-delay': '780ms' } as CSSProperties;
+  const style = { '--i': index, '--lp-delay': '900ms' } as CSSProperties;
 
   return (
     <div className={styles.rowBox} style={style}>
@@ -205,25 +199,5 @@ function Gallery({ photos }: { photos: readonly GalleryPhoto[] }) {
       </ul>
       {open && <ImageLightbox src={open.src} caption={open.caption} onClose={() => setOpen(null)} />}
     </section>
-  );
-}
-
-/**
- * The platform's live counts, the same ones the landing shows and under the same thresholds: a
- * number too small to reassure is not shown at all, so this strip is often empty.
- */
-function Proof() {
-  const facts = visibleFacts(usePublicStats());
-  if (facts.length === 0) return null;
-
-  return (
-    <ul className={styles.facts}>
-      {facts.map((fact) => (
-        <li key={fact.id} className={styles.fact}>
-          <span className={styles.factValue}>{formatCount(fact.value)}</span>
-          <span className={styles.factLabel}>{fact.label}</span>
-        </li>
-      ))}
-    </ul>
   );
 }

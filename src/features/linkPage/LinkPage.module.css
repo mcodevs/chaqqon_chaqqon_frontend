@@ -26,11 +26,10 @@
   --pitch: calc(var(--bead-h) + var(--bead-gap));
 
   /* Derived from the motion tokens, the way the landing derives its own. */
-  --link-draw: calc(var(--motion-slow) * 1.5);
   --link-settle: var(--motion-slow);
   --link-stagger: var(--lp-hero-stagger, 70ms);
-  /* When the rows start: after the head's rod and bar have finished drawing. */
-  --link-rows-at: 300ms;
+  /* When the rows start: once the bar they are pushed against has opened. */
+  --link-rows-at: 340ms;
   /* A bead waits for its own rod to be most of the way down before it climbs it. */
   --link-bead-in: 80ms;
 
@@ -58,19 +57,6 @@
   justify-items: center;
   gap: var(--space-2);
   text-align: center;
-}
-
-/* The rod the avatar comes down. It starts above the column's padding and ends at the avatar. */
-.rodStub {
-  width: 3px;
-  height: var(--space-6);
-  margin-bottom: calc(var(--space-2) * -1);
-  border-radius: var(--radius-full);
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--abacus-rod) 20%, transparent),
-    var(--abacus-rod)
-  );
 }
 
 /* The avatar carries the drop, so the photo's own rounding and border stay untouched by transforms. */
@@ -314,21 +300,18 @@
 /* ---------- The one reckoning ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
-  /* The rod draws down to the avatar: the first thing that moves, and the only one for 90ms. */
-  .rodStub {
-    transform-origin: center top;
-    animation: linkDrawY var(--link-draw) var(--ease-decelerate) both;
-  }
-
-  /* The avatar comes down a bead and a half and settles. It never fades: it arrives. */
+  /*
+   * The avatar comes down a bead and a half and settles: the first thing that moves, and the only
+   * one for 100ms. It never fades — it arrives.
+   */
   .avatarDrop {
-    animation: linkAvatar var(--link-settle) var(--ease-decelerate) 90ms both;
+    animation: linkAvatar var(--link-settle) var(--ease-decelerate) both;
   }
 
-  /* The bar opens from its centre, under the name. */
+  /* The bar opens from its centre, under the name, as the avatar lands on it. */
   .bar {
     transform-origin: center;
-    animation: linkBar var(--link-settle) var(--ease-decelerate) 90ms both;
+    animation: linkBar var(--link-settle) var(--ease-decelerate) 100ms both;
   }
 
   /*
@@ -452,33 +435,6 @@
 
 .quoteAuthor {
   margin-top: var(--space-2);
-  color: var(--content-secondary);
-  font: var(--text-caption);
-}
-
-/* ---------- Platform numbers ---------- */
-
-.facts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-2) var(--space-5);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.fact {
-  display: grid;
-  justify-items: center;
-}
-
-.factValue {
-  font: var(--text-h2);
-  font-variant-numeric: tabular-nums;
-}
-
-.factLabel {
   color: var(--content-secondary);
   font: var(--text-caption);
 }
