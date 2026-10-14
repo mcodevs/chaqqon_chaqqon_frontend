@@ -27,8 +27,7 @@ qayta bo'yadi.
 - **`--success` endi smaragd/tilrang** (`#0f8a63` / `#4fd3a4`). Sababi: brend yashil bo'lgach,
   avvalgi yashil `success` bilan qo'shilib ketardi. `--data-3` ham shu sababdan tilrang.
 - `--data-1` va `--chart-income` brend yashil.
-- `index.html` dagi qorong'i `theme-color` va `public/favicon.svg` (binafsha chaqmoq) ham
-  yashilga bo'yaldi. **Favicon hali logo emas** — shakli eski chaqmoq, faqat rangi mos.
+- `index.html` dagi qorong'i `theme-color` yashilga moslandi.
 - Abakus yog'och/amber ranglari (`--abacus-*`) tegilmadi — logoda ham yog'och abakus bor, mos.
 
 ## Kontrast
@@ -38,3 +37,18 @@ yashil matn och yashil fonda 4.77, oq matn yashil tugmada 5.42. Qorong'i rejimda
 
 Brauzerda ko'rildi: /link, landing (`dev:local`), ustoz paneli — yorug' va qorong'i rejimda.
 Bog'liq: [[bio-havola-sahifasi]], [[landing-redizayn]].
+
+## Ikonkalar (2026-10-15)
+
+Eski binafsha chaqmoq favicon butunlay almashtirildi. Logoning o'zi 16px da o'qilmaydi (bola,
+abakus va yozuv), shuning uchun ikki xil ikonka:
+
+| Fayl                          | Nima                                                                                                                               | Qayerda                                     |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `public/favicon.svg`          | yashil kvadrat + sterjendagi ikki tosh (osmon toshi pastda, yer toshi tepada) — logoning palitrasi va `BrandMark` ning tosh shakli | brauzer varag'i                             |
+| `public/favicon-32.png`       | shu belgining 32px rasteri                                                                                                         | SVG favicon'ni qabul qilmaydigan brauzerlar |
+| `public/apple-touch-icon.png` | logoning o'zidan kesilgan bola + abakus (180px, yozuvsiz)                                                                          | iOS bosh ekraniga qo'shilganda              |
+
+Ya'ni kichik o'lchamda — geometrik belgi, katta o'lchamda — logoning o'zi. PNG'lar macOS `qlmanage`
+va `sips` bilan yasaldi (`sips -c 640 640 --cropOffset 75 300` — yozuvni kesib tashlaydi).
+Telegram bot/mini-app ikonkasi bu yerdan emas, BotFather'dan olinadi — u alohida yangilanadi.

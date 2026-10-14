@@ -17,7 +17,7 @@ yerdan kerakli faylni oching.
 - [useAsyncAction void tuzog'i](references/useasyncaction-void-tuzogi.md) — `run()` void amalda ham `undefined` qaytaradi → shoxlanadigan joyda `return true` bilan o'rang; local sinov uchun `verify.localhost:5174` toza origin
 - [Maxsus domen](references/maxsus-domen.md) — 2026-10-11: **chaqqon-chaqqon.uz jonli** (DNS Ahost'da, www → apex 308, `www` uchun CNAME hali kerak); telegram-webhook `APP_URL` yangi domenda (v5, MCP deploy); qolgan ishlar: BotFather menu URL, `6ef0d61` push
 - [Bio-havola sahifasi](references/bio-havola-sahifasi.md) — /link: ustoz uchun taplink muqobili; 2026-10-14 dan jonli (chaqqon-chaqqon.uz/link); 2 havola (ota-onaga Telegram CTA, ustozga platforma), animatsiya: soroban toshlari ~810 ms, reduced-motion bilan teng; sahifa sof statik (ma'lumot yuklamaydi)
-- [Brend ranglari](references/brend-ranglari.md) — 2026-10-15: butun platforma logo palitrasida (yashil #1a7a34/#5ec97a, to'q sariq urg'u); faqat tokens.css o'zgardi, success tilrangga surildi, favicon hali eski shakl
+- [Brend ranglari](references/brend-ranglari.md) — 2026-10-15: butun platforma logo palitrasida (yashil #1a7a34/#5ec97a, to'q sariq urg'u); faqat tokens.css o'zgardi, success tilrangga surildi, favicon ham logodan: kichikda tosh belgisi, iOS'da logoning o'zi
 
 ## Eslatma
 
