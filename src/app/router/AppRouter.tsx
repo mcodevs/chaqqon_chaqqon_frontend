@@ -35,6 +35,12 @@ import { GuestOnly, HomeRedirect, LandingOrHome, RequireFeature, RequireRole } f
 let landingModule: Promise<typeof import('@/features/landing/LandingPage')> | undefined;
 const loadLanding = () => (landingModule ??= import('@/features/landing/LandingPage'));
 const LandingPage = lazy(() => loadLanding().then((m) => ({ default: m.LandingPage })));
+
+/*
+ * The teacher's bio-link page (/link) is its own chunk too: it is reached from an Instagram or
+ * Telegram profile, so its visitors never need the app, and the app's users never need it.
+ */
+const LinkPage = lazy(() => import('@/features/linkPage/LinkPage').then((m) => ({ default: m.LinkPage })));
 // A guest's root: fetch it beside main.tsx's services chunk, not one request after it.
 // telegram-web-app.js loads synchronously in the head, so initData is already there.
 if (window.location.pathname === '/' && !isTelegramMiniApp(window)) void loadLanding();
@@ -50,6 +56,15 @@ export function AppRouter() {
               <LandingPage />
             </Suspense>
           </LandingOrHome>
+        }
+      />
+
+      <Route
+        path="/link"
+        element={
+          <Suspense fallback={null}>
+            <LinkPage />
+          </Suspense>
         }
       />
 
