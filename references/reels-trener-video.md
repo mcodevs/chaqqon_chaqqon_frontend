@@ -73,6 +73,18 @@ undan faqat ovoz olindi, tasvir esa qaytadan yasaldi. Natija: `marketing/posts/c
   **oq kartalar va "korporativ" diagramma emas, o'yinqaroq/plakat uslubi** — keyingi reklamalarda
   shu yo'nalishdan boshlash.
 
+
+- **2026-10-15, ism almashuvi:** egasi yozma varaqdagi ustoz ismini "Mohira Ravshan qizi" qildirdi
+  (1-versiya qayta render). `SHEET_ONLY=1 node capture/capture.mjs` — faqat varaqni qayta oladi,
+  boshqa skrinshotlarga tegmaydi; namunaviy ustoz endi Mohira Ravshan qizi / Chaqqon akademiyasi /
+  +998993041155. Ism lupasi kengaytirildi (w 250, scale 2.8). Eski varaq scratchpad'da qoldi, repoda yo'q.
+
+
+- **Instagram podpisi (2026-10-15):** `marketing/posts/instagram-caption.txt` — birinchi qator savol
+  (lentada ~125 belgi ko'rinadi), 6 ta funksiya bandi, "14 kun bepul, karta talab qilinmaydi"
+  (landing jumlasi — tarif o'zgarsa tekshirish kerak), telefon + "havola bioda", 15 ta heshteg.
+  Egasi videoni Reels sifatida joylamoqchi.
+
 ## 3D versiya (2026-10-15)
 
 Egasi 4-versiyani "1-variant" deb qabul qildi va **3D variant** so'radi. `Reels3D` kompozitsiyasi:

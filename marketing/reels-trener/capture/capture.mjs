@@ -48,8 +48,8 @@ await page.evaluate(
     const tariff = (await p.tariffs.listAll())[0];
     await p.admin.createTeacher({
       ...TEACHER,
-      firstName: 'Dilnoza',
-      lastName: 'Karimova',
+      firstName: 'Mohira',
+      lastName: 'Ravshan qizi',
       phone: '+998993041155',
       centerName: 'Chaqqon akademiyasi',
       tariffId: tariff.id,
@@ -117,6 +117,19 @@ const signIn = (role, creds) =>
 
 // ---------- teacher ----------
 await signIn('teacher', TEACHER);
+if (process.env.SHEET_ONLY) {
+  await go('/teacher/worksheet');
+  await clickText('Varaqlarni yaratish');
+  await sleep(800);
+  await page.setViewport({ width: 1400, height: 1000, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await sleep(800);
+  const only = (await page.$$('article')).at(0);
+  if (!only) throw new Error('no sheet');
+  await only.screenshot({ path: `${OUT}worksheet-sheet.png` });
+  console.log('✓ worksheet-sheet (only)');
+  await browser.close();
+  process.exit(0);
+}
 await go('/teacher');
 await clickText('Yashirish').catch(() => {});
 await shot('teacher-students');

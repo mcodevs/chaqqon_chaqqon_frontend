@@ -314,7 +314,7 @@ function Abakus() {
 /** worksheet-sheet.png is 1308×1858; these are regions of it in image pixels. */
 const SHEET = { w: 1308, h: 1858 };
 const SHEET_PARTS = [
-  { label: 'Ismingiz', t: 35.6, x: 50, y: 1766, w: 230, h: 36, scale: 3 },
+  { label: 'Ismingiz', t: 35.6, x: 50, y: 1766, w: 250, h: 36, scale: 2.8 },
   { label: 'O‘quv markazingiz', t: 36.4, x: 50, y: 72, w: 400, h: 42, scale: 2.1 },
   { label: 'Telefon raqamingiz', t: 37.84, x: 1108, y: 74, w: 150, h: 38, scale: 3.6 },
 ];
