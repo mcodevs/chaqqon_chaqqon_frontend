@@ -19,6 +19,7 @@ yerdan kerakli faylni oching.
 - [Bio-havola sahifasi](references/bio-havola-sahifasi.md) — /link: ustoz uchun taplink muqobili; 2026-10-14 dan jonli (chaqqon-chaqqon.uz/link); 2 havola (ota-onaga Telegram CTA, ustozga platforma), animatsiya: soroban toshlari ~810 ms, reduced-motion bilan teng; sahifa sof statik (ma'lumot yuklamaydi)
 - [Brend ranglari](references/brend-ranglari.md) — 2026-10-15: butun platforma logo palitrasida (yashil #1a7a34/#5ec97a, to'q sariq urg'u); faqat tokens.css o'zgardi, success tilrangga surildi, ikonkalar logodagi bolaning rasmidan (favicon.svg o'chirildi; 32/48px — yuz kesimi, 180px — butun figura)
 - [Trenerlar uchun Reels](references/reels-trener-video.md) — 2026-10-15: 84 s 9:16 video, Remotion `marketing/reels-trener` (capture → music → render → mix); ekranlar dev:local + puppeteer seed, musiqa o'zimiz sintez qilgan, oxirgi kadr faqat logo + telefon; tuzoqlar: `isMobile` reload, pastki nav click
+- [Reels 3D versiyasi](references/reels-trener-video.md) — 2026-10-15: `Reels3D` (three.js + @remotion/three), `--gl=angle`, 1 birlik = 100 px; tuzoqlar: kanvas ichida delayRender ishlamaydi, torus allaqachon XY da, havodagi obyekt soyasi dog' bo'ladi
 
 ## Eslatma
 

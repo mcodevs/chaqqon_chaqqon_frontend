@@ -13,3 +13,19 @@ Matn: `../posts/video_script.txt`.
 Sahna vaqtlari `src/timeline.ts` da — Whisper so'z vaqtlaridan olingan. Ovoz almashsa, shu yerni yangilang.
 
 Namunaviy hisoblar (faqat capture brauzerining vaqtinchalik profilida yashaydi): `capture/capture.mjs` boshida.
+
+## 3D versiya (`Reels3D`)
+
+Xuddi shu ovoz va vaqt jadvali, lekin har bir asosiy element haqiqiy 3D obyekt (three.js, `@remotion/three`):
+
+| Nima | Qayerda |
+|---|---|
+| Studiya: kamera (30°, 35.84 birlik — z=0 da 1 birlik = 100 px), yorug'lik, soya poli, fon kubiklari | `src/three/Stage.tsx` |
+| Resurslar: Baloo 2 TTF → three Font, teksturalar; **HTML darajasida** yuklanadi (kanvas ichidagi `delayRender` kadrga ulgurmaydi) | `src/three/assets.ts` |
+| Obyektlar: `Text3D` (ekstruziya), `Slab`, `Abacus3D` (ilovaning sorobani), `Coin` (logo tanga), `TileChar`, `Star`, `Clock3D` | `src/three/objects.tsx` |
+| Qalinlikka ega telefon — CSS 3D qatlamlar, ekran piksel-aniq qoladi | `src/three/Phone3D.tsx` |
+| Sahnalar | `src/Reels3D.tsx` |
+
+```bash
+npm run build:3d      # render (--gl=angle shart) + mix → out/chaqqon-trener-reels-3d.mp4
+```

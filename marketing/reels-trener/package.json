@@ -8,16 +8,24 @@
     "music": "~/.venvs/mlx-whisper/bin/python music/make_music.py",
     "render:silent": "remotion render src/index.ts Reels out/video-silent.mp4 --muted --codec=h264 --crf=18",
     "mix": "bash scripts/mix.sh",
-    "build": "npm run render:silent && npm run mix"
+    "build": "npm run render:silent && npm run mix",
+    "render:3d": "remotion render src/index.ts Reels3D out/video3d-silent.mp4 --muted --codec=h264 --crf=18 --gl=angle",
+    "mix:3d": "bash scripts/mix.sh out/video3d-silent.mp4 out/chaqqon-trener-reels-3d.mp4",
+    "build:3d": "npm run render:3d && npm run mix:3d"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "@remotion/cli": "^4.0.535",
     "@remotion/google-fonts": "^4.0.535",
+    "@remotion/three": "^4.0.535",
     "@types/react": "^19.3.0",
+    "@types/three": "^0.170.0",
     "puppeteer-core": "^24.43.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "remotion": "^4.0.535",
+    "three": "^0.170.0",
     "typescript": "^5.9.3"
   }
 }

@@ -322,9 +322,7 @@ export function Phone({
   const outerR = Math.round(width * 0.15);
   const innerR = outerR - bezel;
   const viewport = Math.round(width * 2.1);
-  const shotH = (width * SHOT.h) / SHOT.w;
   const scroll = interpolate(t, [delay + 0.6, delay + 0.6 + scrollDuration], [scrollFrom, scrollTo], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const overflow = Math.max(0, shotH + STATUS_H - viewport);
   const btn = (side: 'left' | 'right', y: number, h: number) => (
     <div
       key={`${side}${y}`}
@@ -358,43 +356,54 @@ export function Phone({
       {btn('left', width * 0.4, width * 0.11)}
       {btn('left', width * 0.54, width * 0.11)}
       {btn('right', width * 0.42, width * 0.17)}
-      <div style={{ width, height: viewport, borderRadius: innerR, overflow: 'hidden', position: 'relative', background: C.page }}>
-        <Img src={staticFile(src)} style={{ width, position: 'absolute', top: STATUS_H - scroll * overflow, left: 0 }} />
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: STATUS_H,
-            background: C.page,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: `0 ${width * 0.07}px`,
-            fontFamily: F.body,
-            fontWeight: 800,
-            fontSize: width * 0.036,
-            color: C.ink,
-          }}
-        >
-          <span>9:41</span>
-          <StatusIcons size={width * 0.03} />
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            top: 14,
-            left: '50%',
-            width: width * 0.27,
-            height: width * 0.075,
-            transform: 'translateX(-50%)',
-            borderRadius: 999,
-            background: '#0b0b0d',
-          }}
-        />
+      <PhoneScreen src={src} width={width} viewport={viewport} innerR={innerR} scroll={scroll}>
         {children}
+      </PhoneScreen>
+    </div>
+  );
+}
+
+/** The screen itself: status bar, island, the (optionally panned) capture and any overlay. */
+export function PhoneScreen({ src, width, viewport, innerR, scroll, children }: { src: string; width: number; viewport: number; innerR: number; scroll: number; children?: ReactNode }) {
+  const shotH = (width * SHOT.h) / SHOT.w;
+  const overflow = Math.max(0, shotH + STATUS_H - viewport);
+  return (
+  <div style={{ width, height: viewport, borderRadius: innerR, overflow: 'hidden', position: 'relative', background: C.page }}>
+      <Img src={staticFile(src)} style={{ width, position: 'absolute', top: STATUS_H - scroll * overflow, left: 0 }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: STATUS_H,
+          background: C.page,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: `0 ${width * 0.07}px`,
+          fontFamily: F.body,
+          fontWeight: 800,
+          fontSize: width * 0.036,
+          color: C.ink,
+        }}
+      >
+        <span>9:41</span>
+        <StatusIcons size={width * 0.03} />
       </div>
+      <div
+        style={{
+          position: 'absolute',
+          top: 14,
+          left: '50%',
+          width: width * 0.27,
+          height: width * 0.075,
+          transform: 'translateX(-50%)',
+          borderRadius: 999,
+          background: '#0b0b0d',
+        }}
+      />
+      {children}
     </div>
   );
 }

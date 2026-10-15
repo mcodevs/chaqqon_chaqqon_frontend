@@ -72,3 +72,23 @@ undan faqat ovoz olindi, tasvir esa qaytadan yasaldi. Natija: `marketing/posts/c
   `#ffd166` urg'u); "Biz bilan" → uchta rangli, qiyshaytirilgan stiker-`Pill`. Egasining didi:
   **oq kartalar va "korporativ" diagramma emas, o'yinqaroq/plakat uslubi** — keyingi reklamalarda
   shu yo'nalishdan boshlash.
+
+## 3D versiya (2026-10-15)
+
+Egasi 4-versiyani "1-variant" deb qabul qildi va **3D variant** so'radi. `Reels3D` kompozitsiyasi:
+three.js + `@remotion/three` (r3f 9, drei 10, three 0.170), `src/three/` (Stage, assets, objects,
+Phone3D). Render **`--gl=angle`** bilan (Mac), ~10 daqiqa; `npm run build:3d` →
+`out/chaqqon-trener-reels-3d.mp4`. Uslub: "yaltiroq o'yinchoq studiya" — clearcoat plastik,
+yumshoq soya poli, fon kubiklari; kamera 30°, z=35.84 → **z=0 da 1 birlik = 100 px** (`px()`).
+
+Tuzoqlar:
+- **Kanvas ichidagi `delayRender` kadrga ulgurmaydi** — r3f alohida React ildizida; shrift/tekstura
+  HTML darajasida (`AssetsProvider`) yuklanib, kontekst orqali uzatiladi (r3f kontekstni ko'priklaydi).
+- Baloo 2 ni Google'dan TTF qilib olish: `curl -A "Mozilla/5.0 (Windows NT 5.1)"` bilan css2 so'rovi
+  ttf URL beradi; `TTFLoader` (opentype) → `FontLoader.parse` → `TextGeometry`.
+- `torusGeometry` allaqachon XY tekisligida — unga `rotation=[π/2,0,0]` bersangiz halqa yotib,
+  obyekt ustidan chiziq bo'lib o'tadi (soat va tanga shu xatoga uchradi).
+- Havoda turgan obyektlarning pol soyasi kadr pastida ajralgan dog' bo'ladi — soya polini faqat
+  obyekt haqiqatan turgan sahnalarda yoqing (hook abakus, zinapoya); matn `castShadow` qilmasin.
+- Telefon CSS 3D: 16 qatlam × 2.1 px — ekran piksel-aniq, tana qalin ko'rinadi; `PhoneScreen`
+  `ui.tsx` dan ajratib olindi va ikkala versiya ishlatadi.
