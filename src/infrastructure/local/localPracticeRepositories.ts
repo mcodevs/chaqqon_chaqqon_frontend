@@ -1,6 +1,7 @@
 import { AppError } from '@/application/errors';
-import type { MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
+import type { DuelRepository, MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
 import type { Room, RoomProgress } from '@/domain/competition';
+import { type Duel, type DuelParticipant, isDuelStale } from '@/domain/duel';
 import {
   type MarketItem,
   type MarketOrder,
@@ -18,6 +19,9 @@ const KEYS = {
   roomsList: 'rooms/all',
   roomsPrefix: 'rooms/',
   progressPrefix: (roomId: string) => `rooms/progress/${roomId}/`,
+  duelsList: 'duels/all',
+  duelsPrefix: 'duels/',
+  duelPlayersPrefix: (duelId: string) => `duels/players/${duelId}/`,
   marketItems: 'market/items',
   marketOrders: 'market/orders',
   marketPrefix: 'market/',
@@ -237,5 +241,160 @@ export function createLocalMarketRepository(store: KeyValueStore, platform: Loca
 
     subscribe: (listener) =>
       store.subscribe((key) => keyMatches(key, (k) => k.startsWith(KEYS.marketPrefix)) && listener()),
+  };
+}
+
+/**
+ * The duels the children run among themselves. On Supabase the host's own participant row and the
+ * practice results of a finished duel come from triggers; here the repository does both itself, as
+ * it does for the star ledger, so the app behaves the same on both backends.
+ */
+export function createLocalDuelRepository(store: KeyValueStore, platform: LocalPlatform): DuelRepository {
+  const listAll = async (): Promise<Owned<Duel>[]> => (await store.get<Owned<Duel>[]>(KEYS.duelsList)) ?? [];
+
+  /** A duel is visible to the classmates it invited and to the teacher of that class. */
+  const isVisible = (duel: Owned<Duel>) => {
+    const current = platform.session();
+    if (current?.role === 'teacher') return duel.teacherId === current.teacherId;
+    if (current?.role === 'student') return duel.invitedIds.includes(current.studentId);
+    return false;
+  };
+
+  const myStudentId = (): string => {
+    const current = platform.session();
+    if (current?.role !== 'student') throw new AppError('FORBIDDEN');
+    return current.studentId;
+  };
+
+  const requireVisible = async (id: string): Promise<Owned<Duel>> => {
+    const duel = (await listAll()).find((candidate) => candidate.id === id && isVisible(candidate));
+    if (!duel) throw new AppError('DUEL_NOT_FOUND');
+    return duel;
+  };
+
+  const players = async (duelId: string): Promise<DuelParticipant[]> => {
+    const keys = await store.keys(KEYS.duelPlayersPrefix(duelId));
+    const rows = await Promise.all(keys.map((key) => store.get<DuelParticipant>(key)));
+    return rows.filter((row): row is DuelParticipant => row !== null);
+  };
+
+  const savePlayer = (participant: DuelParticipant) =>
+    store.set(`${KEYS.duelPlayersPrefix(participant.duelId)}${participant.studentId}`, participant);
+
+  /** Only the host drives a duel — or anyone it invited, once it has timed out. */
+  const assertCanDrive = async (duel: Owned<Duel>, allowStale = false) => {
+    const studentId = myStudentId();
+    if (duel.hostId === studentId) return;
+    if (allowStale && isDuelStale(duel, new Date()) && duel.invitedIds.includes(studentId)) return;
+    throw new AppError('FORBIDDEN');
+  };
+
+  const write = async (duel: Owned<Duel>) => {
+    const all = await listAll();
+    await store.set(
+      KEYS.duelsList,
+      all.map((candidate) => (candidate.id === duel.id ? duel : candidate)),
+    );
+  };
+
+  return {
+    async listRecent(limit) {
+      return (await listAll())
+        .filter(isVisible)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, limit)
+        .map(withoutOwner<Duel>);
+    },
+
+    async getById(id) {
+      const duel = (await listAll()).find((candidate) => candidate.id === id && isVisible(candidate));
+      return duel ? withoutOwner<Duel>(duel) : null;
+    },
+
+    async open(duel) {
+      const studentId = myStudentId();
+      const teacherId = platform.myTeacherId();
+      if (duel.hostId !== studentId) throw new AppError('FORBIDDEN');
+      if (!hasFeature(await platform.featuresOf(teacherId), 'duels')) throw new AppError('FEATURE_DISABLED');
+
+      const classmates = await platform.visibleStudentIds();
+      if (duel.invitedIds.some((id) => !classmates.has(id))) throw new AppError('STUDENT_NOT_FOUND');
+      const open = await platform.openStudentIds();
+      if (duel.invitedIds.some((id) => !open.has(id))) throw new AppError('DUEL_GUEST_UNAVAILABLE');
+
+      await store.set(KEYS.duelsList, [...(await listAll()), { ...duel, teacherId: teacherId ?? undefined }]);
+      // The host plays too, so their row exists from the start.
+      await savePlayer({
+        duelId: duel.id,
+        studentId,
+        joinedAt: duel.createdAt,
+        answered: 0,
+        correct: 0,
+        answerMs: 0,
+      });
+    },
+
+    async join(participant) {
+      const studentId = myStudentId();
+      if (participant.studentId !== studentId) throw new AppError('FORBIDDEN');
+      const duel = await requireVisible(participant.duelId);
+      if (duel.status !== 'lobby') throw new AppError('DUEL_CLOSED');
+      await savePlayer(participant);
+    },
+
+    async start(id, startedAt) {
+      const duel = await requireVisible(id);
+      await assertCanDrive(duel);
+      if (duel.status !== 'lobby') throw new AppError('DUEL_CLOSED');
+      await write({ ...duel, status: 'running', round: 0, startedAt, updatedAt: startedAt });
+    },
+
+    async setRound(id, round) {
+      const duel = await requireVisible(id);
+      await assertCanDrive(duel);
+      if (duel.status !== 'running') throw new AppError('DUEL_NOT_RUNNING');
+      await write({ ...duel, round, updatedAt: new Date().toISOString() });
+    },
+
+    async finish(id) {
+      const duel = await requireVisible(id);
+      await assertCanDrive(duel, true);
+      if (duel.status === 'finished') throw new AppError('DUEL_CLOSED');
+      const now = new Date().toISOString();
+      await write({ ...duel, status: 'finished', finishedAt: now, updatedAt: now });
+
+      // What the database trigger writes: a result per player who answered at least one round.
+      const played = (await players(id)).filter((participant) => participant.answered > 0);
+      const stored = (await store.get<PracticeResult[]>(KEYS.results)) ?? [];
+      await store.set(KEYS.results, [
+        ...stored,
+        ...played.map((participant): PracticeResult => ({
+          id: crypto.randomUUID(),
+          studentId: participant.studentId,
+          completedAt: now,
+          config: duel.configs[participant.studentId],
+          correct: participant.correct,
+          total: participant.answered,
+          mode: 'duel',
+          roomId: null,
+        })),
+      ]);
+    },
+
+    async listParticipants(duelIds) {
+      const visible = new Set((await listAll()).filter(isVisible).map((duel) => duel.id));
+      const lists = await Promise.all(duelIds.filter((id) => visible.has(id)).map(players));
+      return lists.flat();
+    },
+
+    async saveProgress(progress) {
+      if (progress.studentId !== myStudentId()) throw new AppError('FORBIDDEN');
+      const duel = await requireVisible(progress.duelId);
+      if (duel.status !== 'running') throw new AppError('DUEL_NOT_RUNNING');
+      await savePlayer(progress);
+    },
+
+    subscribe: (listener) =>
+      store.subscribe((key) => keyMatches(key, (k) => k.startsWith(KEYS.duelsPrefix)) && listener()),
   };
 }

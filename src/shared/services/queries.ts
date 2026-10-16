@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeacherAccountView } from '@/application/accountService';
 import type { RoomSnapshot } from '@/application/competitionService';
+import type { DuelInbox, DuelSnapshot } from '@/application/duelService';
 import type { PlatformSettings, PublicStats, TeacherCard } from '@/application/ports';
 import type { TeacherApplication } from '@/domain/applications';
 import type { CalendarDate, Payment } from '@/domain/billing';
@@ -22,6 +23,8 @@ import { useLiveQuery } from '@/shared/hooks/useLiveQuery';
 import { useServices } from './ServicesContext';
 
 // Service methods are created once in the composition root, so they are stable references.
+
+const EMPTY_DUEL_INBOX: DuelInbox = { active: null, invites: [] };
 
 export function useWrittenHomework(): WrittenHomework[] | undefined {
   const { homework } = useServices();
@@ -56,6 +59,27 @@ export function useStudentRoom(studentId: string): RoomSnapshot | undefined {
     load,
     subscribe: competition.subscribe,
   });
+}
+
+/**
+ * The student's duel page in one query: the duel they are in and the lobbies they have been
+ * invited to. Realtime carries the lobby filling up and the answers landing; the poll is only a
+ * safety net for a dropped subscription, so a screen the class is playing on never freezes.
+ */
+export function useDuelInbox(studentId: string, pollIntervalMs = 15_000): DuelInbox | undefined {
+  const { duels } = useServices();
+  // Without a student there is nothing to ask for: a tariff without duels passes no id.
+  const load = useCallback(
+    () => (studentId ? duels.getInbox(studentId) : Promise.resolve(EMPTY_DUEL_INBOX)),
+    [duels, studentId],
+  );
+  return useLiveQuery({ load, subscribe: duels.subscribe, pollIntervalMs });
+}
+
+/** Teacher only: what the class has been playing among themselves, newest first. */
+export function useClassDuels(): DuelSnapshot[] | undefined {
+  const { duels } = useServices();
+  return useLiveQuery({ load: duels.listClassDuels, subscribe: duels.subscribe });
 }
 
 export function useMarketItems(): MarketItem[] | undefined {

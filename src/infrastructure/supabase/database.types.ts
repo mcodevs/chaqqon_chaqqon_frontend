@@ -8,7 +8,8 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 type NoArgs = Record<PropertyKey, never>;
 type Role = 'admin' | 'teacher' | 'student';
 type RoomStatus = 'waiting' | 'running' | 'finished';
-type PracticeMode = 'practice' | 'online' | 'classroom';
+type PracticeMode = 'practice' | 'online' | 'classroom' | 'duel';
+type DuelStatus = 'lobby' | 'running' | 'finished';
 type PaymentKind = 'payment' | 'launch';
 
 type ProfileRow = {
@@ -52,6 +53,33 @@ type RoomProgressRow = {
   correct: number;
   total: number;
   finished: boolean;
+};
+
+type DuelRow = {
+  id: string;
+  /** The class the duel belongs to; the database fills it in. */
+  teacher_id: string;
+  host_id: string;
+  status: DuelStatus;
+  invited_ids: string[];
+  configs: Json;
+  problems: Json;
+  same_config: boolean;
+  round_count: number;
+  round: number;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  updated_at: string;
+};
+
+type DuelParticipantRow = {
+  duel_id: string;
+  student_id: string;
+  joined_at: string;
+  answered: number;
+  correct: number;
+  answer_ms: number;
 };
 
 type PracticeResultRow = {
@@ -236,6 +264,23 @@ export type Database = {
         Row: StudentPaymentRow;
         Insert: Pick<StudentPaymentRow, 'student_id' | 'paid_until'> & Partial<StudentPaymentRow>;
         Update: Partial<StudentPaymentRow>;
+        Relationships: [];
+      };
+      duels: {
+        Row: DuelRow;
+        // The owner, the status and the round all start from the database's own defaults.
+        Insert: Pick<
+          DuelRow,
+          'id' | 'host_id' | 'invited_ids' | 'configs' | 'problems' | 'same_config' | 'round_count'
+        >;
+        Update: Partial<Pick<DuelRow, 'status' | 'round' | 'started_at' | 'finished_at'>>;
+        Relationships: [];
+      };
+      duel_participants: {
+        Row: DuelParticipantRow;
+        Insert: Pick<DuelParticipantRow, 'duel_id' | 'student_id'> &
+          Partial<Pick<DuelParticipantRow, 'joined_at'>>;
+        Update: Partial<Pick<DuelParticipantRow, 'answered' | 'correct' | 'answer_ms'>>;
         Relationships: [];
       };
       market_items: {

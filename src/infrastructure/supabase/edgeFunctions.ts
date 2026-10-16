@@ -3,6 +3,8 @@ import { AppError, type AppErrorCode } from '@/application/errors';
 import type { AppSupabaseClient } from './client';
 
 export const POSTGRES_UNIQUE_VIOLATION = '23505';
+/** What a row-level security policy answers when it turns a write down. */
+export const POSTGRES_INSUFFICIENT_PRIVILEGE = '42501';
 
 /** Error codes the Edge Functions return that the app can explain to the user. */
 const EXPLAINABLE_CODES = [
@@ -26,7 +28,8 @@ function isExplainableCode(value: unknown): value is ExplainableCode {
   return typeof value === 'string' && (EXPLAINABLE_CODES as readonly string[]).includes(value);
 }
 
-export type FunctionName = 'manage-teachers' | 'manage-students' | 'telegram-link' | 'telegram-unlink' | 'telegram-send-document';
+export type FunctionName =
+  'manage-teachers' | 'manage-students' | 'telegram-link' | 'telegram-unlink' | 'telegram-send-document';
 
 /** Calls an Edge Function; known failure codes become `AppError`s. */
 export async function invokeFunction<T = unknown>(

@@ -12,6 +12,7 @@ import {
   createLocalTariffRepository,
 } from '@/infrastructure/local/localPlatformRepositories';
 import {
+  createLocalDuelRepository,
   createLocalMarketRepository,
   createLocalResultRepository,
   createLocalRoomRepository,
@@ -86,6 +87,7 @@ export async function createTestDependencies() {
     students: createLocalStudentRepository({ records, platform, hasher: fakeHasher, generateId }),
     results: createLocalResultRepository(store, platform),
     rooms: createLocalRoomRepository(store, platform),
+    duels: createLocalDuelRepository(store, platform),
     payments: createLocalPaymentRepository({ store, records, platform, clock, generateId }),
     market: createLocalMarketRepository(store, platform),
     account: createLocalAccountRepository(platformDeps),

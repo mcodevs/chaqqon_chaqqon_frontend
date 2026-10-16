@@ -4,6 +4,7 @@ import { accessOf } from '@/domain/billing';
 import { type Feature, hasFeature } from '@/domain/teacherBilling';
 import {
   teacherDisplayName,
+  useDuelInbox,
   useMyFeatures,
   useMyTeacherCard,
   usePayments,
@@ -33,6 +34,9 @@ export function StudentLayout() {
   const stars = useStudentStars(studentId ?? '');
   const features = useMyFeatures();
   const teacherCard = useMyTeacherCard();
+  // A duel is live: the poll is slow here, because the duel page itself watches it closely.
+  const duelsOpen = hasFeature(features, 'duels');
+  const duelInbox = useDuelInbox(duelsOpen && studentId ? studentId : '', 60_000);
   const location = useLocation();
   const student = students?.find((s) => s.id === studentId) ?? null;
   const accountDeleted = students !== undefined && student === null;
@@ -60,6 +64,10 @@ export function StudentLayout() {
   const closed = !access.open;
   const subtitle = teacherCard?.centerName || teacherDisplayName(teacherCard) || 'Chaqqon-chaqqon';
 
+  const hasDuelWaiting =
+    duelInbox !== undefined &&
+    (duelInbox.invites.length > 0 || (duelInbox.active?.duel.status ?? 'finished') !== 'finished');
+
   const hasPendingCompetition =
     snapshot?.room?.participantIds.includes(student.id) === true && !snapshot.progress[student.id]?.finished;
 
@@ -81,6 +89,11 @@ export function StudentLayout() {
       label: hasPendingCompetition ? '📝 Interaktiv vazifa •' : '📝 Interaktiv vazifa',
       feature: 'homework_rooms' as const,
     },
+    {
+      to: '/student/duel',
+      label: hasDuelWaiting ? '⚔️ Bellashuv •' : '⚔️ Bellashuv',
+      feature: 'duels' as const,
+    },
     { to: '/student/leaderboard', label: '🏆 Reyting', feature: 'leaderboard' as const },
     { to: '/student/results', label: '📈 Natijalarim' },
     { to: '/student/market', label: "🎁 Do'kon", feature: 'market' as const },
@@ -98,6 +111,13 @@ export function StudentLayout() {
         icon: '📝',
         badge: hasPendingCompetition,
         feature: 'homework_rooms',
+      },
+      {
+        to: '/student/duel',
+        label: 'Bellashuv',
+        icon: '⚔️',
+        badge: hasDuelWaiting,
+        feature: 'duels',
       },
       { to: '/student/leaderboard', label: 'Reyting', icon: '🏆', feature: 'leaderboard' },
       { to: '/student/results', label: 'Natijalar', icon: '📈' },

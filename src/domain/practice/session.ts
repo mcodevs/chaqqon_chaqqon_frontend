@@ -53,6 +53,7 @@ export type SessionAction =
   | { type: 'numberElapsed' }
   | { type: 'gapElapsed' }
   | { type: 'answersSubmitted'; answers: readonly (number | null)[] }
+  | { type: 'roundSkipped' }
   | { type: 'nextRequested' };
 
 export interface TimedTransition {
@@ -148,6 +149,16 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
           attempts: [...lane.attempts, { problem, answer, isCorrect: answer === problem.answer }],
         };
       });
+      return { ...state, phase: 'feedback', lanes };
+    }
+
+    case 'roundSkipped': {
+      // A duel's host moved on before this player answered, so the round is simply missed.
+      if (state.phase === 'feedback' || state.phase === 'finished') return state;
+      const lanes = state.lanes.map((lane) => ({
+        ...lane,
+        attempts: [...lane.attempts, { problem: lane.problems[state.round], answer: null, isCorrect: false }],
+      }));
       return { ...state, phase: 'feedback', lanes };
     }
 

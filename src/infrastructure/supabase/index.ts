@@ -11,6 +11,7 @@ import {
   createSupabaseTariffRepository,
 } from './supabasePlatformRepositories';
 import {
+  createSupabaseDuelRepository,
   createSupabaseMarketRepository,
   createSupabaseResultRepository,
   createSupabaseRoomRepository,
@@ -28,6 +29,7 @@ export function createSupabasePorts(config: SupabaseConfig): Ports {
     students: createSupabaseStudentRepository(client),
     results: createSupabaseResultRepository(client),
     rooms: createSupabaseRoomRepository(client),
+    duels: createSupabaseDuelRepository(client),
     payments: createSupabasePaymentRepository(client),
     market: createSupabaseMarketRepository(client),
     homework: createSupabaseHomeworkRepository(client),

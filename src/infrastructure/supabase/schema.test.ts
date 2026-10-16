@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { addDays, addMonths, isValidPaidUntil, launchPaidUntil, schoolDate } from '@/domain/billing';
+import { DUEL_IDLE_MS } from '@/domain/duel';
 import {
   FEATURES,
   type LedgerEntry,
@@ -1575,5 +1576,322 @@ describe('growing the platform', () => {
     await expect(as('authenticated', ADMIN, 'select private.send_application_reminders()')).rejects.toThrow(
       /permission denied/,
     );
+  });
+});
+
+describe('bellashuv: the duel the students run themselves', () => {
+  /** A teacher whose tariff opens duels, and one whose tariff does not. */
+  const TEACHER_D = '00000000-0000-4000-8000-000000000011';
+  const TEACHER_E = '00000000-0000-4000-8000-000000000012';
+  const SARA = '00000000-0000-4000-8000-0000000000c1';
+  const OMAD = '00000000-0000-4000-8000-0000000000c2';
+  const NODIR = '00000000-0000-4000-8000-0000000000c3';
+  /** In the same class, but their subscription has ended. */
+  const YOPIQ = '00000000-0000-4000-8000-0000000000c4';
+  /** The other class, with no duels in its tariff. */
+  const BEGONA = '00000000-0000-4000-8000-0000000000c5';
+
+  const one = async <T = { id: string }>(sql: string, params: unknown[] = []) =>
+    (await db.query<T>(sql, params)).rows[0];
+
+  const DUEL_CONFIGS = JSON.stringify({ [SARA]: { rowCount: 4 }, [OMAD]: { rowCount: 4 } });
+  const DUEL_PROBLEMS = JSON.stringify({
+    [SARA]: [{ numbers: [3, 1], answer: 4 }],
+    [OMAD]: [{ numbers: [3, 1], answer: 4 }],
+  });
+
+  const openDuel = (host: string, invited: string[], configs = DUEL_CONFIGS, problems = DUEL_PROBLEMS) =>
+    as<{ id: string }>(
+      'authenticated',
+      host,
+      `insert into public.duels (host_id, invited_ids, configs, problems, round_count)
+       values ($1, $2, $3, $4, 5) returning id`,
+      [host, `{${invited.join(',')}}`, configs, problems],
+    );
+
+  const pay = (studentId: string) =>
+    db.query('insert into public.student_payments (student_id, paid_until) values ($1, $2)', [
+      studentId,
+      addMonths(today(), 1),
+    ]);
+
+  /** Ages a duel past the idle limit; the stamp trigger would otherwise set it back to now(). */
+  const leaveAlone = async (duelId: string) => {
+    await db.exec('alter table public.duels disable trigger duels_stamp');
+    await db.query("update public.duels set updated_at = now() - interval '20 minutes' where id = $1", [
+      duelId,
+    ]);
+    await db.exec('alter table public.duels enable trigger duels_stamp');
+  };
+
+  beforeAll(async () => {
+    const duels = await one(
+      `insert into public.tariffs (name, monthly_price, features) values ('Duel', 1, '{duels}') returning id`,
+    );
+    const noDuels = await one(
+      `insert into public.tariffs (name, monthly_price, features) values ('NoDuel', 1, '{leaderboard}') returning id`,
+    );
+
+    await addUser(TEACHER_D, 'teacher', 'dildora', 'Dildora');
+    await db.query('update public.teachers set tariff_id = $1 where profile_id = $2', [duels.id, TEACHER_D]);
+    await addUser(TEACHER_E, 'teacher', 'elnur', 'Elnur');
+    await db.query('update public.teachers set tariff_id = $1 where profile_id = $2', [
+      noDuels.id,
+      TEACHER_E,
+    ]);
+
+    for (const [id, name] of [
+      [SARA, 'sara'],
+      [OMAD, 'omad'],
+      [NODIR, 'nodir'],
+      [YOPIQ, 'yopiq'],
+    ]) {
+      await addUser(id, 'student', name, name, TEACHER_D);
+    }
+    await addUser(BEGONA, 'student', 'begona', 'Begona', TEACHER_E);
+    for (const id of [SARA, OMAD, NODIR, BEGONA]) await pay(id);
+  });
+
+  it('is opened by a student, who is in it from the start without joining', async () => {
+    const [duel] = await openDuel(SARA, [SARA, OMAD]);
+    expect(
+      await as('authenticated', SARA, 'select student_id from public.duel_participants where duel_id = $1', [
+        duel.id,
+      ]),
+    ).toEqual([{ student_id: SARA }]);
+    // The class it belongs to is the database's own answer, not the client's.
+    expect(
+      await as('authenticated', SARA, 'select teacher_id, status, round from public.duels where id = $1', [
+        duel.id,
+      ]),
+    ).toEqual([{ teacher_id: TEACHER_D, status: 'lobby', round: 0 }]);
+  });
+
+  it('invites classmates whose subscription is open, and nobody else', async () => {
+    const rls = /row-level security/;
+    await expect(openDuel(SARA, [SARA, YOPIQ])).rejects.toThrow(rls);
+    await expect(openDuel(SARA, [SARA, BEGONA])).rejects.toThrow(rls);
+    await expect(openDuel(SARA, [SARA, TEACHER_D])).rejects.toThrow(rls);
+    // Somebody else's duel is not theirs to open either.
+    await expect(openDuel(SARA, [OMAD, NODIR])).rejects.toThrow(/duels_host_is_invited|row-level/);
+  });
+
+  it('needs a tariff that opens it', async () => {
+    await expect(
+      as(
+        'authenticated',
+        BEGONA,
+        `insert into public.duels (host_id, invited_ids, configs, problems, round_count)
+         values ($1, $2, '{}', '{}', 5)`,
+        [BEGONA, `{${BEGONA}}`],
+      ),
+    ).rejects.toThrow(/row-level security|duels_invited_ids_check/);
+  });
+
+  it('takes the host plus one to seven classmates', async () => {
+    await expect(openDuel(SARA, [SARA])).rejects.toThrow(/duels_invited_ids_check/);
+    await expect(openDuel(SARA, [SARA, OMAD, NODIR, SARA, OMAD, NODIR, SARA, OMAD, NODIR])).rejects.toThrow(
+      /duels_invited_ids_check/,
+    );
+  });
+
+  it('fills its lobby with the classmates it invited, and only while it is waiting', async () => {
+    const [duel] = await openDuel(SARA, [SARA, OMAD, NODIR]);
+    const join = (studentId: string) =>
+      as(
+        'authenticated',
+        studentId,
+        'insert into public.duel_participants (duel_id, student_id) values ($1, $2)',
+        [duel.id, studentId],
+      );
+
+    await join(OMAD);
+    await expect(join(BEGONA)).rejects.toThrow(/row-level security/);
+    // Joining on somebody else's behalf is refused too.
+    await expect(
+      as(
+        'authenticated',
+        OMAD,
+        'insert into public.duel_participants (duel_id, student_id) values ($1, $2)',
+        [duel.id, NODIR],
+      ),
+    ).rejects.toThrow(/row-level security/);
+
+    await as('authenticated', SARA, "update public.duels set status = 'running' where id = $1", [duel.id]);
+    await expect(join(NODIR)).rejects.toThrow(/row-level security/);
+  });
+
+  it('is driven by its host alone, and each player writes only their own answers', async () => {
+    const [duel] = await openDuel(SARA, [SARA, OMAD]);
+    await as(
+      'authenticated',
+      OMAD,
+      'insert into public.duel_participants (duel_id, student_id) values ($1, $2)',
+      [duel.id, OMAD],
+    );
+
+    const round = async () =>
+      (await db.query<{ round: number }>('select round from public.duels where id = $1', [duel.id])).rows[0]
+        .round;
+
+    // A guest's attempt to drive it changes nothing: no row passes the policy.
+    await as('authenticated', OMAD, "update public.duels set status = 'running' where id = $1", [duel.id]);
+    expect(
+      await as('authenticated', OMAD, 'select status from public.duels where id = $1', [duel.id]),
+    ).toEqual([{ status: 'lobby' }]);
+
+    await as('authenticated', SARA, "update public.duels set status = 'running' where id = $1", [duel.id]);
+    await as('authenticated', SARA, 'update public.duels set round = 1 where id = $1', [duel.id]);
+    expect(await round()).toBe(1);
+
+    await as(
+      'authenticated',
+      OMAD,
+      'update public.duel_participants set answered = 2, correct = 1, answer_ms = 4000 where duel_id = $1 and student_id = $2',
+      [duel.id, OMAD],
+    );
+    await as(
+      'authenticated',
+      OMAD,
+      'update public.duel_participants set correct = 5 where duel_id = $1 and student_id = $2',
+      [duel.id, SARA],
+    );
+    expect(
+      await as(
+        'authenticated',
+        OMAD,
+        'select student_id, answered, correct from public.duel_participants where duel_id = $1 order by student_id',
+        [duel.id],
+      ),
+    ).toEqual([
+      { student_id: SARA, answered: 0, correct: 0 },
+      { student_id: OMAD, answered: 2, correct: 1 },
+    ]);
+
+    // The teacher watches the class play but never steps in.
+    expect(await as('authenticated', TEACHER_D, 'select count(*)::int as n from public.duels')).not.toEqual([
+      { n: 0 },
+    ]);
+    await as('authenticated', TEACHER_D, 'update public.duels set round = 4 where id = $1', [duel.id]);
+    expect(await round()).toBe(1);
+  });
+
+  it('records a result for everyone who played — worth no star and no ranking', async () => {
+    const [duel] = await openDuel(SARA, [SARA, OMAD]);
+    await as(
+      'authenticated',
+      OMAD,
+      'insert into public.duel_participants (duel_id, student_id) values ($1, $2)',
+      [duel.id, OMAD],
+    );
+    await as('authenticated', SARA, "update public.duels set status = 'running' where id = $1", [duel.id]);
+    await as(
+      'authenticated',
+      SARA,
+      'update public.duel_participants set answered = 5, correct = 5 where duel_id = $1 and student_id = $2',
+      [duel.id, SARA],
+    );
+
+    await as('authenticated', SARA, "update public.duels set status = 'finished' where id = $1", [duel.id]);
+
+    // Only the player who answered: a row with total 0 would say nothing and the table forbids it.
+    expect(
+      await db
+        .query<{ student_id: string; correct: number; total: number }>(
+          "select student_id, correct, total from public.practice_results where mode = 'duel' and completed_at > now() - interval '1 minute'",
+        )
+        .then((result) => result.rows),
+    ).toEqual([{ student_id: SARA, correct: 5, total: 5 }]);
+
+    // A perfect duel pays nothing: only an online homework does.
+    expect(
+      await db.query('select 1 from public.star_awards where student_id = $1', [SARA]).then((r) => r.rows),
+    ).toEqual([]);
+  });
+
+  it('lets nobody write a duel result by hand', async () => {
+    await expect(
+      as(
+        'authenticated',
+        SARA,
+        "insert into public.practice_results (student_id, config, correct, total, mode) values ($1, $2, 5, 5, 'duel')",
+        [SARA, CONFIG],
+      ),
+    ).rejects.toThrow(/row-level security/);
+  });
+
+  it('is closed by any of its players once it has been left alone, and in no other way', async () => {
+    const [duel] = await openDuel(SARA, [SARA, OMAD]);
+    await as(
+      'authenticated',
+      OMAD,
+      'insert into public.duel_participants (duel_id, student_id) values ($1, $2)',
+      [duel.id, OMAD],
+    );
+    await as('authenticated', SARA, "update public.duels set status = 'running' where id = $1", [duel.id]);
+    await as(
+      'authenticated',
+      SARA,
+      'update public.duel_participants set answered = 3, correct = 2 where duel_id = $1 and student_id = $2',
+      [duel.id, SARA],
+    );
+
+    // Still alive: a guest may not touch it.
+    await as('authenticated', OMAD, "update public.duels set status = 'finished' where id = $1", [duel.id]);
+    expect(
+      await as('authenticated', OMAD, 'select status from public.duels where id = $1', [duel.id]),
+    ).toEqual([{ status: 'running' }]);
+
+    await leaveAlone(duel.id);
+    // Timed out: closing it is all a guest may do with it.
+    await expect(
+      as('authenticated', OMAD, 'update public.duels set round = 3 where id = $1', [duel.id]),
+    ).rejects.toThrow(/row-level security/);
+    await as('authenticated', OMAD, "update public.duels set status = 'finished' where id = $1", [duel.id]);
+    expect(
+      await as('authenticated', OMAD, 'select status from public.duels where id = $1', [duel.id]),
+    ).toEqual([{ status: 'finished' }]);
+  });
+
+  it('is swept up by the job when nobody comes back at all', async () => {
+    const [duel] = await openDuel(SARA, [SARA, OMAD]);
+    await as('authenticated', SARA, "update public.duels set status = 'running' where id = $1", [duel.id]);
+    await as(
+      'authenticated',
+      SARA,
+      'update public.duel_participants set answered = 1, correct = 1 where duel_id = $1 and student_id = $2',
+      [duel.id, SARA],
+    );
+    await leaveAlone(duel.id);
+
+    await db.query('select private.expire_stale_duels()');
+    expect((await db.query('select status from public.duels where id = $1', [duel.id])).rows).toEqual([
+      { status: 'finished' },
+    ]);
+    await expect(as('authenticated', SARA, 'select private.expire_stale_duels()')).rejects.toThrow(
+      /permission denied/,
+    );
+  });
+
+  it('times out after the same quarter of an hour everywhere', async () => {
+    /** Reads the idle limit out of SQL, written either as the app wrote it or as Postgres prints it. */
+    const idleMsIn = (sql: string) => {
+      const written = /interval '(\d+) minutes'/.exec(sql);
+      if (written) return Number(written[1]) * 60 * 1000;
+      const printed = /'(\d+):(\d+):(\d+)'::interval/.exec(sql);
+      if (!printed) return null;
+      const [, hours, minutes, seconds] = printed;
+      return (Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds)) * 1000;
+    };
+
+    const sweep = await one<{ def: string }>(
+      "select pg_get_functiondef('private.expire_stale_duels()'::regprocedure) as def",
+    );
+    const policy = await one<{ qual: string }>(
+      "select qual from pg_policies where tablename = 'duels' and policyname = 'An invited player closes a timed-out duel'",
+    );
+
+    expect(idleMsIn(sweep.def)).toBe(DUEL_IDLE_MS);
+    expect(idleMsIn(policy.qual)).toBe(DUEL_IDLE_MS);
   });
 });

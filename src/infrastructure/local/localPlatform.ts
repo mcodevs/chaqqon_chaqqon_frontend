@@ -2,7 +2,7 @@ import { AppError } from '@/application/errors';
 import { DEFAULT_PLATFORM_SETTINGS } from '@/application/platformService';
 import type { ChangeListener, Clock, IdGenerator, PlatformSettings, Unsubscribe } from '@/application/ports';
 import type { Session } from '@/application/session';
-import { schoolDate } from '@/domain/billing';
+import { type Payment, accessOf, schoolDate } from '@/domain/billing';
 import {
   FEATURES,
   type Feature,
@@ -43,6 +43,9 @@ export interface TeacherRecord {
   disabledAt: string | null;
   createdAt: string;
 }
+
+/** Where the payments live; the duel rules read them the way a SECURITY DEFINER function does. */
+const PAYMENTS_KEY = 'payments';
 
 export const PLATFORM_KEYS = {
   admin: 'platform/admin',
@@ -215,6 +218,18 @@ export function createLocalPlatform({ store, records, sessions, clock, generateI
       return new Set(
         (await records.list()).filter((r) => teacherId && r.teacherId === teacherId).map((r) => r.id),
       );
+    },
+
+    /**
+     * Classmates whose subscription is open, as `private.has_access` answers on Supabase. A browser
+     * that used the app before billing existed has no payments at all; everyone counts as open
+     * there, which is what the launch migration grants.
+     */
+    async openStudentIds(): Promise<Set<string>> {
+      const payments = (await store.get<Payment[]>(PAYMENTS_KEY)) ?? [];
+      const visible = await this.visibleStudentIds();
+      if (payments.length === 0) return visible;
+      return new Set([...visible].filter((id) => accessOf(payments, id, today()).open));
     },
 
     /** The calling teacher's own students; nobody's for anyone else. */

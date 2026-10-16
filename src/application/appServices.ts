@@ -4,6 +4,7 @@ import type { ApplicationService } from './applicationService';
 import type { AuthService } from './authService';
 import type { BillingService } from './billingService';
 import type { CompetitionService } from './competitionService';
+import type { DuelService } from './duelService';
 import type { HomeworkService } from './homeworkService';
 import type { MarketService } from './marketService';
 import type { PlatformService } from './platformService';
@@ -17,6 +18,7 @@ export interface AppServices {
   students: StudentService;
   results: ResultService;
   competition: CompetitionService;
+  duels: DuelService;
   billing: BillingService;
   market: MarketService;
   homework: HomeworkService;

@@ -14,6 +14,7 @@ import styles from './ResultsPage.module.css';
 const MODE_BADGES: Partial<Record<PracticeMode, { icon: string; label: string }>> = {
   online: { icon: '🏆', label: 'Onlayn musobaqa' },
   classroom: { icon: '🏫', label: 'Sinf musobaqasi' },
+  duel: { icon: '⚔️', label: 'Bellashuv' },
 };
 
 export function ResultsPage() {

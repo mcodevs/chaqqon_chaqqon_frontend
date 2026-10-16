@@ -1,6 +1,7 @@
 import type { ApplicationInput, ApplicationStatus, TeacherApplication } from '@/domain/applications';
 import type { CalendarDate, Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
+import type { Duel, DuelParticipant } from '@/domain/duel';
 import type { MarketItem, MarketOrder, OrderStatus, StarAward } from '@/domain/market';
 import type { DateRange, TeacherOverview } from '@/domain/platformStats';
 import type { PracticeResult } from '@/domain/results';
@@ -89,6 +90,32 @@ export interface RoomRepository {
   save(room: Room): Promise<void>;
   listProgress(roomId: string): Promise<RoomProgress[]>;
   saveProgress(progress: RoomProgress): Promise<void>;
+  subscribe(listener: ChangeListener): Unsubscribe;
+}
+
+/**
+ * The duels the children run among themselves (see domain/duel.ts). The host writes the duel row
+ * and drives the rounds; every player writes only their own participant row.
+ */
+export interface DuelRepository {
+  /** Duels the caller may see, newest first: a student's own, a teacher's whole class. */
+  listRecent(limit: number): Promise<Duel[]>;
+  getById(id: string): Promise<Duel | null>;
+  /** Opens a duel in its lobby. The backend adds the host's own participant row. */
+  open(duel: Duel): Promise<void>;
+  /** A classmate takes up the invitation. Throws `AppError('DUEL_CLOSED')` once it has started. */
+  join(participant: DuelParticipant): Promise<void>;
+  start(id: string, startedAt: string): Promise<void>;
+  /** The host moves everyone on to the next problem. */
+  setRound(id: string, round: number): Promise<void>;
+  /**
+   * Closes the duel and records a practice result for everyone who played, in `duel` mode: it
+   * earns no star and never reaches the class ranking. A timed-out duel is closed the same way,
+   * by whoever notices first.
+   */
+  finish(id: string): Promise<void>;
+  listParticipants(duelIds: readonly string[]): Promise<DuelParticipant[]>;
+  saveProgress(progress: DuelParticipant): Promise<void>;
   subscribe(listener: ChangeListener): Unsubscribe;
 }
 
@@ -275,6 +302,7 @@ export interface Ports {
   students: StudentRepository;
   results: ResultRepository;
   rooms: RoomRepository;
+  duels: DuelRepository;
   payments: PaymentRepository;
   market: MarketRepository;
   homework: HomeworkRepository;

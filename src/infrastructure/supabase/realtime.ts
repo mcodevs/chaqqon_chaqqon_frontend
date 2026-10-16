@@ -7,6 +7,8 @@ export type RealtimeTable =
   | 'rooms'
   | 'room_progress'
   | 'practice_results'
+  | 'duels'
+  | 'duel_participants'
   | 'student_payments'
   | 'market_items'
   | 'market_orders'

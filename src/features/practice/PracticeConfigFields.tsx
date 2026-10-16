@@ -28,9 +28,19 @@ interface PracticeConfigFieldsProps {
   onChange: (value: PracticeConfig) => void;
   /** The drills this form may offer; all of them unless a screen narrows the list. */
   kinds?: readonly PracticeKind[];
+  /**
+   * Hides the number of problems. A duel runs its rounds together, so the host sets that count
+   * once for everyone and the per-child forms only carry the difficulty.
+   */
+  hideProblemCount?: boolean;
 }
 
-export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }: PracticeConfigFieldsProps) {
+export function PracticeConfigFields({
+  value,
+  onChange,
+  kinds = PRACTICE_KINDS,
+  hideProblemCount = false,
+}: PracticeConfigFieldsProps) {
   const set = <K extends keyof PracticeConfig>(key: K, next: PracticeConfig[K]) =>
     onChange(normalizePracticeConfig({ ...value, [key]: next }));
 
@@ -91,14 +101,16 @@ export function PracticeConfigFields({ value, onChange, kinds = PRACTICE_KINDS }
             value={value.rowCount}
             onChange={(n) => set('rowCount', n)}
           />
-          <ChoiceField
-            label="Misollar soni"
-            options={PROBLEM_CHOICES}
-            value={value.problemCount}
-            onChange={(n) => set('problemCount', n)}
-          />
+          {!hideProblemCount && (
+            <ChoiceField
+              label="Misollar soni"
+              options={PROBLEM_CHOICES}
+              value={value.problemCount}
+              onChange={(n) => set('problemCount', n)}
+            />
+          )}
         </>
-      ) : (
+      ) : hideProblemCount ? null : (
         /* Up to thirty cards is too many chips to scan, and a card takes a second anyway. */
         <SliderField
           label="Kartalar soni"

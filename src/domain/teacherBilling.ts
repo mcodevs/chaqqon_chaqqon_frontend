@@ -22,6 +22,7 @@ export const FEATURES = [
   'written_homework',
   'extra_drills',
   'telegram',
+  'duels',
 ] as const;
 
 export type Feature = (typeof FEATURES)[number];
@@ -84,6 +85,12 @@ export const FEATURE_META: Record<Feature, FeatureMeta> = {
     icon: '🧩',
     teacher: "Chaqnovchi mashqini vazifaga qo'sha oladi",
     student: 'Chaqnovchi va ustunlar mashqlari',
+  },
+  duels: {
+    label: 'Bellashuv',
+    icon: '⚔️',
+    teacher: "O'quvchilarning o'zaro bellashuvlarini ko'radi",
+    student: "Sinfdoshlari bilan o'zi bellashuv o'tkazadi",
   },
   telegram: {
     label: 'Telegram xabarlari',

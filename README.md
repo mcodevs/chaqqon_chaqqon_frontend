@@ -4,7 +4,8 @@ Mental arifmetika ustozlari va ularning o'quvchilari uchun platforma. Har bir us
 boshqaradi, o'quvchilar abakus formulalari bo'yicha mashq qiladi. Uch xil mashq bor: **anzan** (sonlar
 ketma-ket chaqnaydi, yig'indisi so'raladi), **chaqnovchi** (abakus bir lahza chaqnaydi, undagi son
 so'raladi) va **ustunlar**. Ilovada sinf reytingi, interaktiv uy vazifasi, sinfda bitta ekranda
-o'tkaziladigan split-screen musobaqa va yulduzcha do'koni bor.
+o'tkaziladigan split-screen musobaqa, o'quvchilarning o'zlari o'tkazadigan **bellashuv** va
+yulduzcha do'koni bor.
 
 **Uch rol:**
 
@@ -14,6 +15,7 @@ o'tkaziladigan split-screen musobaqa va yulduzcha do'koni bor.
 - **Ustoz** (`/teacher`) — faqat o'z o'quvchilarini ko'radi va boshqaradi. Qaysi bo'limlar ochiq ekani
   va nechta o'quvchi qo'shish mumkinligi ustozning tarifiga bog'liq.
 - **O'quvchi** (`/student`) — ustozi bergan login bilan kiradi; bo'limlar ustozning tarifiga qarab ochiladi.
+  Bellashuvni o'quvchining o'zi ochadi: sinfdoshlarini chaqiradi va raundlarni o'zi boshqaradi.
 
 Bosh sahifa (`/`) — ustozlar uchun landing: imkoniyatlar, tariflar va ariza formasi.
 
@@ -99,6 +101,8 @@ Local rejimda (`npm run dev:local`) birinchi ochilishda superadmin hisobi ilovan
   - ustoz faqat o'z o'quvchilari, xonalari, natijalari, to'lovlari, do'koni va yulduzlarini ko'radi va o'zgartiradi;
   - to'lagan o'quvchi faqat o'z sinfdoshlarini ko'radi; loginlarni faqat o'z ustozi ko'radi (`student_accounts()`);
   - o'quvchi faqat o'z natijasini yozadi; do'kondan faqat `place_order()` orqali sotib oladi;
+  - bellashuvni to'lagan o'quvchi o'z sinfdoshlari bilan ochadi; xonani faqat uning egasi boshqaradi,
+    har bir ishtirokchi esa faqat o'z javobini yozadi; bellashuv natijasini ilova emas, trigger yozadi;
   - to'lovi tugagan o'quvchi faqat o'z profili va to'lovlarini ko'radi, hech narsa yoza olmaydi;
   - bloklangan ustozning boshqaruv yozuvlari rad etiladi, o'qishi ochiq qoladi; o'quvchilari ishlayveradi;
   - tarifdagi funksiyalar yozish yo'llarini ochadi (xona, sinf natijasi, do'kon, yozma vazifa, Telegram);
@@ -106,8 +110,8 @@ Local rejimda (`npm run dev:local`) birinchi ochilishda superadmin hisobi ilovan
 
   Barcha qoidalar `src/infrastructure/supabase/schema.test.ts` da haqiqiy migratsiya ustida sinaladi.
 
-- **Realtime** `rooms`, `room_progress`, `practice_results`, `student_payments`, ustoz hisob daftari va
-  tariflar o'zgarishlarini uzatadi: musobaqa monitori va reyting jonli yangilanadi, yopiq o'quvchining va
+- **Realtime** `rooms`, `room_progress`, `duels`, `duel_participants`, `practice_results`,
+  `student_payments`, ustoz hisob daftari va tariflar o'zgarishlarini uzatadi: musobaqa monitori va reyting jonli yangilanadi, yopiq o'quvchining va
   bloklangan ustozning sahifasi to'lov belgilanishi bilan ochiladi. `profiles` Realtime'ga qo'shilmagan, aks holda loginlar payload'da ko'rinib qolardi.
 - Sxema o'zgarsa, tiplarni qayta yarating:
   `npx supabase gen types typescript --linked > src/infrastructure/supabase/database.types.ts`.
@@ -123,7 +127,7 @@ src/
 │   ├── practice/      soroban (harakat tasnifi), abacus (toshlar va formula qadamlari),
 │   │                  problem (anzan generatori), drills (ikki mashq bitta chaqiruv ortida),
 │   │                  session (reducer + vaqt qoidalari)
-│   ├── classroom.ts competition.ts leaderboard.ts results.ts users.ts random.ts
+│   ├── classroom.ts competition.ts duel.ts leaderboard.ts results.ts users.ts random.ts
 ├── application/       Use-case servislar, portlar (AuthGateway, repozitoriylar), AppError kodlari
 ├── infrastructure/
 │   ├── local/         Brauzer backend'i: localStorage, PBKDF2, sessionStorage
@@ -131,7 +135,8 @@ src/
 │   └── storage/ security/ shared/
 ├── app/               Composition root (backend tanlovi), provider'lar, router, guard'lar
 ├── features/          Sahifalar: auth, teacher, student, practice, abacus (vizual soroban),
-│                      competition (onlayn xona va classroom/ — sinf musobaqasi), leaderboard
+│                      competition (onlayn xona va classroom/ — sinf musobaqasi), duel (bellashuv),
+│                      leaderboard
 ├── shared/            Qayta ishlatiladigan UI, hook'lar, i18n (xato matnlari), servis konteksti
 ├── styles/            Dizayn tokenlari va global stil
 └── testing/           Test uchun in-memory bog'liqliklar
@@ -206,8 +211,18 @@ supabase/
   **o'qimaydi**: u boshqa odamning telefonida ko'riladi, shuning uchun abakus illyustratsiyasi kabi
   o'z doimiy palitrasiga ega (`drawResultCard.ts`). Brend belgisi rasmning o'zida chiziladi, pastki
   qatorda esa o'quvchining o'z ustozi nomi yoziladi.
-- **Natija turi** — har bir natijada `mode` bor: `practice`, `online` yoki `classroom`. "Natijalarim"da onlayn
-  musobaqa 🏆, sinf musobaqasi 🏫 belgisi bilan ko'rsatiladi.
+- **Bellashuv** (`features/duel/`, `domain/duel.ts`) — musobaqani o'quvchining o'zi o'tkazadi. U sinfdoshlarini
+  tanlaydi (o'zi bilan 2–8 kishi), sozlamani hammaga bir xil yoki har kimga alohida qo'yadi va xona ochadi;
+  chaqirilganlar o'z telefonida ko'radi va qo'shiladi. Boshlovchi start berganda 3-2-1 sanaladi, keyin har
+  raundda misol hamma qurilmada bir vaqtda chaqnaydi. Keyingisiga faqat boshlovchi o'tkazadi — kim javob
+  berganini real vaqtda ko'rib turadi; ulgurmagan o'quvchining raundi o'tkazib yuborilgan hisoblanadi.
+  Mashq turi va misollar soni hammaga umumiy (raundlar birga yuradi), qolgan sozlamalar har kimniki o'zicha;
+  sozlama bir xil bo'lsa, misollar ham bir xil chiqadi. O'rinlar to'g'ri javob soniga, tenglikda javob
+  vaqtiga qarab beriladi. 15 daqiqa qimirlamagan bellashuv tugagan hisoblanadi: uni kim birinchi ochsa
+  o'sha yopadi, `pg_cron` esa qolganlarini yig'ishtiradi. **Yulduzcha berilmaydi va reytingga qo'shilmaydi** —
+  natija `duel` rejimida saqlanadi, uni o'quvchi "Natijalarim"da, ustoz `/teacher/duels` sahifasida ko'radi.
+- **Natija turi** — har bir natijada `mode` bor: `practice`, `online`, `classroom` yoki `duel`. "Natijalarim"da onlayn
+  musobaqa 🏆, sinf musobaqasi 🏫, bellashuv ⚔️ belgisi bilan ko'rsatiladi.
 - **To'lov** (`domain/billing.ts`). Ustoz "To'ladi" tugmasini bosib, o'quvchi qaysi sanagacha ochiq bo'lishini
   kiritadi: sanani o'zi tanlaydi yoki "1–4 oy" tugmalaridan birini bosadi (o'quvchilar oldindan bir necha oyga
   to'lashi mumkin). Oylar joriy muddat oxiridan sanaladi, shuning uchun oldindan to'langanda kun yo'qolmaydi.

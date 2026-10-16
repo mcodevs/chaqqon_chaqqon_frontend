@@ -1,0 +1,298 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.intro {
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.summary {
+  font: var(--text-body);
+  color: var(--content-secondary);
+  background: var(--surface-soft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.fieldLabel {
+  display: block;
+  font: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--content-tertiary);
+  margin-bottom: var(--space-2);
+}
+
+.modeField,
+.tabField {
+  margin: var(--space-4) 0;
+}
+
+.hint {
+  font: var(--text-body);
+  color: var(--content-tertiary);
+  margin-top: var(--space-2);
+}
+
+.note {
+  font: var(--text-body);
+  color: var(--content-tertiary);
+  text-align: center;
+  margin: var(--space-4) 0;
+}
+
+.waiting {
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+  text-align: center;
+  margin: var(--space-4) 0;
+}
+
+/* ---------------------------------------------------------------- roster */
+
+.roster {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+}
+
+.rosterRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+
+.rosterRow[data-joined='true'] {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-soft);
+}
+
+.rosterName {
+  flex: 1;
+  font: var(--text-body-lg);
+  color: var(--content-primary);
+}
+
+.rosterTag {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
+.rosterMark {
+  font: var(--text-caption);
+  color: var(--content-secondary);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- standings */
+
+.standings {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.standingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+}
+
+.standingRow[data-place='1'] {
+  border-color: var(--medal-gold);
+  background: var(--warning-soft);
+}
+
+.place {
+  font-family: var(--font-display);
+  font-size: var(--size-h2);
+  font-weight: 800;
+  min-width: 1.5em;
+  text-align: center;
+  color: var(--content-secondary);
+}
+
+.standingName {
+  flex: 1;
+  font: var(--text-body-lg);
+  color: var(--content-primary);
+}
+
+.standingScore {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-display);
+  font-size: var(--size-h3);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.standingTime {
+  font: var(--text-caption);
+  color: var(--content-tertiary);
+}
+
+/* ------------------------------------------------------------- the match */
+
+.countdownStage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  text-align: center;
+}
+
+.countdownLabel {
+  font: var(--text-h3);
+  color: var(--content-tertiary);
+  margin-bottom: var(--space-3);
+}
+
+.countdownNumber {
+  font-family: var(--font-display);
+  font-size: var(--size-countdown);
+  font-weight: 800;
+  color: var(--brand-accent);
+  line-height: 1;
+  animation: duelPop 0.3s ease-out;
+}
+
+@keyframes duelPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .countdownNumber {
+    animation: none;
+  }
+}
+
+.run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 200px;
+  justify-content: center;
+  text-align: center;
+}
+
+.verdict {
+  font: var(--text-h2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+}
+
+.good {
+  background: var(--success-soft);
+  color: var(--success-content);
+}
+
+.bad {
+  background: var(--danger-soft);
+  color: var(--danger-content);
+}
+
+.verdictAnswer {
+  font-family: var(--font-display);
+  font-size: var(--size-h1);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.ownScore {
+  font: var(--text-body-lg);
+  color: var(--content-secondary);
+}
+
+/* --------------------------------------------------------- host's strip */
+
+.hostStrip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+.hostList {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.hostChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  font: var(--text-body);
+  color: var(--content-secondary);
+}
+
+.hostChip[data-answered='true'] {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success-content);
+}
+
+.hostChipName {
+  font-weight: 700;
+}
+
+.hostChipScore {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--content-primary);
+}
+
+.hostActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}

@@ -13,6 +13,9 @@ export interface LeaderboardRow {
  * Ranks by points, where every correct answer is one point: a wrong answer earns nothing, so
  * accuracy still counts, but a single perfect problem can no longer outrank weeks of practice.
  * Accuracy and session count only break ties. Students without sessions go last.
+ *
+ * Duels are left out on purpose: the children set those up among themselves, with whatever
+ * settings they like, so they are for fun and never move anyone up the class ranking.
  */
 export function computeLeaderboard(
   students: readonly Student[],
@@ -23,6 +26,7 @@ export function computeLeaderboard(
   );
 
   for (const result of results) {
+    if (result.mode === 'duel') continue;
     const row = rows.get(result.studentId);
     if (!row) continue;
     row.sessions += 1;

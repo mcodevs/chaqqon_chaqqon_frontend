@@ -11,6 +11,8 @@ import { AdminTeacherPage } from '@/features/admin/AdminTeacherPage';
 import { AdminTeachersPage } from '@/features/admin/AdminTeachersPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { ClassroomPage } from '@/features/competition/classroom/ClassroomPage';
+import { StudentDuelPage } from '@/features/duel/StudentDuelPage';
+import { TeacherDuelsPage } from '@/features/duel/TeacherDuelsPage';
 import { StudentCompetitionPage } from '@/features/competition/StudentCompetitionPage';
 import { TeacherCompetitionPage } from '@/features/competition/TeacherCompetitionPage';
 import { LeaderboardPage } from '@/features/leaderboard/LeaderboardPage';
@@ -119,6 +121,14 @@ export function AppRouter() {
           }
         />
         <Route
+          path="duels"
+          element={
+            <RequireFeature feature="duels">
+              <TeacherDuelsPage />
+            </RequireFeature>
+          }
+        />
+        <Route
           path="worksheet"
           element={
             <RequireFeature feature="worksheet">
@@ -162,6 +172,14 @@ export function AppRouter() {
           element={
             <RequireFeature feature="homework_rooms">
               <StudentCompetitionPage />
+            </RequireFeature>
+          }
+        />
+        <Route
+          path="duel"
+          element={
+            <RequireFeature feature="duels">
+              <StudentDuelPage />
             </RequireFeature>
           }
         />

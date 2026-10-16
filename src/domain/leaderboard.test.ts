@@ -32,15 +32,21 @@ describe('computeLeaderboard', () => {
   it('does not let one perfect problem outrank sustained practice', () => {
     const rows = computeLeaderboard(
       [student('grinder'), student('sniper')],
-      [
-        ...Array.from({ length: 10 }, () => result('grinder', 9)),
-        result('sniper', 1, 1),
-      ],
+      [...Array.from({ length: 10 }, () => result('grinder', 9)), result('sniper', 1, 1)],
     );
 
     expect(rows.map((row) => row.student.id)).toEqual(['grinder', 'sniper']);
     expect(rows[0]).toMatchObject({ correct: 90, accuracy: 90 });
     expect(rows[1]).toMatchObject({ correct: 1, accuracy: 100 });
+  });
+
+  it('leaves duels out: the children set those up themselves, for fun', () => {
+    const rows = computeLeaderboard(
+      [student('duellist')],
+      [result('duellist', 5), { ...result('duellist', 10), mode: 'duel' }],
+    );
+
+    expect(rows[0]).toMatchObject({ sessions: 1, correct: 5, total: 10 });
   });
 
   it('breaks a points tie by accuracy, so wasted attempts cost a place', () => {

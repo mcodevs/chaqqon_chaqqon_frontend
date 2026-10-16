@@ -5,6 +5,7 @@ import { createLocalAuthGateway } from './localAuthGateway';
 import { createLocalHomeworkRepository } from './localHomeworkRepository';
 import { createLocalPaymentRepository } from './localPaymentRepository';
 import {
+  createLocalDuelRepository,
   createLocalMarketRepository,
   createLocalResultRepository,
   createLocalRoomRepository,
@@ -68,6 +69,7 @@ export function createLocalPorts(browser: Window, clock: Clock): Ports {
     students: createLocalStudentRepository({ records, platform, hasher, generateId }),
     results: createLocalResultRepository(store, platform),
     rooms: createLocalRoomRepository(store, platform),
+    duels: createLocalDuelRepository(store, platform),
     payments: createLocalPaymentRepository({ store, records, platform, clock, generateId }),
     market: createLocalMarketRepository(store, platform),
     homework: createLocalHomeworkRepository(store, platform),

@@ -21,10 +21,15 @@ yerdan kerakli faylni oching.
 - [Trenerlar uchun Reels](references/reels-trener-video.md) — 2026-10-15: 84 s 9:16 video, Remotion `marketing/reels-trener` (capture → music → render → mix); ekranlar dev:local + puppeteer seed, musiqa o'zimiz sintez qilgan, oxirgi kadr faqat logo + telefon; tuzoqlar: `isMobile` reload, pastki nav click
 - [Reels 3D versiyasi](references/reels-trener-video.md) — 2026-10-15: `Reels3D` (three.js + @remotion/three), `--gl=angle`, 1 birlik = 100 px; tuzoqlar: kanvas ichida delayRender ishlamaydi, torus allaqachon XY da, havodagi obyekt soyasi dog' bo'ladi
 
+- [Bellashuv](references/bellashuv.md) — 2026-10-16: o'quvchi o'zi o'tkazadigan musobaqa (`/student/duel`,
+  ustozda `/teacher/duels`); alohida `duels`+`duel_participants`, raundni faqat boshlovchi suradi,
+  `roundSkipped` reducer harakati, 15 daqiqada o'zi yopiladi; yulduz va reyting yo'q (`mode = 'duel'`)
+
 ## Eslatma
 
 `references/` 2026-10-06 da qayta boshlandi. Loyihaning qolgan xotirasi hozircha
 `~/.claude/projects/-Users-mcodevs-my-projects-chaqqon-chaqqon/memory/` da — vaultdan alohida,
 avtomatik ko'chmaydi. Yangi nota yozilganda o'sha yerdan mos keluvchisini shu papkaga ko'chirib
 qo'yish ma'qul.
+
 - [[natija-rasmi]] — ulashiladigan natija kartasi: tipografik apostrof, brend nomi faqat bir marta, tokensiz palitra

@@ -5,6 +5,7 @@ import { createApplicationService } from '@/application/applicationService';
 import { createAuthService } from '@/application/authService';
 import { createBillingService } from '@/application/billingService';
 import { createCompetitionService } from '@/application/competitionService';
+import { createDuelService } from '@/application/duelService';
 import { createHomeworkService } from '@/application/homeworkService';
 import { createMarketService } from '@/application/marketService';
 import { createPlatformService } from '@/application/platformService';
@@ -25,6 +26,7 @@ export async function createAppServices(config: BackendConfig = readBackendConfi
     students: createStudentService({ students: ports.students, random: Math.random }),
     results: createResultService({ results: ports.results, generateId, clock }),
     competition: createCompetitionService({ rooms: ports.rooms, generateId, clock }),
+    duels: createDuelService({ duels: ports.duels, generateId, clock, random: Math.random }),
     billing: createBillingService({ payments: ports.payments, clock }),
     market: createMarketService({ market: ports.market, generateId, clock }),
     homework: createHomeworkService({ homework: ports.homework }),

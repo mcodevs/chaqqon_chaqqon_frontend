@@ -1,8 +1,11 @@
 import type { PracticeConfig } from './practice/config';
 
-export const PRACTICE_MODES = ['practice', 'online', 'classroom'] as const;
+export const PRACTICE_MODES = ['practice', 'online', 'classroom', 'duel'] as const;
 
-/** How a result was produced: solo practice, an online competition room, or a split-screen classroom match. */
+/**
+ * How a result was produced: solo practice, an online competition room, a split-screen classroom
+ * match, or a duel the students ran themselves (see domain/duel.ts).
+ */
 export type PracticeMode = (typeof PRACTICE_MODES)[number];
 
 export interface PracticeResult {

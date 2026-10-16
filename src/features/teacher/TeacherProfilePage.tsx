@@ -37,7 +37,7 @@ export function TeacherProfilePage() {
       <TeacherProfileForm account={account} />
 
       {/* 2. Ichki bo'limlar menyusi */}
-      {(['classroom', 'worksheet', 'market', 'leaderboard'] as const).some(opens) && (
+      {(['classroom', 'duels', 'worksheet', 'market', 'leaderboard'] as const).some(opens) && (
         <section className={styles.sectionBlock}>
           <div className={styles.sectionTitle}>Qoʻshimcha boshqaruv boʻlimlari</div>
           <div className={styles.menuCard}>
@@ -49,6 +49,23 @@ export function TeacherProfilePage() {
                     <span className={styles.menuItemTitle}>Sinf musobaqasi (Katta ekran)</span>
                     <span className={styles.menuItemDesc}>
                       Dars paytida proyektor yoki monitorda koʻrsatish
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.menuItemRight}>
+                  <span className={styles.arrowIcon}>›</span>
+                </div>
+              </Link>
+            )}
+
+            {opens('duels') && (
+              <Link to="/teacher/duels" className={styles.menuItem}>
+                <div className={styles.menuItemLeft}>
+                  <div className={`${styles.menuIconWrap} ${styles.menuIconInfo}`}>⚔️</div>
+                  <div className={styles.menuItemText}>
+                    <span className={styles.menuItemTitle}>Bellashuvlar</span>
+                    <span className={styles.menuItemDesc}>
+                      Oʻquvchilar oʻzaro oʻtkazgan bellashuvlar va ularning natijalari
                     </span>
                   </div>
                 </div>

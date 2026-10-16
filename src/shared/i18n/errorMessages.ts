@@ -1,6 +1,7 @@
 import { type AppErrorCode, isAppError } from '@/application/errors';
 import { MAX_PREPAID_MONTHS } from '@/domain/billing';
 import { CLASSROOM_PARTICIPANTS } from '@/domain/classroom';
+import { DUEL_PARTICIPANTS } from '@/domain/duel';
 import { MIN_PASSWORD_LENGTH, MIN_TEACHER_PASSWORD_LENGTH } from '@/domain/users';
 
 const ERROR_MESSAGES: Record<AppErrorCode, string> = {
@@ -22,6 +23,12 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   ROOM_NOT_FOUND: 'Musobaqa xonasi topilmadi',
   ROOM_NOT_RUNNING: 'Musobaqa hali boshlanmagan',
   CLASSROOM_SIZE: `Sinf musobaqasi uchun ${CLASSROOM_PARTICIPANTS.min}–${CLASSROOM_PARTICIPANTS.max} ta o'quvchi tanlang`,
+  DUEL_SIZE: `Bellashuvda ${DUEL_PARTICIPANTS.min}–${DUEL_PARTICIPANTS.max} ta o'quvchi bo'lishi kerak`,
+  DUEL_NOT_FOUND: 'Bellashuv topilmadi',
+  DUEL_CLOSED: 'Bellashuv allaqachon boshlangan',
+  DUEL_NOT_RUNNING: 'Bellashuv hali boshlanmagan',
+  DUEL_GUEST_UNAVAILABLE:
+    "Tanlangan sinfdoshlardan biri bellashuvga qo'shila olmaydi — to'lovi tugagan bo'lishi mumkin",
   PAYMENT_NOT_FOUND: "Bekor qilinadigan to'lov yo'q",
   INVALID_PAID_UNTIL: `Ertangi kundan ${MAX_PREPAID_MONTHS} oygacha bo'lgan sanani tanlang`,
   ITEM_NOT_FOUND: 'Mahsulot topilmadi',

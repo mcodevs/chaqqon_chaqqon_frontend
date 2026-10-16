@@ -27,6 +27,7 @@ const READY: SessionAction = { type: 'readyElapsed' };
 const NUMBER: SessionAction = { type: 'numberElapsed' };
 const GAP: SessionAction = { type: 'gapElapsed' };
 const NEXT: SessionAction = { type: 'nextRequested' };
+const SKIP: SessionAction = { type: 'roundSkipped' };
 const answers = (...values: (number | null)[]): SessionAction => ({
   type: 'answersSubmitted',
   answers: values,
@@ -178,5 +179,36 @@ describe('a session that is not flashed', () => {
       delayMs: SESSION_TIMING.readyMs,
       action: READY,
     });
+  });
+});
+
+describe('a round the player did not finish', () => {
+  it('counts as missed, whether the numbers were still flashing or the answer was being typed', () => {
+    const flashing = sessionReducer(createSession([problems]), READY);
+    const missedWhileFlashing = sessionReducer(flashing, SKIP);
+    expect(missedWhileFlashing.phase).toBe('feedback');
+    expect(lastAttempt(missedWhileFlashing)).toMatchObject({ answer: null, isCorrect: false });
+
+    const answering = play(createSession([problems]), FLASH_TWO_NUMBERS);
+    const missedWhileAnswering = sessionReducer(answering, SKIP);
+    expect(missedWhileAnswering.phase).toBe('feedback');
+    expect(countCorrect(missedWhileAnswering)).toBe(0);
+  });
+
+  it('leaves an answer that already landed alone', () => {
+    const answered = sessionReducer(play(createSession([problems]), FLASH_TWO_NUMBERS), answers(4));
+    expect(sessionReducer(answered, SKIP)).toBe(answered);
+    expect(countCorrect(answered)).toBe(1);
+  });
+
+  it('lets a duel rejoined mid-match start on the round everyone else is on', () => {
+    // Two rounds skipped: the session is finished, having missed both.
+    let state = createSession([problems]);
+    for (let round = 0; round < 2; round += 1) {
+      state = sessionReducer(sessionReducer(state, SKIP), NEXT);
+    }
+    expect(state.phase).toBe('finished');
+    expect(state.lanes[0].attempts).toHaveLength(2);
+    expect(countCorrect(state)).toBe(0);
   });
 });

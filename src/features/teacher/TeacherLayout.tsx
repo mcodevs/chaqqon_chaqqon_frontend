@@ -16,6 +16,7 @@ const DESKTOP_TABS: Section<{ to: string; label: string; end?: boolean }>[] = [
   { to: '/teacher/stats', label: '📊 Statistika', feature: 'stats' },
   { to: '/teacher/worksheet', label: '🖨️ Yozma vazifa', feature: 'worksheet' },
   { to: '/teacher/classroom', label: '🏫 Sinf musobaqasi', feature: 'classroom' },
+  { to: '/teacher/duels', label: '⚔️ Bellashuvlar', feature: 'duels' },
   { to: '/teacher/abacus', label: '🧮 Abakus' },
   { to: '/teacher/market', label: "🎁 Do'kon", feature: 'market' },
   { to: '/teacher/leaderboard', label: '🏆 Reyting', feature: 'leaderboard' },

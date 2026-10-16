@@ -1,5 +1,7 @@
 import type { Payment } from '@/domain/billing';
 import type { Room, RoomProgress } from '@/domain/competition';
+import type { Duel, DuelParticipant } from '@/domain/duel';
+import type { Problem } from '@/domain/practice/problem';
 import type { MarketItem, MarketOrder, StarAward } from '@/domain/market';
 import { type PracticeConfig, normalizePracticeConfig } from '@/domain/practice/config';
 import { type PracticeResult, resolvePracticeMode } from '@/domain/results';
@@ -124,6 +126,58 @@ export function toRoomProgressRow(progress: RoomProgress): Tables['room_progress
     correct: progress.correct,
     total: progress.total,
     finished: progress.finished,
+  };
+}
+
+export function toDuel(row: Tables['duels']['Row']): Duel {
+  const configs = isJsonObject(row.configs) ? row.configs : {};
+  const problems = isJsonObject(row.problems) ? row.problems : {};
+  return {
+    id: row.id,
+    hostId: row.host_id,
+    status: row.status,
+    invitedIds: row.invited_ids,
+    configs: Object.fromEntries(row.invited_ids.map((id) => [id, normalizePracticeConfig(configs[id])])),
+    problems: Object.fromEntries(row.invited_ids.map((id) => [id, toProblems(problems[id])])),
+    sameConfig: row.same_config,
+    roundCount: row.round_count,
+    round: row.round,
+    createdAt: row.created_at,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function toDuelRow(duel: Duel): Tables['duels']['Insert'] {
+  return {
+    id: duel.id,
+    host_id: duel.hostId,
+    invited_ids: duel.invitedIds,
+    configs: toJson(duel.configs),
+    problems: duel.problems as unknown as Json,
+    same_config: duel.sameConfig,
+    round_count: duel.roundCount,
+  };
+}
+
+export function toDuelParticipant(row: Tables['duel_participants']['Row']): DuelParticipant {
+  return {
+    duelId: row.duel_id,
+    studentId: row.student_id,
+    joinedAt: row.joined_at,
+    answered: row.answered,
+    correct: row.correct,
+    answerMs: row.answer_ms,
+  };
+}
+
+/** A duel's problems are drawn once and never written again, so only the join sends a row. */
+export function toDuelParticipantRow(participant: DuelParticipant): Tables['duel_participants']['Insert'] {
+  return {
+    duel_id: participant.duelId,
+    student_id: participant.studentId,
+    joined_at: participant.joinedAt,
   };
 }
 
@@ -256,6 +310,18 @@ export function toTeacherApplication(row: Tables['teacher_applications']['Row'])
     adminNote: row.admin_note,
     createdAt: row.created_at,
   };
+}
+
+/** The problems stored with a duel. A row the app did not write reads as an empty list. */
+function toProblems(value: Json | undefined): Problem[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!isJsonObject(entry)) return [];
+    const { numbers, answer } = entry;
+    if (!Array.isArray(numbers) || typeof answer !== 'number') return [];
+    const rows = numbers.filter((number): number is number => typeof number === 'number');
+    return rows.length === numbers.length ? [{ numbers: rows, answer }] : [];
+  });
 }
 
 function isJsonObject(value: Json): value is { [key: string]: Json | undefined } {

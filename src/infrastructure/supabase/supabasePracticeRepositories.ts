@@ -1,8 +1,13 @@
 import { AppError } from '@/application/errors';
-import type { MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
+import type { DuelRepository, MarketRepository, ResultRepository, RoomRepository } from '@/application/ports';
 import type { AppSupabaseClient } from './client';
-import { POSTGRES_UNIQUE_VIOLATION, raisedAppError } from './edgeFunctions';
+import type { Database } from './database.types';
+import { POSTGRES_INSUFFICIENT_PRIVILEGE, POSTGRES_UNIQUE_VIOLATION, raisedAppError } from './edgeFunctions';
 import {
+  toDuel,
+  toDuelParticipant,
+  toDuelParticipantRow,
+  toDuelRow,
   toMarketItem,
   toMarketItemRow,
   toMarketOrder,
@@ -140,6 +145,82 @@ export function createSupabaseMarketRepository(client: AppSupabaseClient): Marke
 
     async updateOrderStatus(orderId, status) {
       const { error } = await client.from('market_orders').update({ status }).eq('id', orderId);
+      if (error) throw error;
+      live.notify();
+    },
+
+    subscribe: live.subscribe,
+  };
+}
+
+export function createSupabaseDuelRepository(client: AppSupabaseClient): DuelRepository {
+  const live = liveSubscription(client, ['duels', 'duel_participants']);
+
+  /** The host's row and a finished duel's results are written by triggers, not from here. */
+  const drive = async (id: string, changes: Database['public']['Tables']['duels']['Update']) => {
+    const { error } = await client.from('duels').update(changes).eq('id', id);
+    if (error) throw error;
+    live.notify();
+  };
+
+  return {
+    async listRecent(limit) {
+      const { data, error } = await client
+        .from('duels')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return data.map(toDuel);
+    },
+
+    async getById(id) {
+      const { data, error } = await client.from('duels').select('*').eq('id', id).maybeSingle();
+      if (error) throw error;
+      return data ? toDuel(data) : null;
+    },
+
+    async open(duel) {
+      const { error } = await client.from('duels').insert(toDuelRow(duel));
+      // A student cannot see who has paid, so the policy is what turns one of them down.
+      if (error?.code === POSTGRES_INSUFFICIENT_PRIVILEGE) throw new AppError('DUEL_GUEST_UNAVAILABLE');
+      if (error) throw error;
+      live.notify();
+    },
+
+    async join(participant) {
+      const { error } = await client.from('duel_participants').insert(toDuelParticipantRow(participant));
+      if (error) throw new AppError('DUEL_CLOSED');
+      live.notify();
+    },
+
+    start: (id, startedAt) => drive(id, { status: 'running', round: 0, started_at: startedAt }),
+
+    setRound: (id, round) => drive(id, { round }),
+
+    finish: (id) => drive(id, { status: 'finished', finished_at: new Date().toISOString() }),
+
+    async listParticipants(duelIds) {
+      if (duelIds.length === 0) return [];
+      const { data, error } = await client
+        .from('duel_participants')
+        .select('*')
+        .in('duel_id', duelIds)
+        .order('joined_at');
+      if (error) throw error;
+      return data.map(toDuelParticipant);
+    },
+
+    async saveProgress(progress) {
+      const { error } = await client
+        .from('duel_participants')
+        .update({
+          answered: progress.answered,
+          correct: progress.correct,
+          answer_ms: progress.answerMs,
+        })
+        .eq('duel_id', progress.duelId)
+        .eq('student_id', progress.studentId);
       if (error) throw error;
       live.notify();
     },
