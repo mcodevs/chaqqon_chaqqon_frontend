@@ -20,13 +20,13 @@ export const SECTION_META: Record<SectionId, SectionMeta> = {
     soft: 'var(--success-soft)',
   },
   kichik: {
-    label: "Kichik do'st",
+    label: "Kichik do‘st",
     description: '5 ichida, +5−x',
     color: 'var(--data-2)',
     soft: 'var(--info-soft)',
   },
   katta: {
-    label: "Katta do'st",
+    label: "Katta do‘st",
     description: "10 ichida, o'nlikka o'tish",
     color: 'var(--data-1)',
     soft: 'var(--brand-primary-soft)',

@@ -37,7 +37,7 @@ interface Praise {
  */
 export function praiseFor(accuracy: number): Praise {
   if (accuracy >= 100) return { praise: 'Mukammal!', badge: '🏆' };
-  if (accuracy >= 90) return { praise: "Zo'r natija!", badge: '🥇' };
+  if (accuracy >= 90) return { praise: "Zo‘r natija!", badge: '🥇' };
   if (accuracy >= 75) return { praise: 'Ajoyib!', badge: '🎉' };
   if (accuracy >= 50) return { praise: 'Yaxshi!', badge: '👍' };
   return { praise: 'Mashq davom etadi!', badge: '💪' };
@@ -88,7 +88,7 @@ export function resultCardData({
 
 /** The sentence that travels with the picture when an app asks for text as well. */
 export function shareText(data: ResultCardData): string {
-  return `${data.name} — ${data.title}: ${data.correct}/${data.total} to'g'ri (${data.accuracy}%). Chaqqon-chaqqon`;
+  return `${data.name} — ${data.title}: ${data.correct}/${data.total} to‘g‘ri (${data.accuracy}%). Chaqqon-chaqqon`;
 }
 
 /** A file name that says whose result it is without a date collision. */

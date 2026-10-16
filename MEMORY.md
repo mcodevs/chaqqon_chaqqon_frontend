@@ -27,3 +27,4 @@ yerdan kerakli faylni oching.
 `~/.claude/projects/-Users-mcodevs-my-projects-chaqqon-chaqqon/memory/` da — vaultdan alohida,
 avtomatik ko'chmaydi. Yangi nota yozilganda o'sha yerdan mos keluvchisini shu papkaga ko'chirib
 qo'yish ma'qul.
+- [[natija-rasmi]] — ulashiladigan natija kartasi: tipografik apostrof, brend nomi faqat bir marta, tokensiz palitra

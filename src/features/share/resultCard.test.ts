@@ -14,8 +14,8 @@ const input = {
 describe('praiseFor', () => {
   it.each([
     [100, 'Mukammal!'],
-    [95, "Zo'r natija!"],
-    [90, "Zo'r natija!"],
+    [95, "Zo‘r natija!"],
+    [90, "Zo‘r natija!"],
     [80, 'Ajoyib!'],
     [60, 'Yaxshi!'],
     [50, 'Yaxshi!'],
@@ -44,7 +44,7 @@ describe('drillDetail', () => {
   it('describes an anzan problem by its section and rows', () => {
     expect(
       drillDetail({ ...DEFAULT_PRACTICE_CONFIG, section: 'kichik', rowCount: 5, secondsPerNumber: 4 }),
-    ).toBe("Kichik do'st · 5 qator · 4 s");
+    ).toBe("Kichik do‘st · 5 qator · 4 s");
   });
 });
 
@@ -61,7 +61,7 @@ describe('resultCardData', () => {
       correct: 9,
       total: 10,
       accuracy: 90,
-      praise: "Zo'r natija!",
+      praise: "Zo‘r natija!",
       date: '29.09.2026',
     });
   });

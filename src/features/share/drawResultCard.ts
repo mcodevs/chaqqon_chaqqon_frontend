@@ -159,18 +159,15 @@ function paintScorePanel(ctx: CanvasRenderingContext2D, data: ResultCardData): v
 }
 
 function paintFooter(ctx: CanvasRenderingContext2D, data: ResultCardData): void {
+  // The platform's name is already up in the brand mark; saying it again down here only
+  // crowded the card, so the footer carries the teacher and the day alone.
   ctx.textAlign = 'center';
-  ctx.fillStyle = CARD.frame;
-  ctx.font = `800 38px ${DISPLAY}`;
-  ctx.fillText('Chaqqon-chaqqon', WIDTH / 2, HEIGHT - 168);
-
   ctx.fillStyle = CARD.inkSoft;
-  ctx.font = `700 30px ${BODY}`;
   // Every teacher's students share these pictures, so the line names the child's own teacher.
   const line = data.teacher ? `Mental arifmetika · ${data.teacher} bilan` : 'Mental arifmetika platformasi';
-  fitText(ctx, line, WIDTH / 2, HEIGHT - 118, WIDTH - 200, 30, BODY, 700);
+  fitText(ctx, line, WIDTH / 2, HEIGHT - 135, WIDTH - 200, 32, BODY, 700);
   ctx.font = `700 30px ${BODY}`;
-  ctx.fillText(data.date, WIDTH / 2, HEIGHT - 70);
+  ctx.fillText(data.date, WIDTH / 2, HEIGHT - 78);
 }
 
 /* ------------------------------------------------------------------ Helpers */
